@@ -38,9 +38,15 @@ describe 'EventTagUtils' do
     end
     it 'should return nil if event tags contains the revenue with a string value' do
       event_tags = {
-        'revenue' => '65536',
+        'revenue' => 'string',
       }
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags)).to be_nil
+    end
+    it 'should return nil if event tags contains the revenue with a string value' do
+      event_tags = {
+        'revenue' => '65536',
+      }
+      expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags)).to eq('65536')
     end
     it 'should return nil if event tags contains the revenue with a boolean value' do
       event_tags = {
@@ -72,5 +78,67 @@ describe 'EventTagUtils' do
       }
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags)).to eq(9223372036854775807)
     end
+
   end
+
+  describe '.get_event_value' do
+    it 'should return nil if argument is not a Hash' do
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(nil)).to be_nil
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(0.5)).to be_nil
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(65536)).to be_nil
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(9223372036854775807)).to be_nil
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value('65536')).to be_nil
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(false)).to be_nil
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value([])).to be_nil
+    end
+    it 'should return nil if event tags does not contain the value' do
+      event_tags = {
+        'non-value' => 5432,
+      }
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(event_tags)).to be_nil
+    end
+    it 'should return nil if event tags contains the value with a string value' do
+      event_tags = {
+        'value' => 'string',
+      }
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(event_tags)).to be_nil
+    end
+    it 'should return correct value if event tags contains the value with a numeric string value' do
+      event_tags = {
+        'value' => '65536',
+      }
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(event_tags)).to eq('65536')
+    end
+    it 'should return nil if event tags contains the value with a boolean value' do
+      event_tags = {
+        'value' => true,
+      }
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(event_tags)).to be_nil
+    end
+    it 'should return nil if event tags contains the value with a list value' do
+      event_tags = {
+        'value' => [],
+      }
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(event_tags)).to be_nil
+    end
+    it 'should return correct value if event tags contains the value with a float value' do
+      event_tags = {
+        'value' => 0.5,
+      }
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(event_tags)).to eq(0.5)
+    end
+    it 'should return correct value if event tags contains the value with an integer value' do
+      event_tags = {
+        'value' => 65536,
+      }
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(event_tags)).to eq(65536)
+    end
+    it 'should return correct value if event tags contains the value with a long value' do
+      event_tags = {
+        'value' => 9223372036854775807,
+      }
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(event_tags)).to eq(9223372036854775807)
+    end
+  end
+
 end
