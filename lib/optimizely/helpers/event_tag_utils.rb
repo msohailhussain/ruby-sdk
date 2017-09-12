@@ -24,12 +24,13 @@ module Optimizely
       REVENUE_EVENT_METRIC_NAME = 'revenue';
       VALUE_EVENT_METRIC_NAME = 'value';
 
-      # Grab the revenue value from the event tags. "revenue" is a reserved keyword.
-      # Params:
-      # +event_tags+:: +Hash+ representing metadata associated with the event.
-      # Returns:
-      # +Integer+ | +nil+ if revenue can't be retrieved from the event tags.
       def get_revenue_value(event_tags)
+        # Grab the revenue value from the event tags. "revenue" is a reserved keyword.
+        #
+        # event_tags - +Hash+ representing metadata associated with the event.
+        #
+        # Returns +Integer+ | +nil+ if revenue can't be retrieved from the event tags.
+
         revenue_value = nil
         
         if ( event_tags and Helpers::Validator.attributes_valid?(event_tags) and event_tags.has_key?(REVENUE_EVENT_METRIC_NAME) )
@@ -61,12 +62,13 @@ module Optimizely
         revenue_value
       end
 
-      # Grab the event value from the event tags. "value" is a reserved keyword.
-      # Params:
-      # +event_tags+:: +Hash+ representing metadata associated with the event.
-      # Returns:
-      # +Number+ | +nil+ if value can't be retrieved from the event tags.
       def get_event_value(event_tags)
+        # Grab the event value from the event tags. "value" is a reserved keyword.
+        #
+        # event_tags - +Hash+ representing metadata associated with the event.
+        #
+        # Returns  +Number+ | +nil+ if value can't be retrieved from the event tags.
+
         event_value = nil
 
         if ( event_tags and Helpers::Validator.attributes_valid?(event_tags) and event_tags.has_key?(VALUE_EVENT_METRIC_NAME) )

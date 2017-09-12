@@ -52,14 +52,14 @@ module Optimizely
 
     private
 
-    # Add params which are used in both conversion and impression events.
-    # Params:
-    # +user_id+::    +String+ ID for user
-    # +attributes+:: +Hash+ representing user attributes and values which need to be recorded.
-    # Return:
-    # +Hash+ Common event params
-    def add_common_params(user_id, attributes)
-      
+    def get_common_event_params(user_id, attributes)
+      # Add params which are used in both conversion and impression events.
+      # 
+      # user_id -    +String+ ID for user
+      # attributes - +Hash+ representing user attributes and values which need to be recorded.
+      # 
+      # Returns +Hash+ Common event params
+
       visitor_attributes = []
 
       unless attributes.nil?
@@ -106,13 +106,14 @@ module Optimizely
     POST_HEADERS = { 'Content-Type' => 'application/json' }
     ACTIVATE_EVENT_KEY = 'campaign_activated'
 
-    # Creates object of params specific to impression events
-    # Params:
-    # +experiment+::   +Hash+ experiment for which impression needs to be recorded
-    # +variation_id+:: +string+ ID for variation which would be presented to user
-    # Return:
-    # +Hash+ Impression event params
     def get_impression_event_params(experiment, variation_id)
+      # Creates object of params specific to impression events
+      #
+      # experiment -   +Hash+ experiment for which impression needs to be recorded
+      # variation_id - +string+ ID for variation which would be presented to user
+      #
+      # Returns +Hash+ Impression event params
+
       experiment_key = experiment['key']
       experiment_id = experiment['id']
 
@@ -137,14 +138,15 @@ module Optimizely
       impressionEventParams;
     end
 
-    # Creates object of params specific to conversion events
-    # Params:
-    # +event_key+::                +String+ Event key representing the event which needs to be recorded
-    # +event_tags+::               +Hash+ Values associated with the event.
-    # +experiment_variation_map+:: +Hash+ Map of experiment IDs to bucketed variation IDs
-    # Return:
-    # +Hash+ Conversion event params
     def get_conversion_event_params(event_key, event_tags, experiment_variation_map)
+      # Creates object of params specific to conversion events
+      #
+      # event_key -                +String+ Event key representing the event which needs to be recorded
+      # event_tags -               +Hash+ Values associated with the event.
+      # experiment_variation_map - +Hash+ Map of experiment IDs to bucketed variation IDs
+      #
+      # Returns +Hash+ Impression event params
+
       conversionEventParams = []
 
       experiment_variation_map.each do |experiment_id, variation_id|
@@ -187,35 +189,35 @@ module Optimizely
       return conversionEventParams
     end
 
-    # Create impression Event to be sent to the logging endpoint.
-    # Params:
-    # +experiment+::   +Object+ Experiment for which impression needs to be recorded.
-    # +variation_id+:: +String+ ID for variation which would be presented to user.
-    # +user_id+::      +String+ ID for user.
-    # +attributes+::   +Hash+ representing user attributes and values which need to be recorded.
-    # Returns:
-    # +Event+ encapsulating the impression event.
     def create_impression_event(experiment, variation_id, user_id, attributes)
+      # Create impression Event to be sent to the logging endpoint.
+      #
+      # experiment -   +Object+ Experiment for which impression needs to be recorded.
+      # variation_id - +String+ ID for variation which would be presented to user.
+      # user_id -      +String+ ID for user.
+      # attributes -   +Hash+ representing user attributes and values which need to be recorded.
+      #
+      # Returns +Event+ encapsulating the impression event.
 
-      event_params = add_common_params(user_id, attributes)
+      event_params = get_common_event_params(user_id, attributes)
       impression_event_params = get_impression_event_params(experiment, variation_id)
       event_params[:visitors][0][:snapshots].push(impression_event_params)
 
       Event.new(:post, ENDPOINT, event_params, POST_HEADERS)
     end
 
-    # Create conversion Event to be sent to the logging endpoint.
-    # Params:
-    # +event_key+::                +String+ Event key representing the event which needs to be recorded.
-    # +user_id+::                  +String+ ID for user.
-    # +attributes+::               +Hash+ representing user attributes and values which need to be recorded.
-    # +event_tags+::               +Hash+ representing metadata associated with the event.
-    # +experiment_variation_map+:: +Map+ of experiment ID to the ID of the variation that the user is bucketed into.
-    # Returns:
-    # +Event+ encapsulating the conversion event.
     def create_conversion_event(event_key, user_id, attributes, event_tags, experiment_variation_map)
+      # Create conversion Event to be sent to the logging endpoint.
+      #
+      # event_key -                +String+ Event key representing the event which needs to be recorded.
+      # user_id -                  +String+ ID for user.
+      # attributes -               +Hash+ representing user attributes and values which need to be recorded.
+      # event_tags -               +Hash+ representing metadata associated with the event.
+      # experiment_variation_map - +Map+ of experiment ID to the ID of the variation that the user is bucketed into.
+      #
+      # Returns +Event+ encapsulating the conversion event.
 
-      event_params = add_common_params(user_id, attributes)
+      event_params = get_common_event_params(user_id, attributes)
       conversion_event_params = get_conversion_event_params(event_key, event_tags, experiment_variation_map)
       event_params[:visitors][0][:snapshots] = conversion_event_params;
       
@@ -224,17 +226,17 @@ module Optimizely
 
     private
 
-    # Creates timestampe
-    # Returns:
-    # +Integer+
     def get_timestamp
+      # Creates timestampe
+      # Returns  +Integer+
+
       (Time.now.to_f * 1000).to_i
     end
 
-    # Creates UUID V4
-    # Returns:
-    # +String+
     def get_uuid
+      # Creates UUID V4
+      # Returns  +String+
+
       SecureRandom.uuid
     end
   end
