@@ -289,11 +289,11 @@ module Optimizely
       #
       # Returns variation ID into which user_id is forced (nil if no variation)
 
-      forced_variations = @config.get_forced_variations(experiment_key)
+      forced_variations = @config.get_forced_variation(experiment_key, user_id) # @config.get_forced_variations(experiment_key)
 
       return nil unless forced_variations
 
-      forced_variation_key = forced_variations[user_id]
+      forced_variation_key = forced_variations["key"]
 
       return nil unless forced_variation_key
 
