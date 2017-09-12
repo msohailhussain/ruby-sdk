@@ -85,7 +85,7 @@ module Optimizely
             end
 
             if num_value.to_s ==  raw_value.to_s # Insuring value was not rounded during conversion to number
-              event_value = raw_value
+              event_value = num_value
               logger.log(Logger::INFO, "Parsed event value #{raw_value} from event tags.")
             else
               logger.log(Logger::WARN, "Failed to parse event value #{raw_value} from event tags.")

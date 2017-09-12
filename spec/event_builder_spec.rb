@@ -315,7 +315,7 @@ describe Optimizely::EventBuilder do
     }
 
     @expected_conversion_params[:visitors][0][:snapshots][0][:events][0].merge!({
-      value: '13.37',
+      value: 13.37,
       tags: event_tags
     })
 

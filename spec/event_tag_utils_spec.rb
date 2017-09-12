@@ -107,7 +107,7 @@ describe 'EventTagUtils' do
       event_tags = {
         'value' => '65536',
       }
-      expect(Optimizely::Helpers::EventTagUtils.get_event_value(event_tags)).to eq('65536')
+      expect(Optimizely::Helpers::EventTagUtils.get_event_value(event_tags)).to eq(65536)
     end
     it 'should return nil if event tags contains the value with a boolean value' do
       event_tags = {
