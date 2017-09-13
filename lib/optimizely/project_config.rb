@@ -270,7 +270,7 @@ module Optimizely
       # Returns Variation The variation which the given user and experiment should be forced into.
 
       # check for nil and empty string user ID
-      if user_id.empty?
+      if user_id.nil? or user_id.empty?
         @logger.log(Logger::DEBUG, "User ID is invalid")
         return nil
       end
@@ -279,10 +279,10 @@ module Optimizely
         return nil
       end
       experimentToVariationMap = @forced_variation_map[user_id]
-      experiment = @experiment_key_map[experiment_key] # get_experiment_from_key(experiment_key)[:id]
-      experiment_id = experiment["id"]
+      experiment = get_experiment_from_key(experiment_key)
+      experiment_id = experiment["id"] if experiment
       # check for nil and empty string experiment ID
-      if experiment_id.empty?
+      if experiment_id.nil? or experiment_id.empty?
         # this case is logged in get_experiment_from_key
         return nil
       end
@@ -292,7 +292,7 @@ module Optimizely
       end
       variation_id = experimentToVariationMap[experiment_id]
       # check for nil and empty string variation ID
-      if variation_id.empty?
+      if variation_id.nil? or variation_id.empty?
         @logger.log(Logger::DEBUG, "No variation mapped to experiment '#{experiment_key}' in the forced variation map.")
         return nil
       end
@@ -300,12 +300,13 @@ module Optimizely
       variation_key = ""
       variation_id_map = @variation_id_map[experiment_key]
       if variation_id_map
-        variation = variation_id_map[variation_id]
+        variation = variation_id_map[variation_id] # get_variation_key_from_id(experiment_key, variation_id)
         variation_key = variation["key"] if variation
       end
+
       # check if the variation exists in the datafile
       if variation_key.empty?
-        # this case is logged in getVariationFromId
+        # this case is logged in get_variation_key_from_id
         return nil
       end
 
@@ -324,19 +325,19 @@ module Optimizely
       # Returns a boolean value that indicates if the set completed successfully.
 
       #  check for null and empty string user ID
-      if user_id.empty?
+      if user_id.nil? or user_id.empty?
         @logger.log(Logger::DEBUG, "User ID is invalid")
         return FALSE
       end
       experiment = get_experiment_from_key(experiment_key)
       experiment_id = experiment["id"] if experiment
       #  check if the experiment exists in the datafile
-      if experiment_id.empty?
+      if experiment_id.nil? or experiment_id.empty?
         return FALSE
       end
       #  clear the forced variation if the variation key is null
-      if variation_key.nil?
-        @forced_variation_map[user_id].delete(experiment_id)
+      if variation_key.nil? or variation_key.empty?
+        @forced_variation_map[user_id].delete(experiment_id) if @forced_variation_map[user_id].present?
         @logger.log(Logger::DEBUG, "Variation mapped to experiment '#{experiment_key}' has been removed for user '#{user_id}'.")
         return TRUE
       end
