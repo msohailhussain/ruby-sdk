@@ -277,6 +277,7 @@ describe 'OptimizelyV2' do
       allow(project_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
       allow(Optimizely::Audience).to receive(:user_in_experiment?)
 
+      expect(project_instance.set_forced_variation('test_experiment_with_audience', 'forced_audience_user', 'variation_with_audience')).to eq(TRUE)
       expect(project_instance.activate('test_experiment_with_audience', 'forced_audience_user', 'browser_type' => 'wrong_browser'))
         .to eq('variation_with_audience')
       expect(project_instance.event_dispatcher).to have_received(:dispatch_event).with(Optimizely::Event.new(:post, impression_log_url, params, post_headers)).once
@@ -596,6 +597,7 @@ describe 'OptimizelyV2' do
       allow(project_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
       allow(Optimizely::Audience).to receive(:user_in_experiment?)
 
+      expect(project_instance.set_forced_variation('test_experiment_with_audience', 'forced_audience_user', 'variation_with_audience')).to eq(TRUE)
       project_instance.track('test_event_with_audience', 'forced_audience_user', 'browser_type' => 'wrong_browser')
       expect(Optimizely::Audience).to_not have_received(:user_in_experiment?)
       expect(project_instance.event_dispatcher).to have_received(:dispatch_event).with(Optimizely::Event.new(:post, conversion_log_url, params, post_headers)).once
@@ -650,6 +652,7 @@ describe 'OptimizelyV2' do
     it 'should override the audience check if the user is whitelisted to a specific variation' do
       allow(Optimizely::Audience).to receive(:user_in_experiment?)
 
+      expect(project_instance.set_forced_variation('test_experiment_with_audience', 'forced_audience_user', 'variation_with_audience')).to eq(TRUE)
       expect(project_instance.get_variation('test_experiment_with_audience', 'forced_audience_user', 'browser_type' => 'wrong_browser'))
         .to eq('variation_with_audience')
       expect(Optimizely::Audience).to_not have_received(:user_in_experiment?)
