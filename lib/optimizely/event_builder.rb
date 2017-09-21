@@ -186,7 +186,7 @@ module Optimizely
         conversionEventParams.push(decision)
       end
     
-      return conversionEventParams
+      conversionEventParams
     end
 
     def create_impression_event(experiment, variation_id, user_id, attributes)
