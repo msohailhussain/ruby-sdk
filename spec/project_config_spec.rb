@@ -681,13 +681,13 @@ describe Optimizely::ProjectConfig do
       end
     end
 
-    #describe 'get_forced_variations' do
-    #  it 'should log a message when there is no experiment key map for the experiment' do
-    #    config.get_forced_variations('invalid_key')
-    #    expect(spy_logger).to have_received(:log).with(Logger::ERROR,
-    #                                                   "Experiment key 'invalid_key' is not in datafile.")
-    #  end
-    #end
+    describe 'get_whitelisted_variations' do
+      it 'should log a message when there is no experiment key map for the experiment' do
+        config.get_whitelisted_variations('invalid_key')
+        expect(spy_logger).to have_received(:log).with(Logger::ERROR,
+                                                       "Experiment key 'invalid_key' is not in datafile.")
+      end
+    end
 
     describe 'get_attribute_id' do
       it 'should log a message when provided attribute key is invalid' do
@@ -759,11 +759,11 @@ describe Optimizely::ProjectConfig do
       end
     end
 
-    #describe 'get_forced_variations' do
-    #  it 'should log a message when there is no experiment key map for the experiment' do
-    #    expect { config.get_forced_variations('invalid_key') }.to raise_error(Optimizely::InvalidExperimentError)
-    #  end
-    #end
+    describe 'get_whitelisted_variations' do
+      it 'should log a message when there is no experiment key map for the experiment' do
+        expect { config.get_whitelisted_variations('invalid_key') }.to raise_error(Optimizely::InvalidExperimentError)
+      end
+    end
 
     describe 'get_attribute_id' do
       it 'should raise an error when provided attribute key is invalid' do

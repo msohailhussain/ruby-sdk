@@ -248,18 +248,18 @@ module Optimizely
       nil
     end
 
-    #def get_forced_variations(experiment_key)
+    def get_whitelisted_variations(experiment_key)
       # Retrieves forced variations for a given experiment Key
       #
       # experiment_key - String Key representing the experiment
       #
       # Returns forced variations for the experiment or nil
 
-    #  experiment = @experiment_key_map[experiment_key]
-    #  return experiment['forcedVariations'] if experiment
-    #  @logger.log Logger::ERROR, "Experiment key '#{experiment_key}' is not in datafile."
-    #  @error_handler.handle_error InvalidExperimentError
-    #end
+      experiment = @experiment_key_map[experiment_key]
+      return experiment['forcedVariations'] if experiment
+      @logger.log Logger::ERROR, "Experiment key '#{experiment_key}' is not in datafile."
+      @error_handler.handle_error InvalidExperimentError
+    end
 
     def get_forced_variation(experiment_key, user_id)
       # Gets the forced variation key for the given user and experiment.
