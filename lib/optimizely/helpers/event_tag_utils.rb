@@ -98,10 +98,8 @@ module Optimizely
         end
 
         if raw_value.is_a? String and raw_value =~ /[^0-9.]/
-          #if raw_value.to_f == 0.0 and raw_value != "0.0"
             logger.log(Logger::DEBUG,"Provided numeric value is not a numeric string.")
-            return nil
-          #end         
+            return nil     
         end
 
         raw_value = raw_value.to_f
