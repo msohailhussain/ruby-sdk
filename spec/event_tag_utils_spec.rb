@@ -132,9 +132,14 @@ describe 'EventTagUtils' do
 
     it 'should return nil if event tags contains the numeric metric tag  with a non-numeric string value' do
       expect(spy_logger).to receive(:log).with(Logger::DEBUG,
-                                                       "Provided numeric value is not a numeric string.").exactly(1).times
+                                                       "Provided numeric value is not a numeric string.").exactly(2).times
       event_tags = {
         'value' => 'abcd',
+      }
+      expect(Optimizely::Helpers::EventTagUtils.get_numeric_value(event_tags,spy_logger)).to be_nil
+
+      event_tags = {
+        'value' => '1,1234',
       }
       expect(Optimizely::Helpers::EventTagUtils.get_numeric_value(event_tags,spy_logger)).to be_nil
     end
