@@ -26,7 +26,7 @@ module Optimizely
 
       def get_revenue_value(event_tags)
         # Grab the revenue value from the event tags. "revenue" is a reserved keyword.
-        # The revenue value must be an integer, not  a numeric string.
+        # The revenue value must be an integer.
         # 
         # event_tags - Hash representing metadata associated with the event.
         # Returns revenue value as an integer number
@@ -36,12 +36,12 @@ module Optimizely
           return nil
         end
 
-        unless event_tags.has_key?('revenue')
+        unless event_tags.has_key?(REVENUE_EVENT_METRIC_NAME)
           return nil
         end
 
         logger = SimpleLogger.new
-        raw_value = event_tags['revenue']
+        raw_value = event_tags[REVENUE_EVENT_METRIC_NAME]
 
         unless raw_value.is_a? Numeric
           logger.log(Logger::WARN, "Failed to parse revenue value #{raw_value} from event tags.")
@@ -57,13 +57,13 @@ module Optimizely
         raw_value
       end
 
-      def get_numeric_value(event_tags)
+      def get_numeric_value(event_tags, logger = nil)
         # Grab the numeric event value from the event tags. "value" is a reserved keyword.
         # The value of 'value' can be a float or a numeric string
         # 
         # event_tags - +Hash+ representing metadata associated with the event.
         # Returns  +Number+ | +nil+ if value can't be retrieved from the event tags.
-        logger = SimpleLogger.new
+        logger = SimpleLogger.new if logger.nil?
 
         if event_tags.nil?
           logger.log(Logger::DEBUG,"Event tags is undefined.")
@@ -76,35 +76,35 @@ module Optimizely
         end
 
         if !event_tags.has_key?(NUMERIC_EVENT_METRIC_NAME)
-          logger.log(Logger::DEBUG,"The numeric metric key is not defined in the event tags")
+          logger.log(Logger::DEBUG,"The numeric metric key is not defined in the event tags.")
           return nil
         end
 
         if event_tags[NUMERIC_EVENT_METRIC_NAME].nil?
-          logger.log(Logger::DEBUG,"The numeric metric key is null")
+          logger.log(Logger::DEBUG,"The numeric metric key is null.")
           return nil
         end
 
         raw_value = event_tags[NUMERIC_EVENT_METRIC_NAME]
 
-        if raw_value === true || raw_value === false
+        if raw_value === true or raw_value === false
           logger.log(Logger::DEBUG,"Provided numeric value is a boolean, which is an invalid format.")
           return nil
         end
 
+        if raw_value.is_a? Array or  raw_value.is_a?(Hash) or raw_value.to_f.nan? or  raw_value.to_f.infinite?
+            logger.log(Logger::DEBUG,"Provided numeric value is in an invalid format.")
+            return nil
+        end
+
         if raw_value.is_a? String
           if raw_value.to_f == 0.0 and raw_value != "0.0"
-            logger.log(Logger::DEBUG,"Provided numeric value is not a numeric string")
+            logger.log(Logger::DEBUG,"Provided numeric value is not a numeric string.")
             return nil
           end         
         end
 
         raw_value = raw_value.to_f
-
-        if raw_value.nan? || raw_value.infinite?
-           logger.log(Logger::DEBUG,"Provided numeric value is in an invalid format.")
-            return nil
-        end
 
         logger.log(Logger::INFO,"The numeric metric value #{raw_value} will be sent to results.")
 
