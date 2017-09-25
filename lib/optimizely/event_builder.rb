@@ -52,8 +52,8 @@ module Optimizely
 
     private
 
-    def get_common_event_params(user_id, attributes)
-      # Add params which are used in both conversion and impression events.
+    def get_common_params(user_id, attributes)
+      # Get params which are used in both conversion and impression events.
       # 
       # user_id -    +String+ ID for user
       # attributes - +Hash+ representing user attributes and values which need to be recorded.
@@ -63,24 +63,26 @@ module Optimizely
       visitor_attributes = []
 
       unless attributes.nil?
+
         attributes.keys.each do |attribute_key|
-          attribute_value = attributes[attribute_key]
-          #next unless attribute_value # Omit falsy attribute values
+        # Omit null attribute value
+        attribute_value = attributes[attribute_key]
+        next if attribute_value.nil?
 
-          # Skip attributes not in the datafile
-          attribute_id = @config.get_attribute_id(attribute_key)
-          next unless attribute_id
-    
-          feature = {
-            entity_id: attribute_id,
-            key: attribute_key,
-            type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
-            value: attribute_value
-          }
+        # Skip attributes not in the datafile
+        attribute_id = @config.get_attribute_id(attribute_key)
+        next unless attribute_id
 
-          visitor_attributes.push(feature)
+        feature = {
+          entity_id: attribute_id,
+          key: attribute_key,
+          type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
+          value: attribute_value
+        }
+
+        visitor_attributes.push(feature)
         end
-      end
+      end 
 
       common_params = {
         account_id: @config.account_id,
@@ -91,11 +93,11 @@ module Optimizely
             snapshots: [],
             visitor_id: user_id,
           }
-        ],
-        revision: @config.revision,
-        client_name: CLIENT_ENGINE,
-        client_version: VERSION,
-      }
+          ],
+          revision: @config.revision,
+          client_name: CLIENT_ENGINE,
+          client_version: VERSION,
+        }
 
       common_params
     end
@@ -106,7 +108,44 @@ module Optimizely
     POST_HEADERS = { 'Content-Type' => 'application/json' }
     ACTIVATE_EVENT_KEY = 'campaign_activated'
 
-    def get_impression_event_params(experiment, variation_id)
+    def create_impression_event(experiment, variation_id, user_id, attributes)
+      # Create impression Event to be sent to the logging endpoint.
+      #
+      # experiment -   +Object+ Experiment for which impression needs to be recorded.
+      # variation_id - +String+ ID for variation which would be presented to user.
+      # user_id -      +String+ ID for user.
+      # attributes -   +Hash+ representing user attributes and values which need to be recorded.
+      #
+      # Returns +Event+ encapsulating the impression event.
+
+      event_params = get_common_params(user_id, attributes)
+      impression_params = get_impression_params(experiment, variation_id)
+      event_params[:visitors][0][:snapshots].push(impression_params)
+
+      Event.new(:post, ENDPOINT, event_params, POST_HEADERS)
+    end
+
+    def create_conversion_event(event_key, user_id, attributes, event_tags, experiment_variation_map)
+      # Create conversion Event to be sent to the logging endpoint.
+      #
+      # event_key -                +String+ Event key representing the event which needs to be recorded.
+      # user_id -                  +String+ ID for user.
+      # attributes -               +Hash+ representing user attributes and values which need to be recorded.
+      # event_tags -               +Hash+ representing metadata associated with the event.
+      # experiment_variation_map - +Map+ of experiment ID to the ID of the variation that the user is bucketed into.
+      #
+      # Returns +Event+ encapsulating the conversion event.
+
+      event_params = get_common_params(user_id, attributes)
+      conversion_params = get_conversion_params(event_key, event_tags, experiment_variation_map)
+      event_params[:visitors][0][:snapshots] = conversion_params;
+      
+      Event.new(:post, ENDPOINT, event_params, POST_HEADERS)
+    end
+
+    private
+
+    def get_impression_params(experiment, variation_id)
       # Creates object of params specific to impression events
       #
       # experiment -   +Hash+ experiment for which impression needs to be recorded
@@ -117,31 +156,27 @@ module Optimizely
       experiment_key = experiment['key']
       experiment_id = experiment['id']
 
-      decision = [{
-        campaign_id: @config.experiment_key_map[experiment_key]['layerId'],
-        experiment_id: experiment_id,
-        variation_id: variation_id,
-      }]
-
-      event = [{
-        entity_id: @config.experiment_key_map[experiment_key]['layerId'],
-        timestamp: get_timestamp(),
-        key: ACTIVATE_EVENT_KEY,
-        uuid: get_uuid()
-      }]
-
       impressionEventParams = {
-        decisions: decision,
-        events: event
+        decisions: [{
+          campaign_id: @config.experiment_key_map[experiment_key]['layerId'],
+          experiment_id: experiment_id,
+          variation_id: variation_id,
+        }],
+        events: [{
+          entity_id: @config.experiment_key_map[experiment_key]['layerId'],
+          timestamp: get_timestamp(),
+          key: ACTIVATE_EVENT_KEY,
+          uuid: get_uuid()
+        }]
       }
 
       impressionEventParams;
     end
 
-    def get_conversion_event_params(event_key, event_tags, experiment_variation_map)
+    def get_conversion_params(event_key, event_tags, experiment_variation_map)
       # Creates object of params specific to conversion events
       #
-      # event_key -                +String+ Event key representing the event which needs to be recorded
+      # event_key -                +String+ Key representing the event which needs to be recorded
       # event_tags -               +Hash+ Values associated with the event.
       # experiment_variation_map - +Hash+ Map of experiment IDs to bucketed variation IDs
       #
@@ -151,7 +186,7 @@ module Optimizely
 
       experiment_variation_map.each do |experiment_id, variation_id|
 
-        decision = {
+        single_snapshot = {
           decisions: [{
             campaign_id: @config.experiment_id_map[experiment_id]['layerId'],
             experiment_id: experiment_id,
@@ -168,74 +203,35 @@ module Optimizely
         }
 
         if event_tags
-          event_revenue = Helpers::EventTagUtils.get_revenue_value(event_tags)
-          if event_revenue
-            event_object[:revenue] = event_revenue
+          revenue_value = Helpers::EventTagUtils.get_revenue_value(event_tags)
+          if revenue_value
+            event_object[:revenue] = revenue_value
           end
 
-          event_value = Helpers::EventTagUtils.get_event_value(event_tags)
-          if event_value
-            event_object[:value] = event_value
+          numeric_value = Helpers::EventTagUtils.get_numeric_value(event_tags)
+          if numeric_value
+            event_object[:value] = numeric_value
           end
 
           event_object[:tags] = event_tags
         end
 
-        decision[:events] = [event_object]
+        single_snapshot[:events] = [event_object]
 
-        conversionEventParams.push(decision)
+        conversionEventParams.push(single_snapshot)
       end
     
       conversionEventParams
     end
 
-    def create_impression_event(experiment, variation_id, user_id, attributes)
-      # Create impression Event to be sent to the logging endpoint.
-      #
-      # experiment -   +Object+ Experiment for which impression needs to be recorded.
-      # variation_id - +String+ ID for variation which would be presented to user.
-      # user_id -      +String+ ID for user.
-      # attributes -   +Hash+ representing user attributes and values which need to be recorded.
-      #
-      # Returns +Event+ encapsulating the impression event.
-
-      event_params = get_common_event_params(user_id, attributes)
-      impression_event_params = get_impression_event_params(experiment, variation_id)
-      event_params[:visitors][0][:snapshots].push(impression_event_params)
-
-      Event.new(:post, ENDPOINT, event_params, POST_HEADERS)
-    end
-
-    def create_conversion_event(event_key, user_id, attributes, event_tags, experiment_variation_map)
-      # Create conversion Event to be sent to the logging endpoint.
-      #
-      # event_key -                +String+ Event key representing the event which needs to be recorded.
-      # user_id -                  +String+ ID for user.
-      # attributes -               +Hash+ representing user attributes and values which need to be recorded.
-      # event_tags -               +Hash+ representing metadata associated with the event.
-      # experiment_variation_map - +Map+ of experiment ID to the ID of the variation that the user is bucketed into.
-      #
-      # Returns +Event+ encapsulating the conversion event.
-
-      event_params = get_common_event_params(user_id, attributes)
-      conversion_event_params = get_conversion_event_params(event_key, event_tags, experiment_variation_map)
-      event_params[:visitors][0][:snapshots] = conversion_event_params;
-      
-      Event.new(:post, ENDPOINT, event_params, POST_HEADERS)
-    end
-
-    private
-
     def get_timestamp
-      # Creates timestampe
-      # Returns  +Integer+
+      # Returns +Integer+ Current timestamp
 
       (Time.now.to_f * 1000).to_i
     end
 
     def get_uuid
-      # Creates UUID V4
-      # Returns  +String+
+      # Returns +String+ Random UUID
 
       SecureRandom.uuid
     end

@@ -22,83 +22,93 @@ module Optimizely
       module_function
 
       REVENUE_EVENT_METRIC_NAME = 'revenue';
-      VALUE_EVENT_METRIC_NAME = 'value';
+      NUMERIC_EVENT_METRIC_NAME = 'value';
 
       def get_revenue_value(event_tags)
         # Grab the revenue value from the event tags. "revenue" is a reserved keyword.
-        #
-        # event_tags - +Hash+ representing metadata associated with the event.
-        #
-        # Returns +Integer+ | +nil+ if revenue can't be retrieved from the event tags.
+        # The revenue value must be an integer, not  a numeric string.
+        # 
+        # event_tags - Hash representing metadata associated with the event.
+        # Returns revenue value as an integer number
+        # Returns nil if revenue can't be retrieved from the event tags.
 
-        revenue_value = nil
-        
-        if ( event_tags and Helpers::Validator.attributes_valid?(event_tags) and event_tags.has_key?(REVENUE_EVENT_METRIC_NAME) )
-  
-          logger = SimpleLogger.new
-  
-          begin
-            raw_value = event_tags[REVENUE_EVENT_METRIC_NAME]
-
-            if raw_value.is_a? Numeric
-              num_value = raw_value
-            else
-              num_value = raw_value.to_i
-            end
-
-            if (!num_value.is_a?(Float)) and num_value.to_s == raw_value.to_s
-              revenue_value = raw_value
-              logger.log(Logger::INFO, "Parsed revenue value #{raw_value} from event tags.")
-            else
-              logger.log(Logger::WARN, "Failed to parse revenue value #{raw_value} from event tags.")
-            end
-
-          rescue
-            logger.log(Logger::WARN, "Failed to parse revenue value #{raw_value} from event tags.")
-          end
-
+        if event_tags.nil? or !Helpers::Validator.attributes_valid?(event_tags)
+          return nil
         end
 
-        revenue_value
+        unless event_tags.has_key?('revenue')
+          return nil
+        end
+
+        logger = SimpleLogger.new
+        raw_value = event_tags['revenue']
+
+        unless raw_value.is_a? Numeric
+          logger.log(Logger::WARN, "Failed to parse revenue value #{raw_value} from event tags.")
+          return nil
+        end
+
+        if raw_value.is_a? Float
+          logger.log(Logger::WARN, "Failed to parse revenue value #{raw_value} from event tags.")
+          return nil
+        end
+
+        logger.log(Logger::INFO, "Parsed revenue value #{raw_value} from event tags.")
+        raw_value
       end
 
-      def get_event_value(event_tags)
-        # Grab the event value from the event tags. "value" is a reserved keyword.
-        #
+      def get_numeric_value(event_tags)
+        # Grab the numeric event value from the event tags. "value" is a reserved keyword.
+        # The value of 'value' can be a float or a numeric string
+        # 
         # event_tags - +Hash+ representing metadata associated with the event.
-        #
         # Returns  +Number+ | +nil+ if value can't be retrieved from the event tags.
+        logger = SimpleLogger.new
 
-        event_value = nil
-
-        if ( event_tags and Helpers::Validator.attributes_valid?(event_tags) and event_tags.has_key?(VALUE_EVENT_METRIC_NAME) )
-
-          logger = SimpleLogger.new
-
-          begin
-            raw_value = event_tags[VALUE_EVENT_METRIC_NAME]
-
-            if raw_value.is_a? Numeric
-              num_value = raw_value
-            else
-              i = raw_value.to_i
-              f = raw_value.to_f
-              num_value = i == f ? i : f
-            end
-
-            if num_value.to_s ==  raw_value.to_s # Insuring value was not rounded during conversion to number
-              event_value = num_value
-              logger.log(Logger::INFO, "Parsed event value #{raw_value} from event tags.")
-            else
-              logger.log(Logger::WARN, "Failed to parse event value #{raw_value} from event tags.")
-            end
-          rescue
-            logger.log(Logger::WARN, "Failed to parse event value #{raw_value} from event tags.")
-          end
-
+        if event_tags.nil?
+          logger.log(Logger::DEBUG,"Event tags is undefined.")
+          return nil
         end
 
-        return event_value
+        if !Helpers::Validator.event_tags_valid?(event_tags)
+          logger.log(Logger::DEBUG,"Event tags is not a dictionary.")
+          return nil
+        end
+
+        if !event_tags.has_key?(NUMERIC_EVENT_METRIC_NAME)
+          logger.log(Logger::DEBUG,"The numeric metric key is not defined in the event tags")
+          return nil
+        end
+
+        if event_tags[NUMERIC_EVENT_METRIC_NAME].nil?
+          logger.log(Logger::DEBUG,"The numeric metric key is null")
+          return nil
+        end
+
+        raw_value = event_tags[NUMERIC_EVENT_METRIC_NAME]
+
+        if raw_value === true || raw_value === false
+          logger.log(Logger::DEBUG,"Provided numeric value is a boolean, which is an invalid format.")
+          return nil
+        end
+
+        if raw_value.is_a? String
+          if raw_value.to_f == 0.0 and raw_value != "0.0"
+            logger.log(Logger::DEBUG,"Provided numeric value is not a numeric string")
+            return nil
+          end         
+        end
+
+        raw_value = raw_value.to_f
+
+        if raw_value.nan? || raw_value.infinite?
+           logger.log(Logger::DEBUG,"Provided numeric value is in an invalid format.")
+            return nil
+        end
+
+        logger.log(Logger::INFO,"The numeric metric value #{raw_value} will be sent to results.")
+
+        raw_value
       end
 
     end
