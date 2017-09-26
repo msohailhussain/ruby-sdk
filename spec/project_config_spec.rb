@@ -817,6 +817,18 @@ describe Optimizely::ProjectConfig do
                                                      "User ID is invalid")
     end
 
+    it 'should log a message and return nil when user is not in forced variation map' do
+      expect(config.get_forced_variation(@valid_experiment[:key], @user_id)).to eq(nil)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "User '#{@user_id}' is not in the forced variation map.")
+    end
+
+    it 'should log a message and return nil when experiment key is not in datafile' do
+      expect(config.get_forced_variation(@invalid_experiment_key, @user_id)).to eq(nil)
+      expect(spy_logger).to have_received(:log).with(Logger::ERROR,
+                                                     "Experiment key '#{@invalid_experiment_key}' is not in datafile.")
+    end
+
     it 'should return nil when experiment_key is passed as nil for get_forced_variation' do
       expect(config.get_forced_variation(nil, @user_id)).to eq(nil)
     end
@@ -825,33 +837,6 @@ describe Optimizely::ProjectConfig do
       expect(config.get_forced_variation('', @user_id)).to eq(nil)
     end
 
-    it 'should log a message and return nil when user is not in forced variation map' do
-      expect(config.get_forced_variation(@valid_experiment[:key], @user_id)).to eq(nil)
-      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
-                                                     "User '#{@user_id}' is not in the forced variation map.")
-    end
-
-    it 'should log a message and return nil when experiment key is not in datafile' do
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])).to eq(TRUE)
-      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
-                                                     "Set variation '#{@valid_variation[:id]}' for experiment '#{@valid_experiment[:id]}' and user '#{@user_id}' in the forced variation map.")
-
-      expect(config.get_forced_variation(@invalid_experiment_key, @user_id)).to eq(nil)
-      expect(spy_logger).to have_received(:log).with(Logger::ERROR,
-                                                     "Experiment key '#{@invalid_experiment_key}' is not in datafile.")
-    end
-
-    it 'should log a message and return expect variation when variation was forced for user' do
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])).to eq(TRUE)
-      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
-                                                     "Set variation '#{@valid_variation[:id]}' for experiment '#{@valid_experiment[:id]}' and user '#{@user_id}' in the forced variation map.")
-
-      variation = config.get_forced_variation(@valid_experiment[:key], @user_id)
-      expect(variation['key']).to eq(@valid_variation[:key])
-      expect(variation['id']).to eq(@valid_variation[:id])
-      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
-                                                     "Variation '#{@valid_variation[:key]}' is mapped to experiment '#{@valid_experiment[:key]}' and user '#{@user_id}' in the forced variation map")
-    end
   end
 
   describe 'set_forced_variation' do
@@ -886,10 +871,8 @@ describe Optimizely::ProjectConfig do
       expect(config.set_forced_variation('', @user_id, @valid_variation[:key])).to eq(FALSE)
     end
 
-    it 'should log a message and return nil when experiment key is not in datafile' do
+    it 'return nil when experiment key is not in datafile' do
       expect(config.set_forced_variation(@invalid_experiment_key, @user_id, @valid_variation[:key])).to eq(FALSE)
-      expect(spy_logger).to have_received(:log).with(Logger::ERROR,
-                                                     "Experiment key '#{@invalid_experiment_key}' is not in datafile.")
     end
 
     it 'should delete forced varaition maping, log a message and return TRUE when variation_key is passed as nil' do
@@ -904,10 +887,8 @@ describe Optimizely::ProjectConfig do
                                                      "Variation mapped to experiment '#{@valid_experiment[:key]}' has been removed for user '#{@user_id}'.")
     end
 
-    it 'should log a message and return FALSE when variation_key is not in datafile' do
+    it 'return FALSE when variation_key is not in datafile' do
       expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @invalid_variation_key)).to eq(FALSE)
-      expect(spy_logger).to have_received(:log).with(Logger::ERROR,
-                                                     "Variation key '#{@invalid_variation_key}' is not in datafile.")
     end
 
     it 'should log a message and return TRUE when forced variation was removed for user' do
@@ -928,4 +909,16 @@ describe Optimizely::ProjectConfig do
       expect(config.get_forced_variation(@valid_experiment[:key], @user_id)).to eq(nil)
     end
   end
+
+   it 'should log a message and return expect variation when variation was forced for user' do
+      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])).to eq(TRUE)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "Set variation '#{@valid_variation[:id]}' for experiment '#{@valid_experiment[:id]}' and user '#{@user_id}' in the forced variation map.")
+
+      variation = config.get_forced_variation(@valid_experiment[:key], @user_id)
+      expect(variation['key']).to eq(@valid_variation[:key])
+      expect(variation['id']).to eq(@valid_variation[:id])
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "Variation '#{@valid_variation[:key]}' is mapped to experiment '#{@valid_experiment[:key]}' and user '#{@user_id}' in the forced variation map")
+    end
 end
