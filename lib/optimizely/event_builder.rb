@@ -91,12 +91,12 @@ module Optimizely
           {
             attributes: visitor_attributes,
             snapshots: [],
-            visitor_id: user_id,
+            visitor_id: user_id
           }
           ],
           revision: @config.revision,
           client_name: CLIENT_ENGINE,
-          client_version: VERSION,
+          client_version: VERSION
         }
 
       common_params

@@ -24,6 +24,10 @@ module Optimizely
       REVENUE_EVENT_METRIC_NAME = 'revenue';
       NUMERIC_EVENT_METRIC_NAME = 'value';
 
+      def isStringNumeric(str)
+        Float(str) != nil rescue false
+      end
+
       def get_revenue_value(event_tags)
         # Grab the revenue value from the event tags. "revenue" is a reserved keyword.
         # The revenue value must be an integer.
@@ -92,12 +96,12 @@ module Optimizely
           return nil
         end
 
-        if raw_value.is_a? Array or  raw_value.is_a?(Hash) or raw_value.to_f.nan? or  raw_value.to_f.infinite?
+        if raw_value.is_a? Array or  raw_value.is_a? Hash or raw_value.to_f.nan? or  raw_value.to_f.infinite?
             logger.log(Logger::DEBUG,"Provided numeric value is in an invalid format.")
             return nil
         end
 
-        if raw_value.is_a? String and raw_value =~ /[^0-9.]/
+        if !Helpers::Validator.string_numeric?(raw_value)
             logger.log(Logger::DEBUG,"Provided numeric value is not a numeric string.")
             return nil     
         end

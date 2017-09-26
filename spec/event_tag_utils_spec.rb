@@ -181,7 +181,7 @@ describe 'EventTagUtils' do
       }
       expect(Optimizely::Helpers::EventTagUtils.get_numeric_value(event_tags,spy_logger)).to be_nil
       event_tags = {
-        'value' => -Float::MAX*10,
+        'value' => Float::MAX*10,
       }
       expect(Optimizely::Helpers::EventTagUtils.get_numeric_value(event_tags,spy_logger)).to be_nil
     end
