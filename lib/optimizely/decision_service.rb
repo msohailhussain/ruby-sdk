@@ -290,29 +290,29 @@ module Optimizely
       #
       # Returns variation ID into which user_id is white-listed (nil if no variation)
 
-      forced_variations = @config.get_forced_variations(experiment_key)
+      whitelisted_variations = @config.get_whitelisted_variations(experiment_key)
 
-      return nil unless forced_variations
+      return nil unless whitelisted_variations
 
-      forced_variation_key = forced_variations[user_id]
+      whitelisted_variation_key = whitelisted_variations[user_id]
 
-      return nil unless forced_variation_key
+      return nil unless whitelisted_variation_key
 
-      forced_variation_id = @config.get_variation_id_from_key(experiment_key, forced_variation_key)
+      whitelisted_variation_id = @config.get_variation_id_from_key(experiment_key, whitelisted_variation_key)
 
-      unless forced_variation_id
+      unless whitelisted_variation_id
         @config.logger.log(
           Logger::INFO,
-          "User '#{user_id}' is whitelisted into variation '#{forced_variation_key}', which is not in the datafile."
+          "User '#{user_id}' is whitelisted into variation '#{whitelisted_variation_key}', which is not in the datafile."
         )
         return nil
       end
 
       @config.logger.log(
         Logger::INFO,
-        "User '#{user_id}' is whitelisted into variation '#{forced_variation_key}' of experiment '#{experiment_key}'."
+        "User '#{user_id}' is whitelisted into variation '#{whitelisted_variation_key}' of experiment '#{experiment_key}'."
       )
-      forced_variation_id
+      whitelisted_variation_id
     end
 
     def get_saved_variation_id(experiment_id, user_profile)
