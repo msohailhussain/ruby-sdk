@@ -58,9 +58,13 @@ module Optimizely
         return nil
       end
 
-      # Check if user is in a forced variation
-      forced_variation_id = get_forced_variation_id(experiment_key, user_id)
+      # Check if a forced variation is set for the user
+      forced_variation_id = @config.get_forced_variation(experiment_key, user_id)
       return forced_variation_id if forced_variation_id
+
+      # Check if user is in a white-listed variation
+      whitelisted_variation_id = get_whitelisted_variation_id(experiment_key, user_id)
+      return whitelisted_variation_id if whitelisted_variation_id
 
       # Check for saved bucketing decisions
       user_profile = get_user_profile(user_id)
@@ -278,13 +282,13 @@ module Optimizely
 
     private
 
-    def get_forced_variation_id(experiment_key, user_id)
-      # Determine if a user is forced into a variation for the given experiment and return the ID of that variation
+    def get_whitelisted_variation_id(experiment_key, user_id)
+      # Determine if a user is white-listed into a variation for the given experiment and return the ID of that variation
       #
       # experiment_key - Key representing the experiment for which user is to be bucketed
       # user_id - ID for the user
       #
-      # Returns variation ID into which user_id is forced (nil if no variation)
+      # Returns variation ID into which user_id is white-listed (nil if no variation)
 
       forced_variations = @config.get_forced_variations(experiment_key)
 
