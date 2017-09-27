@@ -23,10 +23,11 @@ module Optimizely
     # This includes all of the following (in order):
     #
     # 1. Checking experiment status
-    # 2. Checking whitelisting
-    # 3. Checking user profile service for past bucketing decisions (sticky bucketing)
-    # 3. Checking audience targeting
-    # 4. Using Murmurhash3 to bucket the user
+    # 2. Checking force bucketing
+    # 3. Checking whitelisting
+    # 4. Checking user profile service for past bucketing decisions (sticky bucketing)
+    # 5. Checking audience targeting
+    # 6. Using Murmurhash3 to bucket the user
 
     attr_reader :bucketer
     attr_reader :config
@@ -60,7 +61,7 @@ module Optimizely
 
       # Check if a forced variation is set for the user
       forced_variation_id = @config.get_forced_variation(experiment_key, user_id)
-      return forced_variation_id if forced_variation_id
+      return forced_variation_id['id'] if forced_variation_id
 
       # Check if user is in a white-listed variation
       whitelisted_variation_id = get_whitelisted_variation_id(experiment_key, user_id)

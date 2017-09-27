@@ -216,6 +216,8 @@ module Optimizely
       # variation_id - ID of the variation
       #
       # Returns the variation or nil if not found
+      puts experiment_key
+      puts variation_id
 
       variation_id_map = @variation_id_map[experiment_key]
       if variation_id_map
@@ -267,7 +269,7 @@ module Optimizely
     end
 
     def get_forced_variation(experiment_key, user_id)
-      # Gets the forced variation key for the given user and experiment.
+      # Gets the forced variation for the given user and experiment.
       #
       # experiment_key - String Key for experiment.
       # user_id - String ID for user
@@ -361,6 +363,9 @@ module Optimizely
         return FALSE
       end
 
+      unless @forced_variation_map.has_key? user_id 
+        @forced_variation_map[user_id] = {}
+      end
       @forced_variation_map[user_id][experiment_id] = variation_id
       @logger.log(Logger::DEBUG, "Set variation '#{variation_id}' for experiment '#{experiment_id}' and user '#{user_id}' in the forced variation map.")
       return TRUE

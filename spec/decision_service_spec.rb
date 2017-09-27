@@ -14,10 +14,8 @@
 #    limitations under the License.
 #
 require 'optimizely/decision_service'
-require 'optimizely/project_config'
 require 'optimizely/error_handler'
 require 'optimizely/logger'
-require 'spec_helper'
 
 describe Optimizely::DecisionService do
   let(:config_body) { OptimizelySpec::VALID_CONFIG_BODY }
@@ -37,6 +35,15 @@ describe Optimizely::DecisionService do
 
       # by default, spy user profile service should no-op. we override this behavior in specific tests
       allow(spy_user_profile_service).to receive(:lookup).and_return(nil)
+    end
+
+    it 'should return the correct variation ID for a given user for whom a variation has been forced' do
+      config.set_forced_variation('test_experiment','test_user', 'variation')
+      expect(decision_service.get_variation('test_experiment', 'test_user')).to eq('111129')
+      # Setting forced variation should short circuit whitelist check, bucketing and audience evaluation
+      expect(decision_service).not_to have_received(:get_whitelisted_variation_id)
+      expect(decision_service.bucketer).not_to have_received(:bucket)
+      expect(Optimizely::Audience).not_to have_received(:user_in_experiment?)
     end
 
     it 'should return the correct variation ID for a given user ID and key of a running experiment' do
