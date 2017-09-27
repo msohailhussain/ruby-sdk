@@ -216,8 +216,6 @@ module Optimizely
       # variation_id - ID of the variation
       #
       # Returns the variation or nil if not found
-      puts experiment_key
-      puts variation_id
 
       variation_id_map = @variation_id_map[experiment_key]
       if variation_id_map
@@ -338,21 +336,21 @@ module Optimizely
       #  check for null and empty string user ID
       if user_id.nil? or user_id.empty?
         @logger.log(Logger::DEBUG, "User ID is invalid")
-        return FALSE
+        return false
       end
 
       experiment = get_experiment_from_key(experiment_key)
       experiment_id = experiment["id"] if experiment
       #  check if the experiment exists in the datafile
       if experiment_id.nil? or experiment_id.empty?
-        return FALSE
+        return false
       end
 
       #  clear the forced variation if the variation key is null
       if variation_key.nil? or variation_key.empty?
         @forced_variation_map[user_id].delete(experiment_id) if @forced_variation_map[user_id].present?
         @logger.log(Logger::DEBUG, "Variation mapped to experiment '#{experiment_key}' has been removed for user '#{user_id}'.")
-        return TRUE
+        return true
       end
 
       variation_id = get_variation_id_from_key(experiment_key, variation_key)
@@ -360,7 +358,7 @@ module Optimizely
       #  check if the variation exists in the datafile
       unless variation_id
         #  this case is logged in get_variation_id_from_key
-        return FALSE
+        return false
       end
 
       unless @forced_variation_map.has_key? user_id 
@@ -368,7 +366,7 @@ module Optimizely
       end
       @forced_variation_map[user_id][experiment_id] = variation_id
       @logger.log(Logger::DEBUG, "Set variation '#{variation_id}' for experiment '#{experiment_id}' and user '#{user_id}' in the forced variation map.")
-      return TRUE
+      return true
     end
 
     def get_attribute_id(attribute_key)

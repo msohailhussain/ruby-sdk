@@ -60,8 +60,8 @@ module Optimizely
       end
 
       # Check if a forced variation is set for the user
-      forced_variation_id = @config.get_forced_variation(experiment_key, user_id)
-      return forced_variation_id['id'] if forced_variation_id
+      forced_variation = @config.get_forced_variation(experiment_key, user_id)
+      return forced_variation['id'] if forced_variation
 
       # Check if user is in a white-listed variation
       whitelisted_variation_id = get_whitelisted_variation_id(experiment_key, user_id)

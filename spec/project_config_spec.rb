@@ -855,43 +855,43 @@ describe Optimizely::ProjectConfig do
 
     # User ID is null
     it 'should log a message when user_id is passed as nil' do
-      expect(config.set_forced_variation(@valid_experiment[:key], nil, @valid_variation[:key])).to eq(FALSE)
+      expect(config.set_forced_variation(@valid_experiment[:key], nil, @valid_variation[:key])).to eq(false)
       expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
        "User ID is invalid")
     end
     # User ID is an empty string
-    it 'should log a message and return FALSE when user_id is passed as empty string' do
-      expect(config.set_forced_variation(@valid_experiment[:key], '', @valid_variation[:key])).to eq(FALSE)
+    it 'should log a message and return false when user_id is passed as empty string' do
+      expect(config.set_forced_variation(@valid_experiment[:key], '', @valid_variation[:key])).to eq(false)
       expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
        "User ID is invalid")
     end
     # Experiment key is null
-    it 'should return FALSE when experiment_key is passed as nil' do
-      expect(config.set_forced_variation(nil, @user_id, @valid_variation[:key])).to eq(FALSE)
+    it 'should return false when experiment_key is passed as nil' do
+      expect(config.set_forced_variation(nil, @user_id, @valid_variation[:key])).to eq(false)
     end
     # Experiment key is an empty string
-    it 'should return FALSE when experiment_key is passed as empty string' do
-      expect(config.set_forced_variation('', @user_id, @valid_variation[:key])).to eq(FALSE)
+    it 'should return false when experiment_key is passed as empty string' do
+      expect(config.set_forced_variation('', @user_id, @valid_variation[:key])).to eq(false)
     end
     # Experiment key does not exist in the datafile
     it 'return nil when experiment key is not in datafile' do
-      expect(config.set_forced_variation(@invalid_experiment_key, @user_id, @valid_variation[:key])).to eq(FALSE)
+      expect(config.set_forced_variation(@invalid_experiment_key, @user_id, @valid_variation[:key])).to eq(false)
     end
     # Variation key is null
-    it 'should delete forced varaition maping, log a message and return TRUE when variation_key is passed as nil' do
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, nil)).to eq(TRUE)
+    it 'should delete forced varaition maping, log a message and return true when variation_key is passed as nil' do
+      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, nil)).to eq(true)
       expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
        "Variation mapped to experiment '#{@valid_experiment[:key]}' has been removed for user '#{@user_id}'.")
     end
     # Variation key is an empty string
-    it 'should delete forced varaition maping, log a message and return TRUE when variation_key is passed as empty string' do
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, '')).to eq(TRUE)
+    it 'should delete forced varaition maping, log a message and return true when variation_key is passed as empty string' do
+      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, '')).to eq(true)
       expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
        "Variation mapped to experiment '#{@valid_experiment[:key]}' has been removed for user '#{@user_id}'.")
     end
     # Variation key does not exist in the datafile
-    it 'return FALSE when variation_key is not in datafile' do
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @invalid_variation_key)).to eq(FALSE)
+    it 'return false when variation_key is not in datafile' do
+      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @invalid_variation_key)).to eq(false)
     end
   end
 
@@ -914,28 +914,28 @@ describe Optimizely::ProjectConfig do
 
     # Call set variation with different variations on one user/experiment to confirm that each set is expected.
     it 'should set and return expected variations when different variations are set and removed for one user/experiment' do
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])).to eq(TRUE)
+      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])).to eq(true)
       variation = config.get_forced_variation(@valid_experiment[:key], @user_id)                                          
       expect(variation['id']).to eq(@valid_variation[:id])
       expect(variation['key']).to eq(@valid_variation[:key])      
 
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation_2[:key])).to eq(TRUE)
+      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation_2[:key])).to eq(true)
       variation = config.get_forced_variation(@valid_experiment[:key], @user_id)
       expect(variation['id']).to eq(@valid_variation_2[:id])
       expect(variation['key']).to eq(@valid_variation_2[:key])                                   
 
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id,  '')).to eq(TRUE)
+      expect(config.set_forced_variation(@valid_experiment[:key], @user_id,  '')).to eq(true)
       expect(config.get_forced_variation(@valid_experiment[:key], @user_id)).to eq(nil)
     end
 
     # Set variation on multiple experiments for one user.
     it 'should set and return expected variations when variation is set for multiple experiments for one user' do
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])).to eq(TRUE)
+      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])).to eq(true)
       variation = config.get_forced_variation(@valid_experiment[:key], @user_id)
       expect(variation['id']).to eq(@valid_variation[:id])
       expect(variation['key']).to eq(@valid_variation[:key])
 
-      expect(config.set_forced_variation(@valid_experiment_2[:key], @user_id, @valid_variation_for_exp_2[:key])).to eq(TRUE)
+      expect(config.set_forced_variation(@valid_experiment_2[:key], @user_id, @valid_variation_for_exp_2[:key])).to eq(true)
       variation = config.get_forced_variation(@valid_experiment_2[:key], @user_id)
       expect(variation['id']).to eq(@valid_variation_for_exp_2[:id])
       expect(variation['key']).to eq(@valid_variation_for_exp_2[:key])
@@ -944,12 +944,12 @@ describe Optimizely::ProjectConfig do
     # Set variations for multiple users.
     it 'should set and return expected variations when variations are set for multiple users' do
 
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])).to eq(TRUE)
+      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])).to eq(true)
       variation = config.get_forced_variation(@valid_experiment[:key], @user_id)
       expect(variation['id']).to eq(@valid_variation[:id])
       expect(variation['key']).to eq(@valid_variation[:key])
 
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id_2, @valid_variation[:key])).to eq(TRUE)
+      expect(config.set_forced_variation(@valid_experiment[:key], @user_id_2, @valid_variation[:key])).to eq(true)
       variation = config.get_forced_variation(@valid_experiment[:key], @user_id_2)
       expect(variation['id']).to eq(@valid_variation[:id])
       expect(variation['key']).to eq(@valid_variation[:key])
