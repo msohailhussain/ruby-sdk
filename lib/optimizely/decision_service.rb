@@ -62,6 +62,10 @@ module Optimizely
       forced_variation_id = get_forced_variation_id(experiment_key, user_id)
       return forced_variation_id if forced_variation_id
 
+      # Check if user is in a whitelisted variation
+      whitelisted_variation_id = get_whitelisted_variation_id(experiment_key, user_id)
+      return whitelisted_variation_id if whitelisted_variation_id
+
       # Check for saved bucketing decisions
       user_profile = get_user_profile(user_id)
       saved_variation_id = get_saved_variation_id(experiment_id, user_profile)
@@ -286,11 +290,11 @@ module Optimizely
       #
       # Returns variation ID into which user_id is forced (nil if no variation)
 
-      forced_variations = @config.get_forced_variations(experiment_key)
+      forced_variations = @config.get_forced_variation(experiment_key, user_id)
 
       return nil unless forced_variations
 
-      forced_variation_key = forced_variations[user_id]
+      forced_variation_key = forced_variations["key"]
 
       return nil unless forced_variation_key
 
@@ -309,6 +313,39 @@ module Optimizely
         "User '#{user_id}' is whitelisted into variation '#{forced_variation_key}' of experiment '#{experiment_key}'."
       )
       forced_variation_id
+    end
+
+    def get_whitelisted_variation_id(experiment_key, user_id)
+      # Determine if a user is forced into a whiteliste for the given experiment and return the ID of that variation
+      #
+      # experiment_key - Key representing the experiment for which user is to be bucketed
+      # user_id - ID for the user
+      #
+      # Returns variation ID into which user_id is whiteliste (nil if no variation)
+
+      whitelisted_variations = @config.get_whitelisted_variations(experiment_key)
+
+      return nil unless whitelisted_variations
+
+      whitelisted_variation_key = whitelisted_variations[user_id]
+
+      return nil unless whitelisted_variation_key
+
+      whitelisted_variation_id = @config.get_variation_id_from_key(experiment_key, whitelisted_variation_key)
+
+      unless whitelisted_variation_id
+        @config.logger.log(
+          Logger::INFO,
+          "User '#{user_id}' is whitelisted into variation '#{whitelisted_variation_key}', which is not in the datafile."
+        )
+        return nil
+      end
+
+      @config.logger.log(
+        Logger::INFO,
+        "User '#{user_id}' is whitelisted into variation '#{whitelisted_variation_key}' of experiment '#{experiment_key}'."
+      )
+      whitelisted_variation_id
     end
 
     def get_saved_variation_id(experiment_id, user_profile)

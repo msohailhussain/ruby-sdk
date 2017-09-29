@@ -14,8 +14,10 @@
 #    limitations under the License.
 #
 require 'optimizely/decision_service'
+require 'optimizely/project_config'
 require 'optimizely/error_handler'
 require 'optimizely/logger'
+require 'spec_helper'
 
 describe Optimizely::DecisionService do
   let(:config_body) { OptimizelySpec::VALID_CONFIG_BODY }

@@ -278,6 +278,138 @@ describe 'Optimizely' do
     end
   end
 
+  describe 'get_forced_variation' do
+    let(:error_handler) { Optimizely::NoOpErrorHandler.new }
+
+    before(:example) do
+      @user_id = "test_user"
+      @invalid_experiment_key = "invalid_experiment"
+      @invalid_variation_key = "invalid_variation"
+      @valid_experiment = {id: '111127', key: "test_experiment"}
+      @valid_variation = {id: '111128', key: "control"}
+    end
+
+    it 'should log a message and return nil when user_id is passed as nil for get_forced_variation' do
+      expect(project_instance.get_forced_variation(@valid_experiment[:key], nil)).to eq(nil)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "User ID is invalid")
+    end
+
+    it 'should log a message and return nil when user_id is passed as empty string for get_forced_variation' do
+      expect(project_instance.get_forced_variation(@valid_experiment[:key], '')).to eq(nil)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "User ID is invalid")
+    end
+
+    it 'should return nil when experiment_key is passed as nil for get_forced_variation' do
+      expect(project_instance.get_forced_variation(nil, @user_id)).to eq(nil)
+    end
+
+    it 'should return nil when experiment_key is passed as empty string for get_forced_variation' do
+      expect(project_instance.get_forced_variation('', @user_id)).to eq(nil)
+    end
+
+    it 'should log a message and return nil when user is not in forced variation map' do
+      expect(project_instance.get_forced_variation(@valid_experiment[:key], @user_id)).to eq(nil)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "User '#{@user_id}' is not in the forced variation map.")
+    end
+
+    it 'should log a message and return nil when experiment key is not in datafile' do
+      expect(project_instance.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])).to eq(TRUE)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "Set variation '#{@valid_variation[:id]}' for experiment '#{@valid_experiment[:id]}' and user '#{@user_id}' in the forced variation map.")
+
+      expect(project_instance.get_forced_variation(@invalid_experiment_key, @user_id)).to eq(nil)
+      expect(spy_logger).to have_received(:log).with(Logger::ERROR,
+                                                     "Experiment key '#{@invalid_experiment_key}' is not in datafile.")
+    end
+
+    it 'should log a message and return expected variation when variation was forced for user' do
+      expect(project_instance.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])).to eq(TRUE)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "Set variation '#{@valid_variation[:id]}' for experiment '#{@valid_experiment[:id]}' and user '#{@user_id}' in the forced variation map.")
+
+      variation_key = project_instance.get_forced_variation(@valid_experiment[:key], @user_id)
+      expect(variation_key).to eq(@valid_variation[:key])
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "Variation '#{@valid_variation[:key]}' is mapped to experiment '#{@valid_experiment[:key]}' and user '#{@user_id}' in the forced variation map")
+    end
+  end
+
+  describe 'set_forced_variation' do
+    let(:error_handler) { Optimizely::NoOpErrorHandler.new }
+
+    before(:example) do
+      @user_id = "test_user"
+      @invalid_experiment_key = "invalid_experiment"
+      @invalid_variation_key = "invalid_variation"
+      @valid_experiment = {id: '111127', key: "test_experiment"}
+      @valid_variation = {id: '111128', key: "control"}
+    end
+
+    it 'should log a message when user_id is passed as nil' do
+      expect(project_instance.set_forced_variation(@valid_experiment[:key], nil, @valid_variation[:key])).to eq(FALSE)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "User ID is invalid")
+    end
+
+    it 'should log a message and return FALSE when user_id is passed as empty string' do
+      expect(project_instance.set_forced_variation(@valid_experiment[:key], '', @valid_variation[:key])).to eq(FALSE)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "User ID is invalid")
+    end
+
+    it 'should return FALSE when experiment_key is passed as nil' do
+      expect(project_instance.set_forced_variation(nil, @user_id, @valid_variation[:key])).to eq(FALSE)
+    end
+
+    it 'should return FALSE when experiment_key is passed as empty string' do
+      expect(project_instance.set_forced_variation('', @user_id, @valid_variation[:key])).to eq(FALSE)
+    end
+
+    it 'should log a message and return nil when experiment key is not in datafile' do
+      expect(project_instance.set_forced_variation(@invalid_experiment_key, @user_id, @valid_variation[:key])).to eq(FALSE)
+      expect(spy_logger).to have_received(:log).with(Logger::ERROR,
+                                                     "Experiment key '#{@invalid_experiment_key}' is not in datafile.")
+    end
+
+    it 'should delete forced varaition maping, log a message and return TRUE when variation_key is passed as nil' do
+      expect(project_instance.set_forced_variation(@valid_experiment[:key], @user_id, nil)).to eq(TRUE)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "Variation mapped to experiment '#{@valid_experiment[:key]}' has been removed for user '#{@user_id}'.")
+    end
+
+    it 'should delete forced varaition maping, log a message and return TRUE when variation_key is passed as empty string' do
+      expect(project_instance.set_forced_variation(@valid_experiment[:key], @user_id, '')).to eq(TRUE)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "Variation mapped to experiment '#{@valid_experiment[:key]}' has been removed for user '#{@user_id}'.")
+    end
+
+    it 'should log a message and return FALSE when variation_key is not in datafile' do
+      expect(project_instance.set_forced_variation(@valid_experiment[:key], @user_id, @invalid_variation_key)).to eq(FALSE)
+      expect(spy_logger).to have_received(:log).with(Logger::ERROR,
+                                                     "Variation key '#{@invalid_variation_key}' is not in datafile.")
+    end
+
+    it 'should log a message and return TRUE when forced variation was removed for user' do
+      expect(project_instance.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])).to eq(TRUE)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "Set variation '#{@valid_variation[:id]}' for experiment '#{@valid_experiment[:id]}' and user '#{@user_id}' in the forced variation map.")
+
+      variation_key = project_instance.get_forced_variation(@valid_experiment[:key], @user_id)
+      expect(variation_key).to eq(@valid_variation[:key])
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "Variation '#{@valid_variation[:key]}' is mapped to experiment '#{@valid_experiment[:key]}' and user '#{@user_id}' in the forced variation map")
+
+      expect(project_instance.set_forced_variation(@valid_experiment[:key], @user_id,  '')).to eq(TRUE)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
+                                                     "Variation mapped to experiment '#{@valid_experiment[:key]}' has been removed for user '#{@user_id}'.")
+
+      expect(project_instance.get_forced_variation(@valid_experiment[:key], @user_id)).to eq(nil)
+    end
+  end
+
   describe '#track' do
     before(:example) do
       allow(Time).to receive(:now).and_return(time_now)
