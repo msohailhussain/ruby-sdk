@@ -25,9 +25,12 @@ describe Optimizely::Bucketer do
   let(:config) { Optimizely::ProjectConfig.new(config_body_JSON, spy_logger, error_handler) }
   let(:bucketer) { Optimizely::Bucketer.new(config) }
 
-  def get_bucketing_id(user_id, entity_id=nil)
+  testBucketingIdControl = 'testBucketingIdControl!';  # generates bucketing number 3741
+  testBucketingIdVariation = '123456789'; # generates bucketing number 4567
+
+  def get_bucketing_key(bucketing_id, entity_id=nil)
     entity_id = entity_id || 1886780721
-    sprintf(Optimizely::Bucketer::BUCKETING_ID_TEMPLATE, {user_id: user_id, entity_id: entity_id})
+    sprintf(Optimizely::Bucketer::BUCKETING_ID_TEMPLATE, {bucketing_id: bucketing_id, entity_id: entity_id})
   end
 
   it 'should return correct variation ID when provided bucket value' do
@@ -48,11 +51,11 @@ describe Optimizely::Bucketer do
   end
 
   it 'should test the output of generate_bucket_value for different inputs' do
-    expect(bucketer.send(:generate_bucket_value, get_bucketing_id('ppid1'))).to eq(5254)
-    expect(bucketer.send(:generate_bucket_value, get_bucketing_id('ppid2'))).to eq(4299)
-    expect(bucketer.send(:generate_bucket_value, get_bucketing_id('ppid2', 1886780722))).to eq(2434)
-    expect(bucketer.send(:generate_bucket_value, get_bucketing_id('ppid3'))).to eq(5439)
-    expect(bucketer.send(:generate_bucket_value, get_bucketing_id(
+    expect(bucketer.send(:generate_bucket_value, get_bucketing_key('ppid1'))).to eq(5254)
+    expect(bucketer.send(:generate_bucket_value, get_bucketing_key('ppid2'))).to eq(4299)
+    expect(bucketer.send(:generate_bucket_value, get_bucketing_key('ppid2', 1886780722))).to eq(2434)
+    expect(bucketer.send(:generate_bucket_value, get_bucketing_key('ppid3'))).to eq(5439)
+    expect(bucketer.send(:generate_bucket_value, get_bucketing_key(
       'a very very very very very very very very very very very very very very very long ppd string'))).to eq(6128)
   end
 
@@ -117,7 +120,7 @@ describe Optimizely::Bucketer do
   end
 
   it 'should call generate_bucket_value with the proper arguments during variation bucketing' do
-    expected_bucketing_id = get_bucketing_id('test_user', '111127')
+    expected_bucketing_id = get_bucketing_key('test_user', '111127')
     expect(bucketer).to receive(:generate_bucket_value).once.with(expected_bucketing_id).and_call_original
 
     experiment = config.get_experiment_from_key('test_experiment')
@@ -125,7 +128,7 @@ describe Optimizely::Bucketer do
   end
 
   it 'should call generate_bucket_value with the proper arguments during grouped experiment bucketing' do
-    expected_bucketing_id = get_bucketing_id('test_user', '101')
+    expected_bucketing_id = get_bucketing_key('test_user', '101')
     expect(bucketer).to receive(:generate_bucket_value).once.with(expected_bucketing_id).and_call_original
     experiment = config.get_experiment_from_key('group1_exp1')
     bucketer.bucket(experiment, 'test_user')
