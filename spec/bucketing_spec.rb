@@ -148,6 +148,37 @@ describe Optimizely::Bucketer do
                       .with(Logger::DEBUG, "Bucketed into an empty traffic range. Returning nil.")
   end
 
+  describe 'Bucketing with Bucketing Id' do
+    # Bucketing with bucketing ID
+    it 'should bucket to a variation different than the one expected with the userId' do
+      experiment = config.get_experiment_from_key('test_experiment')
+
+      # Bucketing with user id as bucketing id - 'test_user111127' produces bucket value < 5000
+      expected_variation = config.get_variation_from_id('test_experiment','111128')
+      expect(bucketer.bucket(experiment,'test_user', 'test_user')).to be(expected_variation)
+
+      # Bucketing with bucketing id - 'any_string789111127' produces bucket value 5000 < x < 10,000
+      expected_variation = config.get_variation_from_id('test_experiment','111129')
+      expect(bucketer.bucket(experiment,'any_string789', 'test_user')).to be(expected_variation)
+    end
+
+    # Bucketing with invalid experiment key and bucketing ID
+    it 'should return nil with invalid experiment and bucketing ID' do
+      expect(bucketer.bucket(nil,'some_id', 'test_user')).to be(nil)
+    end
+
+    # Bucketing with grouped experiments and bucketing ID
+    it 'should bucket expectedly when bucketing id in grouped experiments'  do
+      experiment = config.get_experiment_from_key('group1_exp1')
+
+      expected_variation = config.get_variation_from_id('group1_exp1','130001')
+      expect(bucketer.bucket(experiment,'pid', 'test_user')).to be(expected_variation)
+
+      expected_variation = config.get_variation_from_id('group1_exp1','130002')
+      expect(bucketer.bucket(experiment,'123456789', 'test_user')).to be(expected_variation)
+    end
+  end
+
   describe 'logging' do
     it 'should log the results of bucketing a user into variation 1' do
       expect(bucketer).to receive(:generate_bucket_value).and_return(50)

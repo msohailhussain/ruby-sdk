@@ -43,6 +43,7 @@ module Optimizely
       # user_id - String ID for user.
       #
       # Returns variation in which visitor with ID user_id has been placed. Nil if no variation.
+      return nil if experiment.nil?
 
       # check if experiment is in a group; if so, check if user is bucketed into specified experiment
       experiment_id = experiment['id']
