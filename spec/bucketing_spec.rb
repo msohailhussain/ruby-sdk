@@ -25,9 +25,6 @@ describe Optimizely::Bucketer do
   let(:config) { Optimizely::ProjectConfig.new(config_body_JSON, spy_logger, error_handler) }
   let(:bucketer) { Optimizely::Bucketer.new(config) }
 
-  testBucketingIdControl = 'testBucketingIdControl!';  # generates bucketing number 3741
-  testBucketingIdVariation = '123456789'; # generates bucketing number 4567
-
   def get_bucketing_key(bucketing_id, entity_id=nil)
     entity_id = entity_id || 1886780721
     sprintf(Optimizely::Bucketer::BUCKETING_ID_TEMPLATE, {bucketing_id: bucketing_id, entity_id: entity_id})
@@ -40,14 +37,14 @@ describe Optimizely::Bucketer do
 
     # Variation 1
     expected_variation_1 = config.get_variation_from_id('test_experiment', '111128')
-    expect(bucketer.bucket(experiment, 'test_user')).to eq(expected_variation_1)
+    expect(bucketer.bucket(experiment,'bucketidstring', 'test_user')).to eq(expected_variation_1)
 
     # Variation 2
     expected_variation_2 = config.get_variation_from_id('test_experiment','111129')
-    expect(bucketer.bucket(experiment, 'test_user')).to eq(expected_variation_2)
+    expect(bucketer.bucket(experiment,'bucketidstring', 'test_user')).to eq(expected_variation_2)
 
     # No matching variation
-    expect(bucketer.bucket(experiment, 'test_user')).to be_nil
+    expect(bucketer.bucket(experiment,'bucketidstring', 'test_user')).to be_nil
   end
 
   it 'should test the output of generate_bucket_value for different inputs' do
@@ -64,7 +61,7 @@ describe Optimizely::Bucketer do
 
     experiment = config.get_experiment_from_key('group1_exp1')
     expected_variation = config.get_variation_from_id('group1_exp1','130001')
-    expect(bucketer.bucket(experiment, 'test_user')).to eq(expected_variation)
+    expect(bucketer.bucket(experiment,'bucketidstring','test_user')).to eq(expected_variation)
     expect(spy_logger).to have_received(:log).exactly(4).times
     expect(spy_logger).to have_received(:log).twice
                       .with(Logger::DEBUG, "Assigned bucket 3000 to user 'test_user'.")
@@ -78,7 +75,7 @@ describe Optimizely::Bucketer do
     expect(bucketer).to receive(:generate_bucket_value).once.and_return(3000)
 
     experiment = config.get_experiment_from_key('group1_exp2')
-    expect(bucketer.bucket(experiment, 'test_user')).to be_nil
+    expect(bucketer.bucket(experiment,'bucketidstring', 'test_user')).to be_nil
     expect(spy_logger).to have_received(:log)
                       .with(Logger::DEBUG, "Assigned bucket 3000 to user 'test_user'.")
     expect(spy_logger).to have_received(:log)
@@ -89,7 +86,7 @@ describe Optimizely::Bucketer do
     expect(bucketer).to receive(:find_bucket).once.and_return(nil)
 
     experiment = config.get_experiment_from_key('group1_exp2')
-    expect(bucketer.bucket(experiment, 'test_user')).to be_nil
+    expect(bucketer.bucket(experiment,'bucketidstring', 'test_user')).to be_nil
     expect(spy_logger).to have_received(:log)
                             .with(Logger::INFO, "User 'test_user' is in no experiment.")
   end
@@ -99,7 +96,7 @@ describe Optimizely::Bucketer do
 
     experiment = config.get_experiment_from_key('group2_exp1')
     expected_variation = config.get_variation_from_id('group2_exp1','144443')
-    expect(bucketer.bucket(experiment, 'test_user')).to eq(expected_variation)
+    expect(bucketer.bucket(experiment,'bucketidstring', 'test_user')).to eq(expected_variation)
     expect(spy_logger).to have_received(:log).twice
     expect(spy_logger).to have_received(:log)
       .with(Logger::DEBUG, "Assigned bucket 3000 to user 'test_user'.")
@@ -111,7 +108,7 @@ describe Optimizely::Bucketer do
     expect(bucketer).to receive(:generate_bucket_value).and_return(50_000)
 
     experiment = config.get_experiment_from_key('group2_exp1')
-    expect(bucketer.bucket(experiment, 'test_user')).to be_nil
+    expect(bucketer.bucket(experiment,'bucketidstring', 'test_user')).to be_nil
     expect(spy_logger).to have_received(:log).twice
     expect(spy_logger).to have_received(:log)
       .with(Logger::DEBUG, "Assigned bucket 50000 to user 'test_user'.")
@@ -120,24 +117,27 @@ describe Optimizely::Bucketer do
   end
 
   it 'should call generate_bucket_value with the proper arguments during variation bucketing' do
-    expected_bucketing_id = get_bucketing_key('test_user', '111127')
+    expected_bucketing_id = get_bucketing_key('bucketidstring', '111127')
     expect(bucketer).to receive(:generate_bucket_value).once.with(expected_bucketing_id).and_call_original
 
     experiment = config.get_experiment_from_key('test_experiment')
-    bucketer.bucket(experiment, 'test_user')
+    bucketer.bucket(experiment,'bucketidstring', 'test_user')
   end
 
   it 'should call generate_bucket_value with the proper arguments during grouped experiment bucketing' do
-    expected_bucketing_id = get_bucketing_key('test_user', '101')
-    expect(bucketer).to receive(:generate_bucket_value).once.with(expected_bucketing_id).and_call_original
+    expected_bucketing_id_group = get_bucketing_key('bucketidstring', '101')
+    expected_bucketing_id_experiment = get_bucketing_key('bucketidstring', '133331')
+    expect(bucketer).to receive(:generate_bucket_value).with(expected_bucketing_id_group).and_call_original
+    expect(bucketer).to receive(:generate_bucket_value).with(expected_bucketing_id_experiment).and_call_original
+    
     experiment = config.get_experiment_from_key('group1_exp1')
-    bucketer.bucket(experiment, 'test_user')
+    bucketer.bucket(experiment,'bucketidstring','test_user')
   end
 
   it 'should return nil when user is in an empty traffic allocation range due to sticky bucketing' do
     expect(bucketer).to receive(:find_bucket).once.and_return('')
     experiment = config.get_experiment_from_key('test_experiment')
-    expect(bucketer.bucket(experiment, 'test_user')).to be_nil
+    expect(bucketer.bucket(experiment,'bucketidstring', 'test_user')).to be_nil
     expect(spy_logger).to have_received(:log)
                       .with(Logger::INFO, "User 'test_user' is in no variation.")
     expect(spy_logger).to have_received(:log)
@@ -149,7 +149,7 @@ describe Optimizely::Bucketer do
       expect(bucketer).to receive(:generate_bucket_value).and_return(50)
 
       experiment = config.get_experiment_from_key('test_experiment')
-      bucketer.bucket(experiment, 'test_user')
+      bucketer.bucket(experiment,'bucketidstring', 'test_user')
       expect(spy_logger).to have_received(:log).twice
       expect(spy_logger).to have_received(:log).with(Logger::DEBUG, "Assigned bucket 50 to user 'test_user'.")
       expect(spy_logger).to have_received(:log).with(
@@ -162,7 +162,7 @@ describe Optimizely::Bucketer do
       expect(bucketer).to receive(:generate_bucket_value).and_return(5050)
 
       experiment = config.get_experiment_from_key('test_experiment')
-      bucketer.bucket(experiment, 'test_user')
+      bucketer.bucket(experiment,'bucketidstring', 'test_user')
       expect(spy_logger).to have_received(:log).twice
       expect(spy_logger).to have_received(:log)
                         .with(Logger::DEBUG, "Assigned bucket 5050 to user 'test_user'.")
@@ -176,7 +176,7 @@ describe Optimizely::Bucketer do
       expect(bucketer).to receive(:generate_bucket_value).and_return(50000)
 
       experiment = config.get_experiment_from_key('test_experiment')
-      bucketer.bucket(experiment, 'test_user')
+      bucketer.bucket(experiment,'bucketidstring', 'test_user')
       expect(spy_logger).to have_received(:log).twice
       expect(spy_logger).to have_received(:log)
                         .with(Logger::DEBUG, "Assigned bucket 50000 to user 'test_user'.")

@@ -51,10 +51,10 @@ module Optimizely
       # Returns variation ID where visitor will be bucketed (nil if experiment is inactive or user does not meet audience conditions)
 
       # By default, the bucketing ID should be the user ID
-      bucketing_id = $user_id;
+      bucketing_id = user_id;
 
       # If the bucketing ID key is defined in attributes, then use that in place of the userID
-      if attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].is_a? String 
+      if attributes and attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].is_a? String 
         unless attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].empty?
           bucketing_id = attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID]
           @config.logger.log(Logger::DEBUG, "Setting the bucketing ID '#{bucketing_id}'")

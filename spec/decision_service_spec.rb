@@ -137,7 +137,7 @@ describe Optimizely::DecisionService do
                             )
       # bucketing should have occured
       experiment = config.get_experiment_from_key('test_experiment')
-      expect(decision_service.bucketer).to have_received(:bucket).once.with(experiment, 'forced_user_with_invalid_variation')
+      expect(decision_service.bucketer).to have_received(:bucket).once.with(experiment,'forced_user_with_invalid_variation','forced_user_with_invalid_variation')
     end
 
     describe 'when a UserProfile service is provided' do
