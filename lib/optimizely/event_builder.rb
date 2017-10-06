@@ -74,15 +74,13 @@ module Optimizely
 
         if attribute_key.eql? RESERVED_ATTRIBUTE_KEY_BUCKETING_ID
           # TODO (Copied from PHP-SDK) (Alda): the type for bucketing ID attribute may change so 
-          # that custom attributes are not overloaded
-          
+          # that custom attributes are not overloaded          
           feature = {
             entity_id: RESERVED_ATTRIBUTE_KEY_BUCKETING_ID,
             key: RESERVED_ATTRIBUTE_KEY_BUCKETING_ID_EVENT_PARAM_KEY,
             type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
             value: attribute_value
-          }
-          
+          }         
         else
           # Skip attributes not in the datafile
           attribute_id = @config.get_attribute_id(attribute_key)
@@ -100,20 +98,20 @@ module Optimizely
       end
     end 
 
-      common_params = {
-        account_id: @config.account_id,
-        project_id: @config.project_id,
-        visitors: [
-          {
-            attributes: visitor_attributes,
-            snapshots: [],
-            visitor_id: user_id
-          }
-          ],
-          revision: @config.revision,
-          client_name: CLIENT_ENGINE,
-          client_version: VERSION
+    common_params = {
+      account_id: @config.account_id,
+      project_id: @config.project_id,
+      visitors: [
+        {
+          attributes: visitor_attributes,
+          snapshots: [],
+          visitor_id: user_id
         }
+        ],
+        revision: @config.revision,
+        client_name: CLIENT_ENGINE,
+        client_version: VERSION
+      }
 
       common_params
     end

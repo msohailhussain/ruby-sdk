@@ -39,7 +39,7 @@ module Optimizely
       # Determines ID of variation to be shown for a given experiment key and user ID.
       #
       # experiment - Experiment for which visitor is to be bucketed.
-      # $bucketingId string A customer-assigned value
+      # bucketing_id - String A customer-assigned value used to generate bucketing key
       # user_id - String ID for user.
       #
       # Returns variation in which visitor with ID user_id has been placed. Nil if no variation.
@@ -101,17 +101,15 @@ module Optimizely
     def find_bucket(bucketing_id, user_id, parent_id, traffic_allocations)
       # Helper function to find the matching entity ID for a given bucketing value in a list of traffic allocations.
       #
-      # bucketing_id String A customer-assigned value
+      # bucketing_id - String A customer-assigned value user to generate bucketing key
       # user_id - String ID for user
       # parent_id - String entity ID to use for bucketing ID
       # traffic_allocations - Array of traffic allocations
       #
       # Returns entity ID corresponding to the provided bucket value or nil if no match is found.
-      puts "bucketingid: #{bucketing_id}, user_id: #{user_id}, parent_id: #{parent_id}"
       bucketing_key = sprintf(BUCKETING_ID_TEMPLATE, bucketing_id: bucketing_id, entity_id: parent_id)
       bucket_value = generate_bucket_value(bucketing_key)
-      puts "bucketvalue: #{bucket_value}"
-      @config.logger.log(Logger::DEBUG, "Assigned bucket #{bucket_value} to user '#{user_id}'.")
+      @config.logger.log(Logger::DEBUG, "Assigned bucket #{bucket_value} to user '#{user_id}' with bucketing ID: '#{bucketing_id}'.")
 
       traffic_allocations.each do |traffic_allocation|
         current_end_of_range = traffic_allocation['endOfRange']
