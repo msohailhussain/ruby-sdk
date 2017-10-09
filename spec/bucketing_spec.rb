@@ -161,7 +161,7 @@ describe Optimizely::Bucketer do
 
     # Bucketing with invalid experiment key and bucketing ID
     it 'should return nil with invalid experiment and bucketing ID' do
-      expect(bucketer.bucket(nil,'some_id', 'test_user')).to be(nil)
+      expect(bucketer.bucket(config.get_experiment_from_key('invalid_experiment'),'some_id', 'test_user')).to be(nil)
     end
 
     # Bucketing with grouped experiments and bucketing ID

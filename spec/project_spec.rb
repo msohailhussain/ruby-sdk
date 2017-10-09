@@ -527,11 +527,7 @@ describe 'Optimizely' do
     end
 
     it 'should have get_variation return expected variation with bucketing id attribute when there are no audiences' do
-      user_attributes = {
-        'browser_type' => 'firefox',
-        OptimizelySpec::RESERVED_ATTRIBUTE_KEY_BUCKETING_ID => 'variation'
-      } 
-      expect(project_instance.get_variation('test_experiment', 'test_user',user_attributes))
+      expect(project_instance.get_variation('test_experiment', 'test_user',nil))
             .to eq(config_body['experiments'][0]['variations'][0]['key'])
     end
 
