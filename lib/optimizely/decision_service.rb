@@ -218,60 +218,59 @@ module Optimizely
       end
 
       rollout = @config.get_rollout_from_id(rollout_id)
-      unless rollout.nil? || rollout['experiments'].empty?
-        rollout_rules = rollout['experiments']
-        number_of_rules = rollout_rules.length - 1
-
-        # Go through each experiment in order and try to get the variation for the user
-        for index in (0...number_of_rules)
-          rollout_rule = rollout_rules[index]
-          experiment_key = rollout_rule['key']
-
-          # Check that user meets audience conditions for targeting rule
-          unless Audience.user_in_experiment?(@config, rollout_rule, attributes)
-            @config.logger.log(
-              Logger::DEBUG,
-              "User '#{user_id}' does not meet the audience conditions to be in rollout rule '#{experiment_key}'."
-            )
-            # move onto the next targeting rule
-            next
-          end
-
-          @config.logger.log(
-            Logger::DEBUG,
-            "Attempting to bucket user '#{user_id}' into rollout rule '#{experiment_key}'."
-          )
-          # Evaluate if user satisfies the traffic allocation for this rollout rule
-          variation = @bucketer.bucket(rollout_rule, user_id)
-          return variation unless variation.nil?
-
-          # User failed traffic allocation, jump to Everyone Else rule
-          @config.logger.log(
-            Logger::DEBUG,
-            "User '#{user_id}' was excluded due to traffic allocation. Checking 'Eveyrone Else' rule now."
-          )
-          break
-        end
-
-        # get last rule which is the everyone else rule
-        everyone_else_experiment = rollout_rules[number_of_rules]
-        variation = @bucketer.bucket(everyone_else_experiment, user_id)
-        if variation.nil?
-          @config.logger.log(
-              Logger::DEBUG,
-              "User '#{user_id}' was excluded from the 'Everyone Else' rule for feature flag"
-          )
-          return nil
-        else
-          return variation
-        end
+      if rollout.nil? || rollout['experiments'].empty?
         @config.logger.log(
           Logger::DEBUG,
-          "User '#{user_id}' does not meet conditions for targeting rule 'Everyone Else'."
+          "Rollout with ID '#{rollout_id}' is not in the datafile '#{feature_flag['key']}'"
         )
+        return nil
+      end
+      rollout_rules = rollout['experiments']
+      number_of_rules = rollout_rules.length - 1
+
+      # Go through each experiment in order and try to get the variation for the user
+      for index in (0...number_of_rules)
+        rollout_rule = rollout_rules[index]
+        experiment_key = rollout_rule['key']
+
+        # Check that user meets audience conditions for targeting rule
+        unless Audience.user_in_experiment?(@config, rollout_rule, attributes)
+          @config.logger.log(
+            Logger::DEBUG,
+            "User '#{user_id}' does not meet the audience conditions to be in rollout rule '#{experiment_key}'."
+          )
+          # move onto the next targeting rule
+          next
+        end
+
+        @config.logger.log(
+          Logger::DEBUG,
+          "Attempting to bucket user '#{user_id}' into rollout rule '#{experiment_key}'."
+        )
+        # Evaluate if user satisfies the traffic allocation for this rollout rule
+        variation = @bucketer.bucket(rollout_rule, user_id)
+        return variation unless variation.nil?
+
+        # User failed traffic allocation, jump to Everyone Else rule
+        @config.logger.log(
+          Logger::DEBUG,
+          "User '#{user_id}' was excluded due to traffic allocation. Checking 'Eveyrone Else' rule now."
+        )
+        break
       end
 
-      nil
+      # get last rule which is the everyone else rule
+      everyone_else_experiment = rollout_rules[number_of_rules]
+      variation = @bucketer.bucket(everyone_else_experiment, user_id)
+      if variation.nil?
+        @config.logger.log(
+          Logger::DEBUG,
+          "User '#{user_id}' was excluded from the 'Everyone Else' rule for feature flag"
+        )
+        return nil
+      else
+        return variation
+      end
     end
 
     private
@@ -338,8 +337,8 @@ module Optimizely
       # Returns Hash stored user profile (or a default one if lookup fails or user profile service not provided)
 
       user_profile = {
-        :user_id => user_id,
-        :experiment_bucket_map => {}
+        user_id: user_id,
+        experiment_bucket_map: {}
       }
 
       return user_profile unless @user_profile_service
@@ -353,7 +352,6 @@ module Optimizely
       user_profile
     end
 
-
     def save_user_profile(user_profile, experiment_id, variation_id)
       # Save a given bucketing decision to a given user profile
       #
@@ -366,7 +364,7 @@ module Optimizely
       user_id = user_profile[:user_id]
       begin
         user_profile[:experiment_bucket_map][experiment_id] = {
-          :variation_id => variation_id
+          variation_id: variation_id
         }
         @user_profile_service.save(user_profile)
         @config.logger.log(Logger::INFO, "Saved variation ID #{variation_id} of experiment ID #{experiment_id} for user '#{user_id}'.")
