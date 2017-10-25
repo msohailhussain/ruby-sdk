@@ -51,10 +51,10 @@ module Optimizely
       # Returns variation ID where visitor will be bucketed (nil if experiment is inactive or user does not meet audience conditions)
 
       # By default, the bucketing ID should be the user ID
-      bucketing_id = user_id;
+      bucketing_id = user_id
 
       # If the bucketing ID key is defined in attributes, then use that in place of the userID
-      if attributes and attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].is_a? String 
+      if attributes and attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].is_a? String
         unless attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].empty?
           bucketing_id = attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID]
           @config.logger.log(Logger::DEBUG, "Setting the bucketing ID '#{bucketing_id}'")
@@ -158,15 +158,20 @@ module Optimizely
       # or nil if the user is not bucketed into any of the experiments on the feature
 
       feature_flag_key = feature_flag['key']
-      unless feature_flag['experimentIds'].empty?
-        #Evaluate each experiment id and return the first bucketed experiment variation
+      if feature_flag['experimentIds'].empty?
+        @config.logger.log(
+          Logger::DEBUG,
+          "The feature flag '#{feature_flag_key}' is not used in any experiments."
+        )
+      else
+        # Evaluate each experiment id and return the first bucketed experiment variation
         feature_flag['experimentIds'].each do |experiment_id|
           # check if experiment is part of mutex group
           experiment = @config.experiment_id_map[experiment_id]
           unless experiment
             @config.logger.log(
-                Logger::DEBUG,
-                "Feature flag experiment with ID '#{experiment_id}' is not in the datafile."
+              Logger::DEBUG,
+              "Feature flag experiment with ID '#{experiment_id}' is not in the datafile."
             )
             return nil
           end
@@ -185,17 +190,12 @@ module Optimizely
           end
         end
         @config.logger.log(
-            Logger::INFO,
-            "The user '#{user_id}' is not bucketed into any of the experiments on the feature '#{feature_flag_key}'."
-        )
-      else
-        @config.logger.log(
-          Logger::DEBUG,
-          "The feature flag '#{feature_flag_key}' is not used in any experiments."
+          Logger::INFO,
+          "The user '#{user_id}' is not bucketed into any of the experiments on the feature '#{feature_flag_key}'."
         )
       end
 
-      return nil
+      nil
     end
 
     def get_variation_for_feature_rollout(feature_flag, user_id, attributes = nil)
@@ -209,7 +209,7 @@ module Optimizely
       # Returns the variation the user is bucketed into or nil if not bucketed into any of the targeting rules
 
       rollout_id = feature_flag['rolloutId']
-      if rollout_id.nil? or rollout_id.empty?
+      if rollout_id.nil? || rollout_id.empty?
         feature_flag_key = feature_flag['key']
         @config.logger.log(
           Logger::DEBUG,
@@ -219,7 +219,7 @@ module Optimizely
       end
 
       rollout = @config.get_rollout_from_id(rollout_id)
-      unless rollout.nil? or rollout['experiments'].empty?
+      unless rollout.nil? || rollout['experiments'].empty?
         rollout_rules = rollout['experiments']
         number_of_rules = rollout_rules.length - 1
 
@@ -244,9 +244,7 @@ module Optimizely
           )
           # Evaluate if user satisfies the traffic allocation for this rollout rule
           variation = @bucketer.bucket(rollout_rule, user_id)
-          unless variation.nil?
-            return variation
-          end
+          return variation unless variation.nil?
 
           # User failed traffic allocation, jump to Everyone Else rule
           @config.logger.log(
@@ -259,9 +257,7 @@ module Optimizely
         # get last rule which is the everyone else rule
         everyone_else_experiment = rollout_rules[number_of_rules]
         variation = @bucketer.bucket(everyone_else_experiment, user_id)
-        unless variation.nil?
-          return variation
-        end
+        return variation unless variation.nil?
 
         @config.logger.log(
           Logger::DEBUG,
@@ -269,7 +265,7 @@ module Optimizely
         )
       end
 
-      return nil
+      nil
     end
 
     private
