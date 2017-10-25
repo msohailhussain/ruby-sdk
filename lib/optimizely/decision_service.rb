@@ -130,7 +130,7 @@ module Optimizely
       if variation
         @config.logger.log(
           Logger::INFO,
-          "User '#{user_id}' was bucketed into a rollout for feature flag '#{feature_flag_key}'."
+          "User '#{user_id}' is bucketed into a rollout for feature flag '#{feature_flag_key}'."
         )
         # return decision with nil experiment so we don't track impressions for it
         return {
@@ -140,7 +140,7 @@ module Optimizely
       else
         @config.logger.log(
           Logger::INFO,
-          "User '#{user_id}' was not bucketed into a rollout for feature flag '#{feature_flag_key}'."
+          "User '#{user_id}' is not bucketed into a rollout for feature flag '#{feature_flag_key}'."
         )
       end
 
@@ -164,9 +164,8 @@ module Optimizely
           "The feature flag '#{feature_flag_key}' is not used in any experiments."
         )
       else
-        # Evaluate each experiment id and return the first bucketed experiment variation
+        # Evaluate each experiment and return the first bucketed experiment variation
         feature_flag['experimentIds'].each do |experiment_id|
-          # check if experiment is part of mutex group
           experiment = @config.experiment_id_map[experiment_id]
           unless experiment
             @config.logger.log(
@@ -184,8 +183,8 @@ module Optimizely
                 "The user '#{user_id}' is bucketed into experiment '#{experiment_key}' of feature '#{feature_flag_key}'."
             )
             return {
-                'variation' => variation,
-                'experiment' => experiment
+                'experiment' => experiment,
+                'variation' => variation
             }
           end
         end
@@ -257,8 +256,15 @@ module Optimizely
         # get last rule which is the everyone else rule
         everyone_else_experiment = rollout_rules[number_of_rules]
         variation = @bucketer.bucket(everyone_else_experiment, user_id)
-        return variation unless variation.nil?
-
+        if variation.nil?
+          @config.logger.log(
+              Logger::DEBUG,
+              "User '#{user_id}' was excluded from the 'Everyone Else' rule for feature flag"
+          )
+          return nil
+        else
+          return variation
+        end
         @config.logger.log(
           Logger::DEBUG,
           "User '#{user_id}' does not meet conditions for targeting rule 'Everyone Else'."
