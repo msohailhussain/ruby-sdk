@@ -16,7 +16,6 @@
 require 'optimizely/decision_service'
 require 'optimizely/error_handler'
 require 'optimizely/logger'
-require 'byebug'
 
 describe Optimizely::DecisionService do
   let(:config_body) { OptimizelySpec::VALID_CONFIG_BODY }
