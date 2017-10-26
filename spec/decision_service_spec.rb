@@ -488,7 +488,7 @@ describe Optimizely::DecisionService do
 
           allow(Optimizely::Audience).to receive(:user_in_experiment?).and_return(true)
           allow(decision_service.bucketer).to receive(:bucket)
-            .with(rollout_experiment, user_id)
+            .with(rollout_experiment, user_id, user_id)
             .and_return(expected_variation)
           expect(decision_service.get_variation_for_feature_rollout(feature_flag, user_id, user_attributes)).to eq(expected_variation)
 
@@ -506,10 +506,10 @@ describe Optimizely::DecisionService do
 
             allow(Optimizely::Audience).to receive(:user_in_experiment?).and_return(true)
             allow(decision_service.bucketer).to receive(:bucket)
-              .with(rollout['experiments'][0], user_id)
+              .with(rollout['experiments'][0], user_id, user_id)
               .and_return(nil)
             allow(decision_service.bucketer).to receive(:bucket)
-              .with(everyone_else_experiment, user_id)
+              .with(everyone_else_experiment, user_id, user_id)
               .and_return(nil)
 
             expect(decision_service.get_variation_for_feature_rollout(feature_flag, user_id, user_attributes)).to eq(nil)
@@ -539,10 +539,10 @@ describe Optimizely::DecisionService do
 
             allow(Optimizely::Audience).to receive(:user_in_experiment?).and_return(true)
             allow(decision_service.bucketer).to receive(:bucket)
-              .with(rollout['experiments'][0], user_id)
+              .with(rollout['experiments'][0], user_id, user_id)
               .and_return(nil)
             allow(decision_service.bucketer).to receive(:bucket)
-              .with(everyone_else_experiment, user_id)
+              .with(everyone_else_experiment, user_id, user_id)
               .and_return(expected_variation)
 
             expect(decision_service.get_variation_for_feature_rollout(feature_flag, user_id, user_attributes)).to eq(expected_variation)
@@ -574,7 +574,7 @@ describe Optimizely::DecisionService do
 
         allow(Optimizely::Audience).to receive(:user_in_experiment?).and_return(false)
         allow(decision_service.bucketer).to receive(:bucket)
-          .with(everyone_else_experiment, user_id)
+          .with(everyone_else_experiment, user_id, user_id)
           .and_return(expected_variation)
 
         expect(decision_service.get_variation_for_feature_rollout(feature_flag, user_id, user_attributes)).to eq(expected_variation)

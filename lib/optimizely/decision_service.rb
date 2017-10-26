@@ -51,16 +51,7 @@ module Optimizely
       # Returns variation ID where visitor will be bucketed (nil if experiment is inactive or user does not meet audience conditions)
 
       # By default, the bucketing ID should be the user ID
-      bucketing_id = user_id
-
-      # If the bucketing ID key is defined in attributes, then use that in place of the userID
-      if attributes and attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].is_a? String
-        unless attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].empty?
-          bucketing_id = attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID]
-          @config.logger.log(Logger::DEBUG, "Setting the bucketing ID '#{bucketing_id}'")
-        end
-      end
-
+      bucketing_id = get_bucketing_id_from_attributes(user_id,attributes)
       # Check to make sure experiment is active
       experiment = @config.get_experiment_from_key(experiment_key)
       if experiment.nil?
@@ -207,6 +198,8 @@ module Optimizely
       #
       # Returns the variation the user is bucketed into or nil if not bucketed into any of the targeting rules
 
+      bucketing_id = get_bucketing_id_from_attributes(user_id, attributes)
+
       rollout_id = feature_flag['rolloutId']
       if rollout_id.nil? || rollout_id.empty?
         feature_flag_key = feature_flag['key']
@@ -248,7 +241,7 @@ module Optimizely
           "Attempting to bucket user '#{user_id}' into rollout rule '#{experiment_key}'."
         )
         # Evaluate if user satisfies the traffic allocation for this rollout rule
-        variation = @bucketer.bucket(rollout_rule, user_id)
+        variation = @bucketer.bucket(rollout_rule, bucketing_id, user_id)
         return variation unless variation.nil?
 
         # User failed traffic allocation, jump to Everyone Else rule
@@ -261,7 +254,7 @@ module Optimizely
 
       # get last rule which is the everyone else rule
       everyone_else_experiment = rollout_rules[number_of_rules]
-      variation = @bucketer.bucket(everyone_else_experiment, user_id)
+      variation = @bucketer.bucket(everyone_else_experiment, bucketing_id ,user_id)
       if variation.nil?
         @config.logger.log(
           Logger::DEBUG,
@@ -371,6 +364,19 @@ module Optimizely
       rescue => e
         @config.logger.log(Logger::ERROR, "Error while saving user profile for user ID '#{user_id}': #{e}.")
       end
+    end
+    def get_bucketing_id_from_attributes(user_id, attributes)
+      # By default, the bucketing ID should be the user ID
+      bucketing_id = user_id
+
+      # If the bucketing ID key is defined in attributes, then use that in place of the userID
+      if attributes and attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].is_a? String
+        unless attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].empty?
+          bucketing_id = attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID]
+          @config.logger.log(Logger::DEBUG, "Setting the bucketing ID '#{bucketing_id}'")
+        end
+      end
+      return bucketing_id
     end
   end
 end
