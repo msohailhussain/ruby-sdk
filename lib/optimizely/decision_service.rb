@@ -212,7 +212,7 @@ module Optimizely
         feature_flag_key = feature_flag['key']
         @config.logger.log(
           Logger::DEBUG,
-          "Feature flag '#{feature_flag_key}' is not part of a rollout."
+          "Feature flag '#{feature_flag_key}' is not used in a rollout."
         )
         return nil
       end

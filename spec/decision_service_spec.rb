@@ -456,7 +456,7 @@ describe Optimizely::DecisionService do
         expect(decision_service.get_variation_for_feature_rollout(feature_flag, user_id, user_attributes)).to eq(nil)
 
         expect(spy_logger).to have_received(:log).once
-                                                 .with(Logger::DEBUG, "Feature flag 'boolean_feature' is not part of a rollout.")
+                                                 .with(Logger::DEBUG, "Feature flag '#{feature_flag['key']}' is not used in a rollout.")
       end
     end
 
