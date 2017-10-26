@@ -16,6 +16,7 @@
 require 'optimizely/decision_service'
 require 'optimizely/error_handler'
 require 'optimizely/logger'
+require 'byebug'
 
 describe Optimizely::DecisionService do
   let(:config_body) { OptimizelySpec::VALID_CONFIG_BODY }
@@ -401,17 +402,12 @@ describe Optimizely::DecisionService do
       expected_decision = nil
       describe 'and the user is bucketed into one of the experiments' do
         before(:each) do
-          group_1 = config.group_key_map['101']
           mutex_exp = config.experiment_key_map['group1_exp1']
           expected_variation = mutex_exp['variations'][0]
           expected_decision = {
             'experiment' => mutex_exp,
             'variation' => expected_variation
           }
-          allow(decision_service.bucketer).to receive(:find_bucket)
-            .with(user_id, group_1['id'], group_1['trafficAllocation'])
-            .and_return(mutex_exp['id'])
-
           allow(decision_service).to receive(:get_variation)
             .and_return(expected_variation['id'])
         end
@@ -427,12 +423,15 @@ describe Optimizely::DecisionService do
 
       describe 'and the user is not bucketed into any of the mutex experiments' do
         before(:each) do
-          group_1 = config.group_key_map['101']
           mutex_exp = config.experiment_key_map['group1_exp1']
+          mutex_exp2 = config.experiment_key_map['group1_exp2']
           expected_variation = mutex_exp['variations'][0]
-          allow(decision_service.bucketer).to receive(:find_bucket)
-            .with(user_id, user_id, group_1['id'], group_1['trafficAllocation'])
-            .and_return(nil)
+          allow(decision_service).to receive(:get_variation)
+                                         .with(mutex_exp['key'], user_id, user_attributes)
+                                         .and_return(nil)
+          allow(decision_service).to receive(:get_variation)
+                                         .with(mutex_exp2['key'], user_id, user_attributes)
+                                         .and_return(nil)
         end
 
         it 'should return nil and log a message' do

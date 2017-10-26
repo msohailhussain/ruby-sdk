@@ -156,13 +156,13 @@ module Optimizely
       #
       # Returns a hash with the experiment and variation where visitor will be bucketed
       # or nil if the user is not bucketed into any of the experiments on the feature
-
       feature_flag_key = feature_flag['key']
       if feature_flag['experimentIds'].empty?
         @config.logger.log(
           Logger::DEBUG,
           "The feature flag '#{feature_flag_key}' is not used in any experiments."
         )
+        return nil
       else
         # Evaluate each experiment and return the first bucketed experiment variation
         feature_flag['experimentIds'].each do |experiment_id|
@@ -176,7 +176,7 @@ module Optimizely
           end
           experiment_key = experiment['key']
           variation_id = get_variation(experiment_key, user_id, attributes)
-          unless variation_id.nil?
+          if variation_id
             variation = @config.variation_id_map[experiment_key][variation_id]
             @config.logger.log(
                 Logger::INFO,
