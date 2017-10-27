@@ -340,7 +340,7 @@ describe Optimizely::DecisionService do
         expect(decision_service.get_variation_for_feature_experiment(feature_flag, 'user_1', user_attributes)).to eq(nil)
 
         expect(spy_logger).to have_received(:log).once
-                                                 .with(Logger::DEBUG, "The feature flag 'empty_feature' is not used in any experiments.")
+          .with(Logger::DEBUG, "The feature flag 'empty_feature' is not used in any experiments.")
       end
     end
 

@@ -51,7 +51,7 @@ module Optimizely
       # Returns variation ID where visitor will be bucketed (nil if experiment is inactive or user does not meet audience conditions)
 
       # By default, the bucketing ID should be the user ID
-      bucketing_id = get_bucketing_id_from_attributes(user_id,attributes)
+      bucketing_id = get_bucketing_id(user_id, attributes)
       # Check to make sure experiment is active
       experiment = @config.get_experiment_from_key(experiment_key)
       if experiment.nil?
@@ -198,7 +198,7 @@ module Optimizely
       #
       # Returns the variation the user is bucketed into or nil if not bucketed into any of the targeting rules
 
-      bucketing_id = get_bucketing_id_from_attributes(user_id, attributes)
+      bucketing_id = get_bucketing_id(user_id, attributes)
 
       rollout_id = feature_flag['rolloutId']
       if rollout_id.nil? || rollout_id.empty?
@@ -330,8 +330,8 @@ module Optimizely
       # Returns Hash stored user profile (or a default one if lookup fails or user profile service not provided)
 
       user_profile = {
-        user_id: user_id,
-        experiment_bucket_map: {}
+        :user_id => user_id,
+        :experiment_bucket_map => {}
       }
 
       return user_profile unless @user_profile_service
@@ -365,7 +365,7 @@ module Optimizely
         @config.logger.log(Logger::ERROR, "Error while saving user profile for user ID '#{user_id}': #{e}.")
       end
     end
-    def get_bucketing_id_from_attributes(user_id, attributes)
+    def get_bucketing_id(user_id, attributes)
       # By default, the bucketing ID should be the user ID
       bucketing_id = user_id
 
