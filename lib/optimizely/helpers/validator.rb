@@ -16,6 +16,7 @@
 require_relative 'constants'
 require 'json'
 require 'json-schema'
+
 module Optimizely
   module Helpers
     module Validator
