@@ -257,6 +257,11 @@ module Optimizely
         return false
       end
 
+      # validates feature flag
+      unless Helpers::Validator.is_feature_flag_valid?(@config, feature_flag)
+        return nil
+      end
+
       decision = @decision_service.get_variation_for_feature(feature_flag, user_id, attributes)
       unless decision.nil?
         variation = decision['variation']

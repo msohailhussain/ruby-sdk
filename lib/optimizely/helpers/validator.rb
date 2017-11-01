@@ -91,6 +91,26 @@ module Optimizely
       def string_numeric?(str)
         Float(str) != nil rescue false
       end
+
+      def is_feature_flag_valid?(config, feature_flag)
+        # Determines if given feature flag valid.
+        #
+        # feature_flag -feature_flag to be validated.
+        # config - ProjectConfig data to be used in getting group_id and experiment.
+        #
+        # Returns true if experiment ids are empty or only 1 experiment id exists, if more than 1 experiment ids exist that belong to the same group.
+        # Returns false if more than 1 experiment ids exist that belong to different group
+
+        experiment_ids = feature_flag['experimentIds']
+        return true if (experiment_ids.empty? || experiment_ids.length == 1)
+        first_group_id = config.experiment_id_map[experiment_ids[0]]['groupId']
+        experiment_ids.each do |experiment_id|
+          experiment = config.experiment_id_map[experiment_id]
+          group_id = experiment['groupId']
+          return false if (first_group_id != group_id)
+        end
+        return true
+      end
       
     end
   end

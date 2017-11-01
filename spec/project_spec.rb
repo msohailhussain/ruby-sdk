@@ -649,6 +649,16 @@ describe 'Optimizely' do
       expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, "No feature flag was found for key 'totally_invalid_feature_key'.")
     end
 
+    it 'should return null when feature flag is invalid' do
+      # Create local project instance for this method to add error
+      project_config_body_JSON = OptimizelySpec::VALID_CONFIG_BODY_JSON
+      project_error_handler = Optimizely::RaiseErrorHandler.new
+      project_spy_logger = spy('logger')
+      project= Optimizely::Project.new(project_config_body_JSON, nil, project_spy_logger, project_error_handler)
+      project.config.feature_flag_key_map['mutex_group_feature']["experimentIds"] << '122241'
+      expect(project.is_feature_enabled('mutex_group_feature', 'user_id')).to be(nil)
+    end
+
     it 'should return false when the user is not bucketed into any variation' do
       allow(project_instance.decision_service).to receive(:get_variation_for_feature).and_return(nil)
 
