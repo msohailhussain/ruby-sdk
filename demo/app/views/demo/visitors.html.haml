@@ -1,0 +1,8 @@
+.container
+  / Example row of columns
+  = render "shared/tabs"
+  .row
+    .col-md-4
+      %ul.list-group
+        - @visitors.each do |visitor|
+          = link_to visitor.name, shop_path(id: visitor.id), class:"list-group-item"

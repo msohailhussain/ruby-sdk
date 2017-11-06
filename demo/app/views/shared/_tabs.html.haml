@@ -1,0 +1,11 @@
+.row
+  .col-sm-9.pt-3.pb-3
+    %ul.nav.nav-tabs
+      %li.nav-item
+        = link_to "Configuration", demo_config_path,class:"nav-link #{assign_active_class(demo_config_path)}"
+      %li.nav-item
+        = link_to "Select Simulated Visitor", visitors_path, class:"nav-link #{assign_active_class(visitors_path)}"
+      %li.nav-item
+        = link_to "Shop", shop_path, class:"nav-link #{assign_active_class(shop_path)}"
+      %li.nav-item
+        %a.nav-link{:href => "#"} Messages(Logs and errors)

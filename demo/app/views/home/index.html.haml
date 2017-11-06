@@ -1,0 +1,14 @@
+=render "layouts/jumbotron"
+.container
+  / Example row of columns
+  .row
+    .col-md-4
+      %h2 Demo App
+      %p Demo app modeled after the Python App
+      %p
+        = link_to "View details »", demo_config_path, class:"btn btn-default",role: "button"
+    .col-md-4
+      %h2 Documentation
+      %p More documentation
+      %p
+        %a.btn.btn-default{:href => "#", :role => "button"} View details »

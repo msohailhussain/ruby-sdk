@@ -1,0 +1,22 @@
+.container
+  / Example row of columns
+  = render "shared/tabs"
+  .container
+    .row.grid-group
+      - @products.each do |product|
+        .item.col-xs-4.col-lg-4
+          .thumbnail
+            %img.img-fluid.group.list-group-image{:alt => "", :src => "http://placehold.it/400x250/000/fff"}/
+            .caption
+              %h4.group.inner.list-group-item-heading
+                #{product.name}
+              %p.group.inner.list-group-item-text
+                %ul.list-group.list-group-flush
+                  %li.list-group-item Color: #{product.color}
+                  %li.list-group-item Category: #{product.category}
+              .row
+                .col-xs-12.col-md-6
+                  %p.lead
+                    $#{product.price}
+                .col-xs-12.col-md-6
+                  = link_to "Buy Now", buy_path(id: @visitor.id, product_id: product.id),method: :post, class:"btn btn-info"
