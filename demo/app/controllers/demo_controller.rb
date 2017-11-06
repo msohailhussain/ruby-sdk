@@ -67,6 +67,20 @@ class DemoController < ApplicationController
     redirect_to shop_path
   end
 
+  def log_messages
+    @logs = LogMessage.order_by(datatime: 'desc')
+  end
+
+  def delete_messgaes
+    @logs = LogMessage.all
+    if @logs.destroy
+      flash[:success] = "log messages deleted successfully."
+    else
+      flash[:error] = @logs.errors
+    end
+    redirect_to messages_path
+  end
+
   private
 
   def demo_params

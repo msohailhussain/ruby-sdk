@@ -1,12 +1,12 @@
 !!!
 %html
-%head
-%meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
-%title Demo
-= csrf_meta_tags
-= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload'
-= javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
-%body
-  = render "layouts/header"
-  = render "shared/flash_messages"
-  = yield
+  %head
+    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+    %title Optimizely Ruby SDK Demo Application
+    = csrf_meta_tags
+    = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload'
+    = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
+  %body
+    = render "layouts/header"
+    = render "shared/flash_messages"
+    = yield

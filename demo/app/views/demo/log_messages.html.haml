@@ -1,0 +1,33 @@
+.container
+  / Example row of columns
+  = render "shared/tabs"
+  .row
+    = link_to 'Clear Messages',
+    delete_messgaes_path,
+    method: :delete,
+    data: { confirm: 'Are you sure? want to delete all log messages!' },
+    class:"btn btn-danger #{!@logs.present? ? 'disabled' : ''}"
+  %br
+  .row
+    %table#example.table.table-sm
+      %thead
+        %tr
+          %th Timestamp
+          %th Type
+          %th Message
+      %tbody
+        - @logs.each do |log|
+          %tr{class:"#{get_level_class(log.type)}"}
+            %td
+              = log.datatime.present? ? log.datatime.strftime("%m/%d/%Y at %I:%M %p") : ""
+            %td
+              = "LOG #{LogMessage::LOGGER_LEVELS.key(log.type)}"
+            %td
+              = log.message
+
+:javascript
+  $(document).ready(function() {
+    $('#example').dataTable({
+      'bSort': false
+    });
+  });
