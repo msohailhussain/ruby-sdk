@@ -1,3 +1,5 @@
+env:
+  SDK_BRANCH = $TRAVIS_BRANCH
 language: ruby
 rvm:
   - 2.3.1
