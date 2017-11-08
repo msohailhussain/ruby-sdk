@@ -4,7 +4,7 @@ rvm:
 services:
   - docker
 install:
-  - docker build -t e2eApp ruby-testapp
+  - docker build -t e2eapp ruby-testapp
   - docker run -p 3000:3000 --name rubye2e e2eapp
 script:
   - docker ps
