@@ -389,38 +389,32 @@ module Optimizely
       variable_value = nil
       variable = @config.get_feature_variable(feature_flag, variable_key)
 
-      if variable.nil?
-        # Error message logged in ProjectConfig- get_feature_flag_from_key
+      # Error message logged in ProjectConfig- get_feature_flag_from_key
+      return nil if variable.nil?
+
+      # Returns nil if type differs
+      if variable['type'] != variable_type
+        @logger.log(Logger::WARN,
+          "Requested variable type '#{variable_type}' but variable '#{variable_key}' is of type '#{variable['type']}'.")
         return nil
       else
-        # Returns nil if type differs
-        if variable['type'] != variable_type
-          @logger.log(Logger::WARN,
-            "Requested variable type '#{variable_type}' but variable '#{variable_key}' is of type '#{variable['type']}'."
-          )
-          return nil
-        else
-          decision = @decision_service.get_variation_for_feature(feature_flag, user_id, attributes)
-          variable_value = variable['defaultValue']
-          if decision
-            variation = decision['variation']
-            variation_variable_usages = @config.variation_id_to_variable_usage_map[variation['id']]
-            variable_id = variable['id']
-            if variation_variable_usages and variation_variable_usages.key?(variable_id)
-              variable_value = variation_variable_usages[variable_id]['value']
-              @logger.log(Logger::INFO,
-                "Got variable value '#{variable_value}' for variable '#{variable_key}' of feature flag '#{feature_flag_key}'."
-              )
-            else
-              @logger.log(Logger::DEBUG,
-                "Variable '#{variable_key}' is not used in variation '#{variation['key']}'. Returning the default variable value '#{variable_value}'."
-              )
-            end
-          else
+        decision = @decision_service.get_variation_for_feature(feature_flag, user_id, attributes)
+        variable_value = variable['defaultValue']
+        if decision
+          variation = decision['variation']
+          variation_variable_usages = @config.variation_id_to_variable_usage_map[variation['id']]
+          variable_id = variable['id']
+          if variation_variable_usages and variation_variable_usages.key?(variable_id)
+            variable_value = variation_variable_usages[variable_id]['value']
             @logger.log(Logger::INFO,
-              "User '#{user_id}' was not bucketed into any variation for feature flag '#{feature_flag_key}'. Returning the default variable value '#{variable_value}'."
-            )
+              "Got variable value '#{variable_value}' for variable '#{variable_key}' of feature flag '#{feature_flag_key}'.")
+          else
+            @logger.log(Logger::DEBUG,
+              "Variable '#{variable_key}' is not used in variation '#{variation['key']}'. Returning the default variable value '#{variable_value}'.")
           end
+        else
+          @logger.log(Logger::INFO,
+            "User '#{user_id}' was not bucketed into any variation for feature flag '#{feature_flag_key}'. Returning the default variable value '#{variable_value}'.")
         end
       end
 
