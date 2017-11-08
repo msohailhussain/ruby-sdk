@@ -3,7 +3,7 @@ FROM ruby:2.3.1
 MAINTAINER Andrew Delikat <andrew@optimizely.com>
 
 # GitHub branch from which to build the SDK. Defaults to master
-ARG SDK_BRANCH=master
+# ARG SDK_BRANCH=master
 ENV SDK_BRANCH $SDK_BRANCH
 
 RUN mkdir -p /usr/src/app
