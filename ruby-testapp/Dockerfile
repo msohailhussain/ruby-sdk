@@ -5,12 +5,11 @@ MAINTAINER Andrew Delikat <andrew@optimizely.com>
 # GitHub branch from which to build the SDK. Defaults to master
 
 ARG SDK_REPO=optimizely/ruby-sdk
+ENV SDK_REPO $SDK_REPO
+
+ENV GIT_LINK https://github.com/$SDK_REPO
+
 ARG SDK_BRANCH=master
-
-ENV SDK_REPO = $SDK_REPO
-
-ENV GIT_LINK = https://github.com/$SDK_REPO
-
 ENV SDK_BRANCH $SDK_BRANCH
 
 RUN mkdir -p /usr/src/app

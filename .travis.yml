@@ -3,17 +3,21 @@ rvm:
   - 2.3.1
 services:
   - docker
+before_install: gem install bundler -v 1.10.6
+
 install:
-  - docker build --build-arg SDK_BRANCH="building-docker-with-travis" -t e2eapp ruby-testapp
+  - bundle install
+  - bundle exec rake install
+  - docker build --build-arg SDK_REPO=$TRAVIS_REPO_SLUG --build-arg SDK_BRANCH=$TRAVIS_BRANCH -t e2eapp ruby-testapp
   - docker run -d -p 3000:3000 --name rubye2e e2eapp
+
+# adding rake spec in before_script to immediately fail and discontinue if unit tests fail
+before_script: "rake spec"
+
 script: 
   - docker ps
+  - echo $GIT_LINK
   - echo $SDK_BRANCH
 
+after_success: "coveralls"
 
-# before_install: gem install bundler -v 1.10.6
-# install:
-#   - bundle install
-#    - bundle exec rake install
-# script: "rake spec"
-# after_success: "coveralls"
