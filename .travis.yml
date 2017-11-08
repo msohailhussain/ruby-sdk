@@ -5,8 +5,9 @@ services:
   - docker
 install:
   - docker build -t e2eApp ruby-testapp
-  - docker run -p 3000:3000 --name rubye2e e2eApp
-
+  - docker run -p 3000:3000 --name rubye2e e2eapp
+script:
+  - docker ps
 
 
 # before_install: gem install bundler -v 1.10.6
