@@ -2,4 +2,4 @@ source 'https://rubygems.org'
 
 gem 'httparty', '0.14.0'
 gem 'sinatra'
-gem 'optimizely-sdk', :git => 'https://github.com/msohailhussain/ruby-sdk', :branch => "#{ENV['SDK_BRANCH']}"
+gem 'optimizely-sdk', :git =>  "#{ENV['GIT_LINK']}", :branch => "#{ENV['SDK_BRANCH']}"

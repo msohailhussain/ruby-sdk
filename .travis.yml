@@ -1,12 +1,10 @@
-env:
-  #SDK_BRANCH = $TRAVIS_BRANCH
 language: ruby
 rvm:
   - 2.3.1
 services:
   - docker
 install:
-  - docker build -t e2eapp ruby-testapp
+  - docker build --build-arg SDK_BRANCH="building-docker-with-travis" -t e2eapp ruby-testapp
   - docker run -d -p 3000:3000 --name rubye2e e2eapp
 script: 
   - docker ps
