@@ -35,6 +35,11 @@ module Optimizely
     attr_reader :bucketer
     attr_reader :config
 
+
+    Decision = Struct.new(:experiment, :variation, :source)
+    DECISION_SOURCE_EXPERIMENT = 'experiment'
+    DECISION_SOURCE_ROLLOUT = 'rollout'
+
     def initialize(config, user_profile_service = nil)
       @config = config
       @user_profile_service = user_profile_service
@@ -123,11 +128,7 @@ module Optimizely
           Logger::INFO,
           "User '#{user_id}' is bucketed into a rollout for feature flag '#{feature_flag_key}'."
         )
-        # return decision with nil experiment so we don't track impressions for it
-        return {
-          'experiment' => nil,
-          'variation' => variation
-        }
+        return variation
       else
         @config.logger.log(
           Logger::INFO,
@@ -173,10 +174,7 @@ module Optimizely
                 Logger::INFO,
                 "The user '#{user_id}' is bucketed into experiment '#{experiment_key}' of feature '#{feature_flag_key}'."
             )
-            return {
-                'experiment' => experiment,
-                'variation' => variation
-            }
+            return Decision.new(experiment, variation, DECISION_SOURCE_EXPERIMENT)
           end
         end
         @config.logger.log(
@@ -242,7 +240,7 @@ module Optimizely
         )
         # Evaluate if user satisfies the traffic allocation for this rollout rule
         variation = @bucketer.bucket(rollout_rule, bucketing_id, user_id)
-        return variation unless variation.nil?
+        return Decision.new(rollout_rule, variation, DECISION_SOURCE_ROLLOUT) unless variation.nil?
 
         # User failed traffic allocation, jump to Everyone Else rule
         @config.logger.log(
@@ -262,7 +260,7 @@ module Optimizely
         )
         return nil
       else
-        return variation
+        return Decision.new(everyone_else_experiment, variation, DECISION_SOURCE_ROLLOUT)
       end
     end
 
