@@ -112,7 +112,7 @@ module Optimizely
       # user_id - String ID for the user
       # attributes - Hash representing user attributes
       #
-      # Returns decision with the experiment and variation where visitor will be bucketed (nil if the user is not bucketed into any of the experiments on the feature)
+      # Returns Decision struct (nil if the user is not bucketed into any of the experiments on the feature)
 
       # check if the feature is being experiment on and whether the user is bucketed into the experiment
       decision = get_variation_for_feature_experiment(feature_flag, user_id, attributes)
@@ -145,7 +145,7 @@ module Optimizely
       # user_id - String ID for the user
       # attributes - Hash representing user attributes
       #
-      # Returns decision with the experiment and variation where visitor will be bucketed
+      # Returns Decision struct (nil if the user is not bucketed into any of the experiments on the feature)
       # or nil if the user is not bucketed into any of the experiments on the feature
       feature_flag_key = feature_flag['key']
       if feature_flag['experimentIds'].empty?
@@ -193,7 +193,7 @@ module Optimizely
       # user_id - String ID for the user
       # attributes - Hash representing user attributes
       #
-      # Returns the variation the user is bucketed into or nil if not bucketed into any of the targeting rules
+      # Returns the Decision struct or nil if not bucketed into any of the targeting rules
 
       bucketing_id = get_bucketing_id(user_id, attributes)
 
