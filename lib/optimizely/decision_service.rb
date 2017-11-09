@@ -35,7 +35,6 @@ module Optimizely
     attr_reader :bucketer
     attr_reader :config
 
-
     Decision = Struct.new(:experiment, :variation, :source)
     DECISION_SOURCE_EXPERIMENT = 'experiment'
     DECISION_SOURCE_ROLLOUT = 'rollout'
@@ -113,7 +112,7 @@ module Optimizely
       # user_id - String ID for the user
       # attributes - Hash representing user attributes
       #
-      # Returns hash with the experiment and variation where visitor will be bucketed (nil if the user is not bucketed into any of the experiments on the feature)
+      # Returns decision with the experiment and variation where visitor will be bucketed (nil if the user is not bucketed into any of the experiments on the feature)
 
       # check if the feature is being experiment on and whether the user is bucketed into the experiment
       decision = get_variation_for_feature_experiment(feature_flag, user_id, attributes)
@@ -122,19 +121,19 @@ module Optimizely
       end
 
       feature_flag_key = feature_flag['key']
-      variation = get_variation_for_feature_rollout(feature_flag, user_id, attributes)
-      if variation
+      decision = get_variation_for_feature_rollout(feature_flag, user_id, attributes)
+      if decision
         @config.logger.log(
           Logger::INFO,
           "User '#{user_id}' is bucketed into a rollout for feature flag '#{feature_flag_key}'."
         )
-        return variation
-      else
-        @config.logger.log(
-          Logger::INFO,
-          "User '#{user_id}' is not bucketed into a rollout for feature flag '#{feature_flag_key}'."
-        )
+        return decision
       end
+
+      @config.logger.log(
+        Logger::INFO,
+        "User '#{user_id}' is not bucketed into a rollout for feature flag '#{feature_flag_key}'."
+      )
 
       return nil
     end
@@ -146,7 +145,7 @@ module Optimizely
       # user_id - String ID for the user
       # attributes - Hash representing user attributes
       #
-      # Returns a hash with the experiment and variation where visitor will be bucketed
+      # Returns decision with the experiment and variation where visitor will be bucketed
       # or nil if the user is not bucketed into any of the experiments on the feature
       feature_flag_key = feature_flag['key']
       if feature_flag['experimentIds'].empty?
