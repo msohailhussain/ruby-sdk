@@ -728,12 +728,10 @@ describe 'Optimizely' do
 
             expect(project_instance.get_feature_variable_string('boolean_single_variable_feature', 'boolean_variable', user_id, user_attributes))
               .to eq(nil)
-
-            expect(spy_logger).to have_received(:log).once
             expect(spy_logger).to have_received(:log).once
               .with(
                 Logger::WARN,
-                "Requested variable type 'string' but variable 'boolean_variable' is of type 'boolean'."
+                "Requested variable as type 'string' but variable 'boolean_variable' is of type 'boolean'."
               )
           end
         end
@@ -751,12 +749,10 @@ describe 'Optimizely' do
 
             expect(project_instance.get_feature_variable_string('integer_single_variable_feature', 'integer_variable', user_id, user_attributes))
               .to eq(nil)
-
-            expect(spy_logger).to have_received(:log).once
             expect(spy_logger).to have_received(:log).once
               .with(
                 Logger::WARN,
-                "Requested variable type 'string' but variable 'integer_variable' is of type 'integer'."
+                "Requested variable as type 'string' but variable 'integer_variable' is of type 'integer'."
               )
           end
         end
@@ -907,6 +903,33 @@ describe 'Optimizely' do
           Logger::INFO,
           "Got variable value '42' for variable 'integer_variable' of feature flag 'integer_single_variable_feature'."
         )
+    end
+  end
+
+
+  describe '#get_feature_variable_for_type with empty params' do
+    user_id = 'test_user'
+    user_attributes = {}
+
+    it 'should return nil if feature_flag_key is nil' do
+
+      expect(project_instance.get_feature_variable_integer(nil, 'integer_variable', user_id, user_attributes))
+          .to eq(nil)
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR,"Feature flag key cannot be empty.")
+    end
+
+    it 'should return nil if variable_key is nil' do
+
+      expect(project_instance.get_feature_variable_integer('integer_single_variable_feature', nil, user_id, user_attributes))
+          .to eq(nil)
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR,"Variable key cannot be empty.")
+    end
+
+    it 'should return nil if user_id is nil' do
+
+      expect(project_instance.get_feature_variable_integer('integer_single_variable_feature', 'integer_variable', nil, user_attributes))
+          .to eq(nil)
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR,"User ID cannot be empty.")
     end
   end
 

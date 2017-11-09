@@ -116,9 +116,7 @@ module Optimizely
 
       # check if the feature is being experiment on and whether the user is bucketed into the experiment
       decision = get_variation_for_feature_experiment(feature_flag, user_id, attributes)
-      unless decision.nil?
-        return decision
-      end
+      return decision unless decision.nil?
 
       feature_flag_key = feature_flag['key']
       decision = get_variation_for_feature_rollout(feature_flag, user_id, attributes)
@@ -197,6 +195,8 @@ module Optimizely
 
       bucketing_id = get_bucketing_id(user_id, attributes)
 
+      bucketing_id = get_bucketing_id(user_id, attributes)
+
       rollout_id = feature_flag['rolloutId']
       if rollout_id.nil? || rollout_id.empty?
         feature_flag_key = feature_flag['key']
@@ -208,26 +208,31 @@ module Optimizely
       end
 
       rollout = @config.get_rollout_from_id(rollout_id)
-      if rollout.nil? || rollout['experiments'].empty?
+      if rollout.nil?
         @config.logger.log(
           Logger::DEBUG,
           "Rollout with ID '#{rollout_id}' is not in the datafile '#{feature_flag['key']}'"
         )
         return nil
       end
+
+      return nil if rollout['experiments'].empty?
+
       rollout_rules = rollout['experiments']
       number_of_rules = rollout_rules.length - 1
 
       # Go through each experiment in order and try to get the variation for the user
-      for index in (0...number_of_rules)
+      number_of_rules.times do |index|
         rollout_rule = rollout_rules[index]
-        experiment_key = rollout_rule['key']
+        audience_id = rollout_rule['audienceIds'][0]
+        audience = @config.get_audience_from_id(audience_id)
+        audience_name = audience['name']
 
         # Check that user meets audience conditions for targeting rule
         unless Audience.user_in_experiment?(@config, rollout_rule, attributes)
           @config.logger.log(
             Logger::DEBUG,
-            "User '#{user_id}' does not meet the audience conditions to be in rollout rule '#{experiment_key}'."
+            "User '#{user_id}' does not meet the conditions to be in rollout rule for audience '#{audience_name}'."
           )
           # move onto the next targeting rule
           next
@@ -235,16 +240,15 @@ module Optimizely
 
         @config.logger.log(
           Logger::DEBUG,
-          "Attempting to bucket user '#{user_id}' into rollout rule '#{experiment_key}'."
+          "Attempting to bucket user '#{user_id}' into rollout rule for audience '#{audience_name}'."
         )
         # Evaluate if user satisfies the traffic allocation for this rollout rule
         variation = @bucketer.bucket(rollout_rule, bucketing_id, user_id)
         return Decision.new(rollout_rule, variation, DECISION_SOURCE_ROLLOUT) unless variation.nil?
-
         # User failed traffic allocation, jump to Everyone Else rule
         @config.logger.log(
           Logger::DEBUG,
-          "User '#{user_id}' was excluded due to traffic allocation. Checking 'Eveyrone Else' rule now."
+          "User '#{user_id}' was excluded due to traffic allocation. Checking 'Everyone Else' rule now."
         )
         break
       end
@@ -362,18 +366,24 @@ module Optimizely
         @config.logger.log(Logger::ERROR, "Error while saving user profile for user ID '#{user_id}': #{e}.")
       end
     end
+
     def get_bucketing_id(user_id, attributes)
+      # Gets the Bucketing Id for Bucketing
+      #
+      # user_id - String user ID
+      # attributes - Hash user attributes
       # By default, the bucketing ID should be the user ID
       bucketing_id = user_id
 
       # If the bucketing ID key is defined in attributes, then use that in place of the userID
-      if attributes and attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].is_a? String
+
+      if attributes && attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].is_a?(String)
         unless attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID].empty?
           bucketing_id = attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID]
           @config.logger.log(Logger::DEBUG, "Setting the bucketing ID '#{bucketing_id}'")
         end
       end
-      return bucketing_id
+      bucketing_id
     end
   end
 end

@@ -378,15 +378,30 @@ module Optimizely
       # attributes - Hash representing visitor attributes and values which need to be recorded.
       #
       # Returns the type-casted variable value.
-      # Returns nil if the feature flag or variable are not found.
+      # Returns nil if the feature flag or variable or user ID is empty
+      #             in case of variable type mismatch
+
+      unless feature_flag_key
+        @logger.log(Logger::ERROR, "Feature flag key cannot be empty.")
+        return nil
+      end
+
+      unless variable_key
+        @logger.log(Logger::ERROR, "Variable key cannot be empty.")
+        return nil
+      end
+
+      unless user_id
+        @logger.log(Logger::ERROR, "User ID cannot be empty.")
+        return nil
+      end
 
       feature_flag = @config.get_feature_flag_from_key(feature_flag_key)
       unless feature_flag
         @logger.log(Logger::INFO, "No feature flag was found for key '#{feature_flag_key}'.")
         return nil
       end
-
-      variable_value = nil
+      
       variable = @config.get_feature_variable(feature_flag, variable_key)
 
       # Error message logged in ProjectConfig- get_feature_flag_from_key
@@ -395,7 +410,7 @@ module Optimizely
       # Returns nil if type differs
       if variable['type'] != variable_type
         @logger.log(Logger::WARN,
-          "Requested variable type '#{variable_type}' but variable '#{variable_key}' is of type '#{variable['type']}'.")
+          "Requested variable as type '#{variable_type}' but variable '#{variable_key}' is of type '#{variable['type']}'.")
         return nil
       else
         decision = @decision_service.get_variation_for_feature(feature_flag, user_id, attributes)
@@ -418,9 +433,9 @@ module Optimizely
         end
       end
 
-      variable_value = Helpers::VariableType.cast_value_to_type(variable_value, variable_type, @logger) if variable_value.present?
+      variable_value = Helpers::VariableType.cast_value_to_type(variable_value, variable_type, @logger)
 
-      return variable_value
+      variable_value
     end
 
     def get_valid_experiments_for_event(event_key, user_id, attributes)
