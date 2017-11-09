@@ -378,7 +378,7 @@ module Optimizely
       # attributes - Hash representing visitor attributes and values which need to be recorded.
       #
       # Returns the type-casted variable value.
-      # Returns nil if the feature flag or variable are not found.
+      # Returns nil if the feature flag, variable, User ID are not found and variable type differs.
 
       unless feature_flag_key
         @logger.log(Logger::ERROR, "Feature flag key cannot be empty.")
@@ -400,8 +400,7 @@ module Optimizely
         @logger.log(Logger::INFO, "No feature flag was found for key '#{feature_flag_key}'.")
         return nil
       end
-
-
+      
       variable = @config.get_feature_variable(feature_flag, variable_key)
 
       # Error message logged in ProjectConfig- get_feature_flag_from_key
