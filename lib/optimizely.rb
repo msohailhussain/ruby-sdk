@@ -378,7 +378,8 @@ module Optimizely
       # attributes - Hash representing visitor attributes and values which need to be recorded.
       #
       # Returns the type-casted variable value.
-      # Returns nil if the feature flag, variable, User ID are not found and variable type differs.
+      # Returns nil if the feature flag or variable or user ID is empty
+      #             in case of variable type mismatch
 
       unless feature_flag_key
         @logger.log(Logger::ERROR, "Feature flag key cannot be empty.")
