@@ -25,6 +25,7 @@ require_relative 'optimizely/helpers/validator'
 require_relative 'optimizely/helpers/variable_type'
 require_relative 'optimizely/logger'
 require_relative 'optimizely/project_config'
+require_relative 'optimizely/notification_center'
 
 module Optimizely
   class Project
@@ -38,6 +39,7 @@ module Optimizely
     attr_reader :event_builder
     attr_reader :event_dispatcher
     attr_reader :logger
+    attr_accessor :notification_center
 
     def initialize(datafile, event_dispatcher = nil, logger = nil, error_handler = nil, skip_json_validation = false, user_profile_service = nil)
       # Constructor for Projects.
@@ -83,6 +85,7 @@ module Optimizely
 
       @decision_service = DecisionService.new(@config, @user_profile_service)
       @event_builder = EventBuilder.new(@config)
+      @notification_center = Optimizely::NotificationCenter.new(@logger)
     end
 
     def activate(experiment_key, user_id, attributes = nil)
@@ -231,6 +234,15 @@ module Optimizely
       rescue => e
         @logger.log(Logger::ERROR, "Unable to dispatch conversion event. Error: #{e}")
       end
+      begin
+        @notification_center.fire_notifications(
+            Optimizely::NotificationCenter::NOTIFICATION_TYPES[:TRACK],
+            event_key, user_id, attributes, event_tags, conversion_event
+        )
+        @logger.log Logger::INFO, "Notification #{Optimizely::NotificationCenter::NOTIFICATION_TYPES[:TRACK]} sent successfully."
+      rescue => e
+        @logger.log(Logger::ERROR, "Problem calling notify callback. Error: #{e}")
+      end
     end
 
     def is_feature_enabled(feature_flag_key, user_id, attributes = nil)
@@ -269,6 +281,15 @@ module Optimizely
         end
 
         @logger.log(Logger::INFO, "Feature '#{feature_flag_key}' is enabled for user '#{user_id}'.")
+        begin
+          @notification_center.fire_notifications(
+              Optimizely::NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ACCESSED],
+              feature_flag_key, user_id, attributes, variation
+          )
+          @logger.log(Logger::INFO, "Notification #{Optimizely::NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ACCESSED]} sent successfully.")
+        rescue => e
+          @logger.log(Logger::ERROR, "Problem calling notify callback. Error: #{e}")
+        end
         return true
       end
 
@@ -511,6 +532,16 @@ module Optimizely
         @event_dispatcher.dispatch_event(impression_event)
       rescue => e
         @logger.log(Logger::ERROR, "Unable to dispatch impression event. Error: #{e}")
+      end
+      variation = @config.get_variation_from_id(experiment_key, variation_id)
+      begin
+        @notification_center.fire_notifications(
+            Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION],
+            experiment,user_id, attributes, variation, impression_event
+        )
+        @logger.log Logger::INFO, "Notification #{Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION]} sent successfully."
+      rescue => e
+        @logger.log(Logger::ERROR, "Problem calling notify callback. Error: #{e}")
       end
     end
   end

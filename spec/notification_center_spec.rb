@@ -164,7 +164,7 @@ describe 'NotificationCenter' do
 
         notification_center.fire_notifications(notification_type,@args)
         expect(spy_logger).to have_received(:log).twice
-                                  .with(Logger::INFO, "Notification #{notification_type} sent successfully.")
+          .with(Logger::INFO, "Notification #{notification_type} sent successfully.")
       end
 
     end

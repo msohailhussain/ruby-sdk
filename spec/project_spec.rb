@@ -284,6 +284,28 @@ describe 'Optimizely' do
              .to raise_error(Optimizely::InvalidAttributeFormatError)
     end
 
+    it 'should log when the notification is sent. ' do
+      user_id = 'test_user'
+      experiment = project_instance.config.get_experiment_from_key('test_experiment')
+      variation_to_return = project_instance.config.get_variation_from_id('test_experiment', '111128')
+      allow(project_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
+      allow(project_instance.notification_center).to receive(:fire_notifications)
+        .with(
+            Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION],
+            experiment,user_id,nil,variation_to_return,
+            instance_of(Optimizely::Event)
+        )
+      project_instance.activate('test_experiment', 'test_user')
+      expect(spy_logger).to have_received(:log).once.with(Logger::INFO, include("Notification #{Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION]} sent successfully."))
+    end
+
+    it 'should log when invalid notification type fired ' do
+      allow(project_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
+      allow(project_instance.notification_center).to receive(:fire_notifications).with(any_args).and_raise(RuntimeError)
+      project_instance.activate('test_experiment', 'test_user')
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, "Problem calling notify callback. Error: RuntimeError")
+    end
+    
     it 'should override the audience check if the user is whitelisted to a specific variation' do
       params = @expected_activate_params
       params[:visitors][0][:visitor_id] = 'forced_audience_user'
@@ -359,6 +381,30 @@ describe 'Optimizely' do
       allow(project_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
       project_instance.track('test_event', 'test_user')
       expect(project_instance.event_dispatcher).to have_received(:dispatch_event).with(Optimizely::Event.new(:post, conversion_log_url, params, post_headers)).once
+    end
+
+    it 'should send track notification by calling fire_notification' do
+      params = @expected_track_event_params
+      params[:visitors][0][:snapshots][0][:events][0].merge!({
+        revenue: 42,
+        tags: {'revenue' => 42}
+      })
+      allow(project_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
+      conversion_event = Optimizely::Event.new(:post, conversion_log_url, params, post_headers)
+      allow(project_instance.notification_center).to receive(:fire_notifications)
+        .with(
+            Optimizely::NotificationCenter::NOTIFICATION_TYPES[:TRACK],
+            'test_event','test_user', nil, {'revenue' => 42}, conversion_event
+        ).once
+      project_instance.track('test_event', 'test_user',nil,{'revenue' => 42})
+      expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Notification #{Optimizely::NotificationCenter::NOTIFICATION_TYPES[:TRACK]} sent successfully.")
+    end
+
+    it 'should raise exception when invalid arguments passed in track notification' do
+      allow(project_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
+      allow(project_instance.notification_center).to receive(:fire_notifications).with(any_args).and_raise(RuntimeError)
+      project_instance.track('test_event', 'test_user')
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, "Problem calling notify callback. Error: RuntimeError")
     end
 
     it 'should properly track an event by calling dispatch_event with right params after forced variation' do
@@ -686,6 +732,41 @@ describe 'Optimizely' do
       expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Dispatching impression event to URL https://logx.optimizely.com/v1/events with params #{expected_params}.")
       expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Feature 'multi_variate_feature' is enabled for user 'test_user'.")
     end
+
+    it 'should return true and send an feature notification' do
+      experiment_to_return = config_body['rollouts'][0]['experiments'][0]
+      variation_to_return = experiment_to_return['variations'][0]
+      decision_to_return = {
+          'experiment' => nil,
+          'variation' => variation_to_return
+      }
+      allow(project_instance.decision_service).to receive(:get_variation_for_feature).and_return(decision_to_return)
+
+      allow(project_instance.notification_center).to receive(:fire_notifications).with(
+          Optimizely::NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ACCESSED],
+          'boolean_single_variable_feature', 'test_user', nil, variation_to_return
+      )
+
+      expect(project_instance.is_feature_enabled('boolean_single_variable_feature', 'test_user')).to be true
+      expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Feature 'boolean_single_variable_feature' is enabled for user 'test_user'.")
+      expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Notification #{Optimizely::NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ACCESSED]} sent successfully.")
+    end
+
+    it 'should log error in feature notification' do
+      experiment_to_return = config_body['rollouts'][0]['experiments'][0]
+      variation_to_return = experiment_to_return['variations'][0]
+      decision_to_return = {
+          'experiment' => nil,
+          'variation' => variation_to_return
+      }
+      allow(project_instance.decision_service).to receive(:get_variation_for_feature).and_return(decision_to_return)
+
+      allow(project_instance.notification_center).to receive(:fire_notifications).with(any_args).and_raise(RuntimeError)
+      expect(project_instance.is_feature_enabled('boolean_single_variable_feature', 'test_user')).to be true
+      expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Feature 'boolean_single_variable_feature' is enabled for user 'test_user'.")
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, "Problem calling notify callback. Error: RuntimeError")
+    end
+
   end
 
   describe '#get_feature_variable_string' do
