@@ -58,7 +58,7 @@ describe 'NotificationCenter' do
                                   .with(Logger::ERROR, "Invalid notification callback.")
       end
 
-      it 'shoud return 1 for valid params' do
+      it 'should return 1 for valid params' do
         notification_center = Optimizely::NotificationCenter.new(Optimizely::SimpleLogger.new)
         expect(notification_center.add_notification_listener(
             Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION],
@@ -139,11 +139,21 @@ describe 'NotificationCenter' do
         expect(notification_center.fire_notifications("test_type",@args)).to eq(nil)
 
       end
-      it 'should return error when callback is invalid' do
+      it 'should raise exception when callback is invalid' do
+        class CallBack
+          def call args
+            return args
+          end
+        end
+
+        @callback = CallBack.new
+        @callback_reference = @callback.call "This is Test"
+
         notification_type = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION]
         notification_center = Optimizely::NotificationCenter.new(spy_logger)
         notification_center.add_notification_listener(notification_type,@callback_reference)
-        expect {notification_center.fire_notifications(undefined_variable,@args)}.to raise_error StandardError
+        notification_center.fire_notifications(notification_type,@args)
+        expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, "Problem calling notify callback. Error: undefined method `call' for \"This is Test\":String")
       end
 
       it 'should return multiple logs of multiple notifications sent for same notification type' do

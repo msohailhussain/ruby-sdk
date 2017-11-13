@@ -115,8 +115,9 @@ module Optimizely
             notification_callback = notification[:callback]
             notification_callback.call *args
             @logger.log Logger::INFO, "Notification #{notification_type} sent successfully."
-          rescue StandardError => e
-            @logger.log Logger::ERROR, "Problem calling notify callback. Error: #{e.message}"
+          rescue => e
+            @logger.log(Logger::ERROR, "Problem calling notify callback. Error: #{e}")
+            return nil
           end
         end
       end
