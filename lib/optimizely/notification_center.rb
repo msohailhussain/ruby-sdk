@@ -99,6 +99,7 @@ module Optimizely
       # Args:
       #     notification_type: key to the list of notifications .helpers.enums.NotificationTypes
       @notifications[notification_type] = []
+      @logger.log Logger::INFO, "All callbacks for notification type #{notification_type} have been removed."
     end
 
     def fire_notifications notification_type, *args
@@ -108,19 +109,17 @@ module Optimizely
       #Args:
       # notification_type: Type of notification to fire.
       # args: list of arguments to the callback.
-      response = nil
       if @notifications.include?(notification_type)
         @notifications[notification_type].each do |notification|
           begin
             notification_callback = notification[:callback]
-            response = notification_callback.call *args
+            notification_callback.call *args
+            @logger.log Logger::INFO, "Notification #{notification_type} sent successfully."
           rescue StandardError => e
-            response  = e.message
             @logger.log Logger::ERROR, "Problem calling notify callback. Error: #{e.message}"
           end
         end
       end
-      response
     end
   end
 
