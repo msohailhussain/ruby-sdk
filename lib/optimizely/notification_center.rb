@@ -26,13 +26,13 @@ module Optimizely
     def initialize logger
       @notification_id = 1
       @notifications = {}
-      @notifications[NOTIFICATION_TYPES[:DECISION]] = []
-      @notifications[NOTIFICATION_TYPES[:TRACK]] = []
-      @notifications[NOTIFICATION_TYPES[:FEATURE_ACCESSED]] = []
+      @notifications[NOTIFICATION_TYPES.values] = []
       @logger = logger
     end
 
     def add_notification_listener notification_type, notification_callback
+
+
       # Add a notification callback to the notification center.
 
       # Args:
@@ -41,6 +41,16 @@ module Optimizely
 
       # Returns:
       #  notification id used to remove the notification
+
+      unless notification_type
+        @logger.log Logger::ERROR, "Invalid notification type."
+        return nil
+      end
+
+      unless notification_callback
+        @logger.log Logger::ERROR, "Invalid notification callback."
+        return nil
+      end
 
       if @notifications.include?(notification_type)
         @notifications[notification_type].each do |notification|
@@ -66,10 +76,16 @@ module Optimizely
       # Returns:
       #     The function returns true if found and removed, false otherwise.
 
+      unless notification_id
+        @logger.log Logger::ERROR, "Notification id can't b empty."
+        return nil
+      end
+
+
       @notifications.each do |key, array|
         @notifications[key].each do |notification|
-          if notification_id == notification.id
-            @notifications[key].delete({notification_id: @notification_id, callback: notification_callback})
+          if notification_id == notification[:notification_id]
+            @notifications[key].delete({notification_id: notification_id, callback: notification[:callback]})
             return true
           end
         end
@@ -85,23 +101,27 @@ module Optimizely
       @notifications[notification_type] = []
     end
 
-    def fire_notifications notification_type, args
+    def fire_notifications notification_type, *args
       # Fires off the notification for the specific event.  Uses var args to pass in a
       # arbitrary list of parameter according to which notification type was fired.
 
       #Args:
       # notification_type: Type of notification to fire.
       # args: list of arguments to the callback.
+      response = nil
       if @notifications.include?(notification_type)
         @notifications[notification_type].each do |notification|
           begin
-            my_proc = Proc.new { notification[:callback] }
-            my_proc.call args
+            notification_callback = notification[:callback]
+            response = notification_callback.call *args
           rescue StandardError => e
+            response  = e.message
             @logger.log Logger::ERROR, "Problem calling notify callback. Error: #{e.message}"
           end
         end
       end
+      response
     end
   end
+
 end
