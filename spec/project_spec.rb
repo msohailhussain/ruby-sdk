@@ -705,10 +705,12 @@ describe 'Optimizely' do
     it 'should return true but not send an impression if the user is not bucketed into a feature experiment' do
       experiment_to_return = config_body['rollouts'][0]['experiments'][0]
       variation_to_return = experiment_to_return['variations'][0]
-      decision_to_return = {
-        'experiment' => nil,
-        'variation' => variation_to_return
-      }
+
+      decision_to_return = Optimizely::DecisionService::Decision.new(
+          experiment_to_return,
+          variation_to_return,
+          Optimizely::DecisionService::DECISION_SOURCE_ROLLOUT
+      )
       allow(project_instance.decision_service).to receive(:get_variation_for_feature).and_return(decision_to_return)
 
       expect(project_instance.is_feature_enabled('boolean_single_variable_feature', 'test_user')).to be true
@@ -720,10 +722,12 @@ describe 'Optimizely' do
       allow(project_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
       experiment_to_return = config_body['experiments'][3]
       variation_to_return = experiment_to_return['variations'][0]
-      decision_to_return = {
-        'experiment' => experiment_to_return,
-        'variation' => variation_to_return
-      }
+      decision_to_return = Optimizely::DecisionService::Decision.new(
+          experiment_to_return,
+          variation_to_return,
+          Optimizely::DecisionService::DECISION_SOURCE_EXPERIMENT
+      )
+
       allow(project_instance.decision_service).to receive(:get_variation_for_feature).and_return(decision_to_return)
 
       expected_params = @expected_bucketed_params
@@ -736,10 +740,11 @@ describe 'Optimizely' do
     it 'should return true and send an feature notification' do
       experiment_to_return = config_body['rollouts'][0]['experiments'][0]
       variation_to_return = experiment_to_return['variations'][0]
-      decision_to_return = {
-          'experiment' => nil,
-          'variation' => variation_to_return
-      }
+      decision_to_return = Optimizely::DecisionService::Decision.new(
+          experiment_to_return,
+          variation_to_return,
+          Optimizely::DecisionService::DECISION_SOURCE_ROLLOUT
+      )
       allow(project_instance.decision_service).to receive(:get_variation_for_feature).and_return(decision_to_return)
 
       allow(project_instance.notification_center).to receive(:fire_notifications).with(
@@ -755,10 +760,11 @@ describe 'Optimizely' do
     it 'should log error in feature notification' do
       experiment_to_return = config_body['rollouts'][0]['experiments'][0]
       variation_to_return = experiment_to_return['variations'][0]
-      decision_to_return = {
-          'experiment' => nil,
-          'variation' => variation_to_return
-      }
+      decision_to_return = Optimizely::DecisionService::Decision.new(
+          experiment_to_return,
+          variation_to_return,
+          Optimizely::DecisionService::DECISION_SOURCE_ROLLOUT
+      )
       allow(project_instance.decision_service).to receive(:get_variation_for_feature).and_return(decision_to_return)
 
       allow(project_instance.notification_center).to receive(:fire_notifications).with(any_args).and_raise(RuntimeError)
@@ -805,7 +811,6 @@ describe 'Optimizely' do
 
             expect(project_instance.get_feature_variable_string('boolean_single_variable_feature', 'boolean_variable', user_id, user_attributes))
               .to eq(nil)
-
             expect(spy_logger).to have_received(:log).once
               .with(
                 Logger::WARN,
@@ -827,7 +832,6 @@ describe 'Optimizely' do
 
             expect(project_instance.get_feature_variable_string('integer_single_variable_feature', 'integer_variable', user_id, user_attributes))
               .to eq(nil)
-            
             expect(spy_logger).to have_received(:log).once
               .with(
                 Logger::WARN,
