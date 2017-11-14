@@ -48,7 +48,12 @@ module Optimizely
       end
 
       unless notification_callback
-        @logger.log Logger::ERROR, "Invalid notification callback."
+        @logger.log Logger::ERROR, "Callback can not be blank!"
+        return nil
+      end
+
+      unless notification_callback.is_a? Method
+        @logger.log Logger::ERROR, "#{notification_callback} is invalid."
         return nil
       end
 
