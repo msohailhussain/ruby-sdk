@@ -37,64 +37,53 @@ describe '.NotificationCenter' do
     @callback = CallBack.new
     @callback_reference = @callback.method(:call)
   end
+  
+  before(:example) do
+    @notification_center = Optimizely::NotificationCenter.new(spy_logger)
+  end
 
   describe '#Notification center' do
     describe '.add_notification_listener' do
       it 'should log and return nil when notification type is empty' do
-        notification_center = Optimizely::NotificationCenter.new(spy_logger)
-        expect(notification_center.add_notification_listener(
+        expect(@notification_center.add_notification_listener(
                  nil,
                  @callback_reference
         )).to eq(nil)
         expect(spy_logger).to have_received(:log).once
-          .with(Logger::ERROR, 'Notification type can not be blank!')
+          .with(Logger::ERROR, 'Notification type can not be empty.')
       end
 
       it 'should log and return nil when notification callback is empty' do
-        notification_center = Optimizely::NotificationCenter.new(spy_logger)
-        expect(notification_center.add_notification_listener(
+        expect(@notification_center.add_notification_listener(
                  Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION],
                  nil
         )).to eq(nil)
         expect(spy_logger).to have_received(:log).once
-          .with(Logger::ERROR, 'Callback can not be blank!')
+          .with(Logger::ERROR, 'Callback can not be empty.')
       end
 
       it 'should log and return nil when notification callback is invalid' do
-        notification_center = Optimizely::NotificationCenter.new(spy_logger)
-        expect(notification_center.add_notification_listener(
+        expect(@notification_center.add_notification_listener(
                  Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION],
                  'Invalid callback!'
         )).to eq(nil)
         expect(spy_logger).to have_received(:log).once
           .with(Logger::ERROR, 'Invalid callback! is invalid.')
       end
-
-      it 'should log and return nil when notification type is invalid' do
-        notification_center = Optimizely::NotificationCenter.new(spy_logger)
-        expect(notification_center.add_notification_listener(
-                 Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION],
-                 'Invalid callback!'
-        )).to eq(nil)
-        expect(spy_logger).to have_received(:log).once
-          .with(Logger::ERROR, 'Invalid callback! is invalid.')
-      end
-
-      it 'should return 1 for valid params' do
-        notification_center = Optimizely::NotificationCenter.new(Optimizely::SimpleLogger.new)
-        expect(notification_center.add_notification_listener(
+      
+      it 'should return a positive integer for valid params' do
+        expect(@notification_center.add_notification_listener(
                  Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION],
                  @callback_reference
         )).to eq(1)
       end
 
       it 'shoud return -1 when callback already exists' do
-        notification_center = Optimizely::NotificationCenter.new(Optimizely::SimpleLogger.new)
-        notification_center.add_notification_listener(
+        @notification_center.add_notification_listener(
           Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION],
           @callback_reference
         )
-        expect(notification_center.add_notification_listener(
+        expect(@notification_center.add_notification_listener(
                  Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION],
                  @callback_reference
         )).to eq(-1)
@@ -104,14 +93,13 @@ describe '.NotificationCenter' do
     describe '.remove_notification_listener' do
       before(:example) do
         @notification_type = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION]
-        @notification_center = Optimizely::NotificationCenter.new(spy_logger)
         @notification_center.add_notification_listener(@notification_type, @callback_reference)
       end
 
-      it 'shoud log and return nil when notification id is blank' do
+      it 'shoud log and return nil when notification ID is blank' do
         expect(@notification_center.remove_notification_listener(nil)).to eq(nil)
         expect(spy_logger).to have_received(:log).once
-          .with(Logger::ERROR, 'Notification id can not be blank!')
+          .with(Logger::ERROR, 'Notification ID can not be empty.')
       end
 
       it 'shoud return true if notification is removed' do
@@ -127,11 +115,41 @@ describe '.NotificationCenter' do
     describe '.clear_notifications' do
       it 'should return log of notifications cleared' do
         notification_type = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION]
-        notification_center = Optimizely::NotificationCenter.new(spy_logger)
-        notification_center.add_notification_listener(notification_type, @callback_reference)
-        notification_center.clear_notifications(notification_type)
+        @notification_center.add_notification_listener(notification_type, @callback_reference)
+        @notification_center.clear_notifications(notification_type)
+        expect(@notification_center.notifications[Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION]]).to be_empty
         expect(spy_logger).to have_received(:log).once
           .with(Logger::INFO, "All callbacks for notification type #{notification_type} have been removed.")
+      end
+
+      it 'should not clear invalid notification' do
+        notification_type = "Invalid notification!"
+        
+        @notification_center.clear_notifications(notification_type)
+        expect(spy_logger).to have_received(:log).once
+                               .with(Logger::ERROR, 'Invalid notification type.')
+      end
+      
+    end
+
+    describe '.clean_all_notifications' do
+      it 'should return log of notifications cleared' do
+        @notification_center.add_notification_listener(
+         Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION],
+         @callback_reference
+        )
+        @notification_center.add_notification_listener(
+         Optimizely::NotificationCenter::NOTIFICATION_TYPES[:TRACK],
+         @callback_reference
+        )
+        @notification_center.add_notification_listener(
+         Optimizely::NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ACCESSED],
+         @callback_reference
+        )
+        @notification_center.clean_all_notifications
+        expect(@notification_center.notifications[Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION]]).to be_empty
+        expect(@notification_center.notifications[Optimizely::NotificationCenter::NOTIFICATION_TYPES[:TRACK]]).to be_empty
+        expect(@notification_center.notifications[Optimizely::NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ACCESSED]]).to be_empty
       end
     end
 
@@ -153,25 +171,22 @@ describe '.NotificationCenter' do
 
       it 'should return success log for notification sent' do
         notification_type = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION]
-        notification_center = Optimizely::NotificationCenter.new(spy_logger)
-        notification_center.add_notification_listener(notification_type, @callback_reference)
-        notification_center.fire_notifications(notification_type, @args)
+        @notification_center.add_notification_listener(notification_type, @callback_reference)
+        @notification_center.fire_notifications(notification_type, @args)
         expect(spy_logger).to have_received(:log).once
           .with(Logger::INFO, "Notification #{notification_type} sent successfully.")
       end
 
       it 'should return nil when notification type not valid' do
         notification_type = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION]
-        notification_center = Optimizely::NotificationCenter.new(spy_logger)
-        notification_center.add_notification_listener(notification_type, @callback_reference)
-        expect(notification_center.fire_notifications('test_type', @args)).to eq(nil)
+        @notification_center.add_notification_listener(notification_type, @callback_reference)
+        expect(@notification_center.fire_notifications('test_type', @args)).to eq(nil)
       end
 
       it 'should return nil and log when args are invalid' do
         notification_type = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION]
-        notification_center = Optimizely::NotificationCenter.new(spy_logger)
-        notification_center.add_notification_listener(notification_type, @callback_reference)
-        expect(notification_center.fire_notifications(notification_type)).to eq(nil)
+        @notification_center.add_notification_listener(notification_type, @callback_reference)
+        expect(@notification_center.fire_notifications(notification_type)).to eq(nil)
         expect(spy_logger).to have_received(:log).once
           .with(
             Logger::ERROR,
@@ -179,7 +194,7 @@ describe '.NotificationCenter' do
           )
       end
 
-      it 'should return multiple logs of multiple notifications sent for same notification type' do
+      it 'should fire multiple notifications for a single type' do
         class CallBackSecond
           def call(_args)
             'Test multi listner.'
@@ -188,13 +203,12 @@ describe '.NotificationCenter' do
 
         @callback_second = CallBackSecond.new
         @callback_reference_second = @callback_second.method(:call)
-
+        
         notification_type = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION]
-        notification_center = Optimizely::NotificationCenter.new(spy_logger)
-        notification_center.add_notification_listener(notification_type, @callback_reference)
-        notification_center.add_notification_listener(notification_type, @callback_reference_second)
+        @notification_center.add_notification_listener(notification_type, @callback_reference)
+        @notification_center.add_notification_listener(notification_type, @callback_reference_second)
 
-        notification_center.fire_notifications(notification_type, @args)
+        @notification_center.fire_notifications(notification_type, @args)
         expect(spy_logger).to have_received(:log).twice
           .with(Logger::INFO, "Notification #{notification_type} sent successfully.")
       end

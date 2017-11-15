@@ -234,15 +234,10 @@ module Optimizely
       rescue => e
         @logger.log(Logger::ERROR, "Unable to dispatch conversion event. Error: #{e}")
       end
-      begin
-        @notification_center.fire_notifications(
-            NotificationCenter::NOTIFICATION_TYPES[:TRACK],
-            event_key, user_id, attributes, event_tags, conversion_event
-        )
-        @logger.log Logger::INFO, "Notification #{NotificationCenter::NOTIFICATION_TYPES[:TRACK]} sent successfully."
-      rescue => e
-        @logger.log(Logger::ERROR, "Problem calling notify callback. Error: #{e}")
-      end
+      @notification_center.fire_notifications(
+          NotificationCenter::NOTIFICATION_TYPES[:TRACK],
+          event_key, user_id, attributes, event_tags, conversion_event
+      )
     end
 
     def is_feature_enabled(feature_flag_key, user_id, attributes = nil)
@@ -281,15 +276,10 @@ module Optimizely
         end
 
         @logger.log(Logger::INFO, "Feature '#{feature_flag_key}' is enabled for user '#{user_id}'.")
-        begin
-          @notification_center.fire_notifications(
-              NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ACCESSED],
-              feature_flag_key, user_id, attributes, variation
-          )
-          @logger.log(Logger::INFO, "Notification #{NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ACCESSED]} sent successfully.")
-        rescue => e
-          @logger.log(Logger::ERROR, "Problem calling notify callback. Error: #{e}")
-        end
+        @notification_center.fire_notifications(
+            NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ACCESSED],
+            feature_flag_key, user_id, attributes, variation
+        )
         return true
       end
 
@@ -547,15 +537,10 @@ module Optimizely
         @logger.log(Logger::ERROR, "Unable to dispatch impression event. Error: #{e}")
       end
       variation = @config.get_variation_from_id(experiment_key, variation_id)
-      begin
-        @notification_center.fire_notifications(
-            NotificationCenter::NOTIFICATION_TYPES[:DECISION],
-            experiment,user_id, attributes, variation, impression_event
-        )
-        @logger.log Logger::INFO, "Notification #{NotificationCenter::NOTIFICATION_TYPES[:DECISION]} sent successfully."
-      rescue => e
-        @logger.log(Logger::ERROR, "Problem calling notify callback. Error: #{e}")
-      end
+      @notification_center.fire_notifications(
+          NotificationCenter::NOTIFICATION_TYPES[:DECISION],
+          experiment,user_id, attributes, variation, impression_event
+      )
     end
   end
 end

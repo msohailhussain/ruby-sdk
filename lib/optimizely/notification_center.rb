@@ -15,6 +15,7 @@
 #
 module Optimizely
   class NotificationCenter
+    attr_reader :notifications
     NOTIFICATION_TYPES = {
       DECISION: 'DECISION: experiment, user_id, attributes, variation, event',
       TRACK: 'TRACK: event_key, user_id, attributes, event_tags, event',
@@ -29,22 +30,19 @@ module Optimizely
     end
 
     def add_notification_listener(notification_type, notification_callback)
-      # Add a notification callback to the notification center.
+      # Adds notification callback to the notification center
 
       # Args:
-      #   notification_type: DECISION
-      #   notification_callback: closure of function to call when event is triggered.
+      #  notification_type: DECISION
+      #  notification_callback: closure of function to call when event is triggered
 
       # Returns:
-      #  notification id used to remove the notification
+      #  notification ID used to remove the notification
 
-      unless notification_type
-        @logger.log Logger::ERROR, 'Notification type can not be blank!'
-        return nil
-      end
-
+      return nil unless notification_type_valid?(notification_type)
+      
       unless notification_callback
-        @logger.log Logger::ERROR, 'Callback can not be blank!'
+        @logger.log Logger::ERROR, 'Callback can not be empty.'
         return nil
       end
 
@@ -52,30 +50,25 @@ module Optimizely
         @logger.log Logger::ERROR, "#{notification_callback} is invalid."
         return nil
       end
-
-      if @notifications.include?(notification_type)
-        @notifications[notification_type].each do |notification|
-          return -1 if notification[:callback] == notification_callback
-        end
-        @notifications[notification_type].push(notification_id: @notification_id, callback: notification_callback)
-      else
-        @logger.log Logger::ERROR, 'Invalid notification type.'
-        return nil
+      
+      @notifications[notification_type].each do |notification|
+        return -1 if notification[:callback] == notification_callback
       end
+      @notifications[notification_type].push(notification_id: @notification_id, callback: notification_callback)
       notification_id = @notification_id
       @notification_id += 1
       notification_id
     end
 
     def remove_notification_listener(notification_id)
-      # Remove a previously added notification callback.
+      # Removes previously added notification callback
 
       # Args:
-      #     notification_id:
+      #  notification_id:
       # Returns:
-      #     The function returns true if found and removed, false otherwise.
+      #  The function returns true if found and removed, false otherwise
       unless notification_id
-        @logger.log Logger::ERROR, 'Notification id can not be blank!'
+        @logger.log Logger::ERROR, 'Notification ID can not be empty.'
         return nil
       end
       @notifications.each do |key, _array|
@@ -90,33 +83,66 @@ module Optimizely
     end
 
     def clear_notifications(notification_type)
-      # Remove notifications for a certain notification type
+      # Removes notifications for a certain notification type
       #
       # Args:
-      #     notification_type: key to the list of notifications .helpers.enums.NotificationTypes
+      #  notification_type: key to the list of notifications
+  
+      return nil unless notification_type_valid?(notification_type)
+      
       @notifications[notification_type] = []
       @logger.log Logger::INFO, "All callbacks for notification type #{notification_type} have been removed."
+    end
+    
+    def clean_all_notifications
+      # Remove all notifications
+      @notifications.keys.each { |key| @notifications[key] = [] }
     end
 
     def fire_notifications(notification_type, *args)
       # Fires off the notification for the specific event.  Uses var args to pass in a
-      # arbitrary list of parameter according to which notification type was fired.
+      # arbitrary list of parameter according to which notification type was fired
 
       # Args:
-      # notification_type: Type of notification to fire.
-      # args: list of arguments to the callback.
-      if @notifications.include?(notification_type)
-        @notifications[notification_type].each do |notification|
-          begin
-            notification_callback = notification[:callback]
-            notification_callback.call(*args)
-            @logger.log Logger::INFO, "Notification #{notification_type} sent successfully."
-          rescue => e
-            @logger.log(Logger::ERROR, "Problem calling notify callback. Error: #{e}")
-            return nil
-          end
+      #  notification_type: Type of notification to fire
+      #  args: list of arguments to the callback
+  
+      return nil unless notification_type_valid?(notification_type)
+
+      @notifications[notification_type].each do |notification|
+        begin
+          notification_callback = notification[:callback]
+          notification_callback.call(*args)
+          @logger.log Logger::INFO, "Notification #{notification_type} sent successfully."
+        rescue => e
+          @logger.log(Logger::ERROR, "Problem calling notify callback. Error: #{e}")
+          return nil
         end
       end
+      
     end
+    
+    private
+    
+    def notification_type_valid?(notification_type)
+      # Validates notification type
+      
+      # Args:
+      #  notification_type: Type of notification to fire
+      
+      # Returns true if notification_type is present or valid,  otherwise
+      
+      unless notification_type
+        @logger.log Logger::ERROR, 'Notification type can not be empty.'
+        return false
+      end
+      
+      unless @notifications.include?(notification_type)
+        @logger.log Logger::ERROR, 'Invalid notification type.'
+        return false
+      end
+      true
+    end
+    
   end
 end
