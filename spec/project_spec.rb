@@ -735,6 +735,7 @@ describe 'Optimizely' do
       expect(project_instance.is_feature_enabled('multi_variate_feature', 'test_user')).to be true
       expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Dispatching impression event to URL https://logx.optimizely.com/v1/events with params #{expected_params}.")
       expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Feature 'multi_variate_feature' is enabled for user 'test_user'.")
+      expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Notification #{Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION]} sent successfully.")
     end
 
     it 'should return true and send an feature notification' do

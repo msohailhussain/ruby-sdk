@@ -24,7 +24,7 @@ module Optimizely
     def initialize(logger)
       @notification_id = 1
       @notifications = {}
-      @notifications[NOTIFICATION_TYPES.values] = []
+						NOTIFICATION_TYPES.values.each { |value| @notifications[value] = [] }
       @logger = logger
     end
 
@@ -39,7 +39,7 @@ module Optimizely
       #  notification id used to remove the notification
 
       unless notification_type
-        @logger.log Logger::ERROR, 'Invalid notification type.'
+        @logger.log Logger::ERROR, 'Notification type can not be blank!'
         return nil
       end
 
@@ -52,14 +52,15 @@ module Optimizely
         @logger.log Logger::ERROR, "#{notification_callback} is invalid."
         return nil
       end
-
+						
       if @notifications.include?(notification_type)
         @notifications[notification_type].each do |notification|
           return -1 if notification[:callback] == notification_callback
         end
         @notifications[notification_type].push ({notification_id: @notification_id, callback: notification_callback})
       else
-        @notifications[notification_type] = [{notification_id: @notification_id, callback: notification_callback}]
+								@logger.log Logger::ERROR, 'Invalid notification type.'
+								return nil
       end
       notification_id = @notification_id
       @notification_id += 1
@@ -75,18 +76,17 @@ module Optimizely
       #     The function returns true if found and removed, false otherwise.
 
       unless notification_id
-        @logger.log Logger::ERROR, "Notification id can't b empty."
+        @logger.log Logger::ERROR, "Notification id can not be blank!"
         return nil
-      end
-
+						end
       @notifications.each do |key, _array|
         @notifications[key].each do |notification|
-          if notification_id == notification[:notification_id]
+										if notification_id == notification[:notification_id]
             @notifications[key].delete(notification_id: notification_id, callback: notification[:callback])
             return true
           end
         end
-      end
+						end
       false
     end
 
@@ -96,7 +96,7 @@ module Optimizely
       # Args:
       #     notification_type: key to the list of notifications .helpers.enums.NotificationTypes
       @notifications[notification_type] = []
-      @logger.log Logger::INFO, "All callbacks for notification type #{notification_type} have been removed."
+						@logger.log Logger::INFO, "All callbacks for notification type #{notification_type} have been removed."
     end
 
     def fire_notifications(notification_type, *args)
