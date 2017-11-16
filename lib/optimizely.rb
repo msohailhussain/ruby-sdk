@@ -85,7 +85,7 @@ module Optimizely
 
       @decision_service = DecisionService.new(@config, @user_profile_service)
       @event_builder = EventBuilder.new(@config)
-      @notification_center = NotificationCenter.new(@logger)
+      @notification_center = NotificationCenter.new(@logger, @error_handler)
     end
 
     def activate(experiment_key, user_id, attributes = nil)

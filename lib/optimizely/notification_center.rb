@@ -13,20 +13,25 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
+
 module Optimizely
   class NotificationCenter
+    
     attr_reader :notifications
+    
     NOTIFICATION_TYPES = {
       DECISION: 'DECISION: experiment, user_id, attributes, variation, event',
       TRACK: 'TRACK: event_key, user_id, attributes, event_tags, event',
-      FEATURE_ACCESSED: 'FEATURE: feature_key, user_id, attributes, variation'
+      FEATURE_ROLLOUT: 'FEATURE_ROLLOUT:feature_key, user_id, attributes, audiences',
+      FEATURE_EXPERIMENT: 'FEATURE_EXPERIMENT:feature_key, user_id, attributes, experiment, variation'
     }.freeze
 
-    def initialize(logger)
+    def initialize(logger, error_handler)
       @notification_id = 1
       @notifications = {}
       NOTIFICATION_TYPES.values.each { |value| @notifications[value] = [] }
       @logger = logger
+      @error_handler = error_handler
     end
 
     def add_notification_listener(notification_type, notification_callback)
@@ -45,7 +50,7 @@ module Optimizely
         @logger.log Logger::ERROR, 'Callback can not be empty.'
         return nil
       end
-
+      
       unless notification_callback.is_a? Method
         @logger.log Logger::ERROR, "#{notification_callback} is invalid."
         return nil
@@ -130,7 +135,7 @@ module Optimizely
       # Args:
       #  notification_type: Type of notification to fire
       
-      # Returns true if notification_type is present or valid,  otherwise
+      # Returns true if notification_type is present or valid,  false otherwise
       
       unless notification_type
         @logger.log Logger::ERROR, 'Notification type can not be empty.'
@@ -139,6 +144,7 @@ module Optimizely
       
       unless @notifications.include?(notification_type)
         @logger.log Logger::ERROR, 'Invalid notification type.'
+        @error_handler.handle_error InvalidNotificationType
         return false
       end
       true
