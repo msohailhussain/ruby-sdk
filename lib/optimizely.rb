@@ -24,8 +24,8 @@ require_relative 'optimizely/helpers/group'
 require_relative 'optimizely/helpers/validator'
 require_relative 'optimizely/helpers/variable_type'
 require_relative 'optimizely/logger'
-require_relative 'optimizely/project_config'
 require_relative 'optimizely/notification_center'
+require_relative 'optimizely/project_config'
 
 module Optimizely
   class Project
