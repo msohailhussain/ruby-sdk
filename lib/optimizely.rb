@@ -270,15 +270,27 @@ module Optimizely
         # Send event if Decision came from an experiment.
         if decision.source == Optimizely::DecisionService::DECISION_SOURCE_EXPERIMENT
           send_impression(decision.experiment, variation['key'], user_id, attributes)
+          @notification_center.fire_notifications(
+           NotificationCenter::NOTIFICATION_TYPES[:FEATURE_EXPERIMENT],
+           feature_flag_key, user_id, attributes, variation
+          )
         else
           @logger.log(Logger::DEBUG,
                       "The user '#{user_id}' is not being experimented on in feature '#{feature_flag_key}'.")
         end
 
         @logger.log(Logger::INFO, "Feature '#{feature_flag_key}' is enabled for user '#{user_id}'.")
+        audience = nil
+        if decision.experiment
+          audience_ids = decision.experiment['audienceIds']
+          if audience_ids
+            audience_id = audience_ids[0]
+            audience = @config.get_audience_from_id(audience_id)
+          end
+        end
         @notification_center.fire_notifications(
-            NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ACCESSED],
-            feature_flag_key, user_id, attributes, variation
+            NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ROLLOUT],
+            feature_flag_key, user_id, attributes, [audience]
         )
         return true
       end
@@ -538,7 +550,7 @@ module Optimizely
       end
       variation = @config.get_variation_from_id(experiment_key, variation_id)
       @notification_center.fire_notifications(
-          NotificationCenter::NOTIFICATION_TYPES[:DECISION],
+          NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE],
           experiment,user_id, attributes, variation, impression_event
       )
     end

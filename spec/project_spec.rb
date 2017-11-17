@@ -19,7 +19,7 @@ require 'optimizely/audience'
 require 'optimizely/helpers/validator'
 require 'optimizely/exceptions'
 require 'optimizely/version'
-
+require 'byebug'
 describe 'Optimizely' do
   let(:config_body) { OptimizelySpec::VALID_CONFIG_BODY }
   let(:config_body_JSON) { OptimizelySpec::VALID_CONFIG_BODY_JSON }
@@ -291,7 +291,7 @@ describe 'Optimizely' do
       allow(project_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
       allow(project_instance.notification_center).to receive(:fire_notifications)
         .with(
-            Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION],
+            Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE],
             experiment,user_id,nil,variation_to_return,
             instance_of(Optimizely::Event)
         )
@@ -733,13 +733,25 @@ describe 'Optimizely' do
 
       allow(project_instance.notification_center).to receive(:fire_notifications)
         .with(
-          Optimizely::NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ACCESSED],
+          Optimizely::NotificationCenter::NOTIFICATION_TYPES[:FEATURE_EXPERIMENT],
           'boolean_single_variable_feature', 'test_user', nil, variation_to_return
+        )
+
+      audience = nil
+      if experiment_to_return
+        audience_id = experiment_to_return['audienceIds'][0]
+        audience = project_instance.config.get_audience_from_id(audience_id)
+      end
+      
+      allow(project_instance.notification_center).to receive(:fire_notifications)
+        .with(
+          Optimizely::NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ROLLOUT],
+          'boolean_single_variable_feature', 'test_user', nil, [audience]
         )
 
       allow(project_instance.notification_center).to receive(:fire_notifications)
         .with(
-           Optimizely::NotificationCenter::NOTIFICATION_TYPES[:DECISION],
+           Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE],
            experiment_to_return, 'test_user', nil, variation_to_return,
            instance_of(Optimizely::Event)
         )

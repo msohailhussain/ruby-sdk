@@ -18,9 +18,10 @@ module Optimizely
   class NotificationCenter
     
     attr_reader :notifications
+    attr_reader :notification_id
     
     NOTIFICATION_TYPES = {
-      DECISION: 'DECISION: experiment, user_id, attributes, variation, event',
+      ACTIVATE: 'ACTIVATE: experiment, user_id, attributes, variation, event',
       TRACK: 'TRACK: event_key, user_id, attributes, event_tags, event',
       FEATURE_ROLLOUT: 'FEATURE_ROLLOUT:feature_key, user_id, attributes, audiences',
       FEATURE_EXPERIMENT: 'FEATURE_EXPERIMENT:feature_key, user_id, attributes, experiment, variation'
@@ -38,8 +39,8 @@ module Optimizely
       # Adds notification callback to the notification center
 
       # Args:
-      #  notification_type: DECISION
-      #  notification_callback: closure of function to call when event is triggered
+      #  notification_type: one of the constants in NOTIFICATION_TYPES
+      #  notification_callback: function to call when the event is fired
 
       # Returns:
       #  notification ID used to remove the notification
@@ -52,7 +53,7 @@ module Optimizely
       end
       
       unless notification_callback.is_a? Method
-        @logger.log Logger::ERROR, "#{notification_callback} is invalid."
+        @logger.log Logger::ERROR, "Invalid notification callback given."
         return nil
       end
       
@@ -91,7 +92,7 @@ module Optimizely
       # Removes notifications for a certain notification type
       #
       # Args:
-      #  notification_type: key to the list of notifications
+      #  notification_type: one of the constants in NOTIFICATION_TYPES
   
       return nil unless notification_type_valid?(notification_type)
       
@@ -100,16 +101,16 @@ module Optimizely
     end
     
     def clean_all_notifications
-      # Remove all notifications
+      # Removes all notifications
       @notifications.keys.each { |key| @notifications[key] = [] }
     end
 
     def fire_notifications(notification_type, *args)
       # Fires off the notification for the specific event.  Uses var args to pass in a
-      # arbitrary list of parameter according to which notification type was fired
+      # arbitrary list of parameters according to which notification type was fired
 
       # Args:
-      #  notification_type: Type of notification to fire
+      #  notification_type: one of the constants in NOTIFICATION_TYPES
       #  args: list of arguments to the callback
   
       return nil unless notification_type_valid?(notification_type)
@@ -133,9 +134,9 @@ module Optimizely
       # Validates notification type
       
       # Args:
-      #  notification_type: Type of notification to fire
+      #  notification_type: one of the constants in NOTIFICATION_TYPES
       
-      # Returns true if notification_type is present or valid,  false otherwise
+      # Returns true if notification_type is valid,  false otherwise
       
       unless notification_type
         @logger.log Logger::ERROR, 'Notification type can not be empty.'

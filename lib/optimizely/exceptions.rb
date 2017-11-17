@@ -97,7 +97,7 @@ module Optimizely
   end
   
   class InvalidNotificationType < Error
-    # Raised when an invalid experiment key is provided
+    # Raised when an invalid notification type is provided
   
     def initialize(msg = 'Provided notification type is invalid.')
       super

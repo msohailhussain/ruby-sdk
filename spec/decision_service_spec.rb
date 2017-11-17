@@ -484,7 +484,6 @@ describe Optimizely::DecisionService do
         it 'should return the variation the user is bucketed into' do
           feature_flag = config.feature_flag_key_map['boolean_single_variable_feature']
           rollout_experiment = config.rollout_id_map[feature_flag['rolloutId']]['experiments'][0]
-
           variation = rollout_experiment['variations'][0]
           audience_id = rollout_experiment['audienceIds'][0]
           audience_name = config.get_audience_from_id(audience_id)['name']
