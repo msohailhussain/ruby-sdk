@@ -19,7 +19,7 @@ require 'optimizely/audience'
 require 'optimizely/helpers/validator'
 require 'optimizely/exceptions'
 require 'optimizely/version'
-require 'byebug'
+
 describe 'Optimizely' do
   let(:config_body) { OptimizelySpec::VALID_CONFIG_BODY }
   let(:config_body_JSON) { OptimizelySpec::VALID_CONFIG_BODY_JSON }
