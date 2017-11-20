@@ -118,10 +118,10 @@ describe 'Optimizely' do
   end
 
   describe '#activate' do
+    let(:notification_center) { spy(project_instance.notification_center) }
     before(:example) do
       allow(Time).to receive(:now).and_return(time_now)
       allow(SecureRandom).to receive(:uuid).and_return('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
-      
       @expected_activate_params = {
         account_id: '12001',
         project_id: '111001',
@@ -259,14 +259,21 @@ describe 'Optimizely' do
 
     it 'should log when an impression event is dispatched' do
       params = @expected_activate_params
-
       variation_to_return = project_instance.config.get_variation_from_id('test_experiment', '111128')
       allow(project_instance.decision_service.bucketer).to receive(:bucket).and_return(variation_to_return)
       allow(project_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
       allow(project_instance.config).to receive(:get_audience_ids_for_experiment)
                                         .with('test_experiment')
                                         .and_return([])
+      # experiment = project_instance.config.get_experiment_from_key('test_experiment')
+      # expect(notification_center).to received(:fire_notifications).with(
+      #  Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE],
+      #  experiment,'test_user',nil,variation_to_return,
+      #  [instance_of(Optimizely::Event)]
+      # )
+      
       project_instance.activate('test_experiment', 'test_user')
+      
       expect(spy_logger).to have_received(:log).once.with(Logger::INFO, include("Dispatching impression event to" \
                                                                                 " URL #{impression_log_url} with params #{params}"))
     end
@@ -282,20 +289,6 @@ describe 'Optimizely' do
     it 'should raise an exception when called with invalid attributes' do
       expect { project_instance.activate('test_experiment', 'test_user', 'invalid') }
              .to raise_error(Optimizely::InvalidAttributeFormatError)
-    end
-
-    it 'should log when the notification is sent. ' do
-      user_id = 'test_user'
-      experiment = project_instance.config.get_experiment_from_key('test_experiment')
-      variation_to_return = project_instance.config.get_variation_from_id('test_experiment', '111128')
-      allow(project_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
-      allow(project_instance.notification_center).to receive(:fire_notifications)
-        .with(
-            Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE],
-            experiment,user_id,nil,variation_to_return,
-            instance_of(Optimizely::Event)
-        )
-      project_instance.activate('test_experiment', 'test_user')
     end
     
     it 'should override the audience check if the user is whitelisted to a specific variation' do

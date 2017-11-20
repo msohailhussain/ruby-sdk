@@ -13,7 +13,6 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
-
 module Optimizely
   class NotificationCenter
     
@@ -112,7 +111,6 @@ module Optimizely
       # Args:
       #  notification_type: one of the constants in NOTIFICATION_TYPES
       #  args: list of arguments to the callback
-  
       return nil unless notification_type_valid?(notification_type)
 
       @notifications[notification_type].each do |notification|
