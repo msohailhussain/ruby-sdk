@@ -494,7 +494,6 @@ describe Optimizely::DecisionService do
             .with(rollout_experiment, user_id, user_id)
             .and_return(variation)
           expect(decision_service.get_variation_for_feature_rollout(feature_flag, user_id, user_attributes)).to eq(expected_decision)
-
           expect(spy_logger).to have_received(:log).once
             .with(Logger::DEBUG, "Attempting to bucket user '#{user_id}' into rollout rule "\
                   "for audience '#{audience_name}'.")

@@ -127,13 +127,12 @@ module Optimizely
         )
         return decision
       end
-
       @config.logger.log(
         Logger::INFO,
         "User '#{user_id}' is not bucketed into a rollout for feature flag '#{feature_flag_key}'."
       )
 
-      return nil
+      nil
     end
 
     def get_variation_for_feature_experiment(feature_flag, user_id, attributes = nil)
@@ -193,6 +192,8 @@ module Optimizely
       #
       # Returns the Decision struct or nil if not bucketed into any of the targeting rules
       
+      bucketing_id = get_bucketing_id(user_id, attributes)
+
       bucketing_id = get_bucketing_id(user_id, attributes)
 
       rollout_id = feature_flag['rolloutId']
