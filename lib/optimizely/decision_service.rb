@@ -35,6 +35,10 @@ module Optimizely
     attr_reader :bucketer
     attr_reader :config
 
+    Decision = Struct.new(:experiment, :variation, :source)
+    DECISION_SOURCE_EXPERIMENT = 'experiment'
+    DECISION_SOURCE_ROLLOUT = 'rollout'
+
     def initialize(config, user_profile_service = nil)
       @config = config
       @user_profile_service = user_profile_service
@@ -108,30 +112,25 @@ module Optimizely
       # user_id - String ID for the user
       # attributes - Hash representing user attributes
       #
-      # Returns hash with the experiment and variation where visitor will be bucketed (nil if the user is not bucketed into any of the experiments on the feature)
+      # Returns Decision struct (nil if the user is not bucketed into any of the experiments on the feature)
 
       # check if the feature is being experiment on and whether the user is bucketed into the experiment
       decision = get_variation_for_feature_experiment(feature_flag, user_id, attributes)
       return decision unless decision.nil?
 
       feature_flag_key = feature_flag['key']
-      variation = get_variation_for_feature_rollout(feature_flag, user_id, attributes)
-      if variation
+      decision = get_variation_for_feature_rollout(feature_flag, user_id, attributes)
+      if decision
         @config.logger.log(
           Logger::INFO,
           "User '#{user_id}' is bucketed into a rollout for feature flag '#{feature_flag_key}'."
         )
-        # return decision with nil experiment so we don't track impressions for it
-        return {
-          'experiment' => nil,
-          'variation' => variation
-        }
-      else
-        @config.logger.log(
-          Logger::INFO,
-          "User '#{user_id}' is not bucketed into a rollout for feature flag '#{feature_flag_key}'."
-        )
+        return decision
       end
+      @config.logger.log(
+        Logger::INFO,
+        "User '#{user_id}' is not bucketed into a rollout for feature flag '#{feature_flag_key}'."
+      )
 
       nil
     end
@@ -143,7 +142,7 @@ module Optimizely
       # user_id - String ID for the user
       # attributes - Hash representing user attributes
       #
-      # Returns a hash with the experiment and variation where visitor will be bucketed
+      # Returns Decision struct (nil if the user is not bucketed into any of the experiments on the feature)
       # or nil if the user is not bucketed into any of the experiments on the feature
       feature_flag_key = feature_flag['key']
       if feature_flag['experimentIds'].empty?
@@ -165,15 +164,14 @@ module Optimizely
           end
           experiment_key = experiment['key']
           variation_id = get_variation(experiment_key, user_id, attributes)
-          next unless variation_id
-          variation = @config.variation_id_map[experiment_key][variation_id]
-          @config.logger.log(Logger::INFO,
-                             "The user '#{user_id}' is bucketed into experiment '#{experiment_key}' of feature "\
-                             "'#{feature_flag_key}'.")
-          return {
-            'experiment' => experiment,
-            'variation' => variation
-          }
+          if variation_id
+            variation = @config.variation_id_map[experiment_key][variation_id]
+            @config.logger.log(
+                Logger::INFO,
+                "The user '#{user_id}' is bucketed into experiment '#{experiment_key}' of feature '#{feature_flag_key}'."
+            )
+            return Decision.new(experiment, variation, DECISION_SOURCE_EXPERIMENT)
+          end
         end
         @config.logger.log(
           Logger::INFO,
@@ -192,7 +190,9 @@ module Optimizely
       # user_id - String ID for the user
       # attributes - Hash representing user attributes
       #
-      # Returns the variation the user is bucketed into or nil if not bucketed into any of the targeting rules
+      # Returns the Decision struct or nil if not bucketed into any of the targeting rules
+      
+      bucketing_id = get_bucketing_id(user_id, attributes)
 
       bucketing_id = get_bucketing_id(user_id, attributes)
 
@@ -237,14 +237,14 @@ module Optimizely
           next
         end
 
+        # User failed traffic allocation, jump to Everyone Else rule
         @config.logger.log(
           Logger::DEBUG,
           "Attempting to bucket user '#{user_id}' into rollout rule for audience '#{audience_name}'."
         )
         # Evaluate if user satisfies the traffic allocation for this rollout rule
         variation = @bucketer.bucket(rollout_rule, bucketing_id, user_id)
-        return variation unless variation.nil?
-
+        return Decision.new(rollout_rule, variation, DECISION_SOURCE_ROLLOUT) unless variation.nil?
         # User failed traffic allocation, jump to Everyone Else rule
         @config.logger.log(
           Logger::DEBUG,
@@ -255,14 +255,16 @@ module Optimizely
 
       # get last rule which is the everyone else rule
       everyone_else_experiment = rollout_rules[number_of_rules]
-      variation = @bucketer.bucket(everyone_else_experiment, bucketing_id, user_id)
-      return variation unless variation.nil?
-
-      @config.logger.log(
-        Logger::DEBUG,
-        "User '#{user_id}' was excluded from the 'Everyone Else' rule for feature flag"
-      )
-      nil
+      variation = @bucketer.bucket(everyone_else_experiment, bucketing_id ,user_id)
+      if variation.nil?
+        @config.logger.log(
+          Logger::DEBUG,
+          "User '#{user_id}' was excluded from the 'Everyone Else' rule for feature flag"
+        )
+        return nil
+      else
+        return Decision.new(everyone_else_experiment, variation, DECISION_SOURCE_ROLLOUT)
+      end
     end
 
     private
@@ -370,7 +372,6 @@ module Optimizely
       #
       # user_id - String user ID
       # attributes - Hash user attributes
-
       # By default, the bucketing ID should be the user ID
       bucketing_id = user_id
 
