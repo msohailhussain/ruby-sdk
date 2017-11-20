@@ -188,9 +188,7 @@ module Optimizely
       # attributes - Hash representing user attributes
       #
       # Returns the Decision struct or nil if not bucketed into any of the targeting rules
-
-      bucketing_id = get_bucketing_id(user_id, attributes)
-
+      
       bucketing_id = get_bucketing_id(user_id, attributes)
 
       rollout_id = feature_flag['rolloutId']
