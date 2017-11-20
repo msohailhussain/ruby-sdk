@@ -15,10 +15,9 @@
 #
 module Optimizely
   class NotificationCenter
-    
     attr_reader :notifications
     attr_reader :notification_id
-    
+
     NOTIFICATION_TYPES = {
       ACTIVATE: 'ACTIVATE: experiment, user_id, attributes, variation, event',
       TRACK: 'TRACK: event_key, user_id, attributes, event_tags, event',
@@ -45,17 +44,17 @@ module Optimizely
       #  notification ID used to remove the notification
 
       return nil unless notification_type_valid?(notification_type)
-      
+
       unless notification_callback
         @logger.log Logger::ERROR, 'Callback can not be empty.'
         return nil
       end
-      
+
       unless notification_callback.is_a? Method
-        @logger.log Logger::ERROR, "Invalid notification callback given."
+        @logger.log Logger::ERROR, 'Invalid notification callback given.'
         return nil
       end
-      
+
       @notifications[notification_type].each do |notification|
         return -1 if notification[:callback] == notification_callback
       end
@@ -92,13 +91,13 @@ module Optimizely
       #
       # Args:
       #  notification_type: one of the constants in NOTIFICATION_TYPES
-  
+
       return nil unless notification_type_valid?(notification_type)
-      
+
       @notifications[notification_type] = []
       @logger.log Logger::INFO, "All callbacks for notification type #{notification_type} have been removed."
     end
-    
+
     def clean_all_notifications
       # Removes all notifications
       @notifications.keys.each { |key| @notifications[key] = [] }
@@ -123,24 +122,23 @@ module Optimizely
           return nil
         end
       end
-      
     end
-    
+
     private
-    
+
     def notification_type_valid?(notification_type)
       # Validates notification type
-      
+
       # Args:
       #  notification_type: one of the constants in NOTIFICATION_TYPES
-      
+
       # Returns true if notification_type is valid,  false otherwise
-      
+
       unless notification_type
         @logger.log Logger::ERROR, 'Notification type can not be empty.'
         return false
       end
-      
+
       unless @notifications.include?(notification_type)
         @logger.log Logger::ERROR, 'Invalid notification type.'
         @error_handler.handle_error InvalidNotificationType
@@ -148,6 +146,5 @@ module Optimizely
       end
       true
     end
-    
   end
 end
