@@ -1,18 +1,18 @@
-class Config
-  attr_accessor :project_id
-  attr_accessor :experiment_key
-  attr_accessor :event_key
-  attr_accessor :project_configuration_json
-  
-  # validates :project_id, presence: true
+class Config < RedisOrm::Base
+  property :project_id, String
+  property :experiment_key, String
+  property :event_key, String
+  property :project_configuration_json, String
 
+  validates_presence_of :project_id
+  
+  index :project_id
+  index [:project_id, :event_key, :experiment_key]
+  
   URL="https://cdn.optimizely.com/json"
   
-  def initialize(project_id = nil, experiment_key = nil, event_key = nil, project_configuration_json = nil)
-    @project_id = project_id
-    @experiment_key = experiment_key
-    @event_key = event_key
-    @project_configuration_json = project_configuration_json
+  def self.find_or_create_by_project_id project_id
+    self.find(:first, conditions: {project_id: project_id}) || self.create(project_id: project_id)
   end
   
 end

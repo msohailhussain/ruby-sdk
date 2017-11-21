@@ -1,45 +1,49 @@
 class DemoController < ApplicationController
 
-  # before_action :validate_config!, only: :create
-  # before_action :get_visitor, only: [:shop,:buy]
-  # before_action :get_project_configuration, only: [:shop,:buy]
-  # before_action :check_optimizely_client, only: [:shop,:buy]
-  # before_action :get_product, only: [:buy]
+  before_action :validate_config!, only: :create
+  before_action :get_visitor, only: [:shop,:buy]
+  before_action :get_project_configuration, only: [:shop,:buy]
+  before_action :check_optimizely_client, only: [:shop,:buy]
+  before_action :get_product, only: [:buy]
 
   def new
-    # if session[:config_project_id].present?
-    #   @config = Config.where(project_id: session[:config_project_id]).first
-    #   get_or_generate_optimizely_client
-    # else
-    #   @config = Config.new
-    # end
-    @config = Config.new
+    if session[:config_project_id].present?
+      @config = Config.find(:first, conditions: {project_id: session[:config_project_id]})
+      get_or_generate_optimizely_client
+    else
+      @config = Config.new
+    end
   end
 
   def create
-    @config = Config.new
     begin
-      response = RestClient.get "#{Config::URL}/"+"#{demo_params[:project_id]}.json"
+      response = RestClient.get "#{Config::URL}/"+"#{@config.project_id}.json"
       @optimizely_service = OptimizelyService.new(response.body)
       if @optimizely_service.instantiate!
-        reset_session
-        byebug
+        if @config.update_attributes(
+          experiment_key: demo_params[:experiment_key],
+          event_key: demo_params[:event_key],
+          project_configuration_json: response.body
+        )
+          session[:config_project_id] = @config.project_id
+        else
+          flash[:error] = @config.errors.full_messages.first
+        end
       else
         flash[:error] = @optimizely_service.errors
       end
     rescue StandardError => error
       flash[:error] = error
     end
-    @config = Config.new
     render "new"
   end
 
   def visitors
-    @visitors = Visitor.all
+    @visitors = Visitor::VISITORS
   end
 
   def shop
-    @products = Product.all
+    @products = Product::PRODUCTS
     @optimizely_service = OptimizelyService.new(@config.project_configuration_json)
     if @optimizely_service.activate_service!(@visitor,@config.experiment_key )
       @optimizely_service
@@ -54,9 +58,9 @@ class DemoController < ApplicationController
     if @optimizely_service.track_service!(
         @config.event_key,
         @visitor,
-        @product.present? ? @product.as_json.except("_id") : {}
+        @product.present? ? @product.except(:id) : {}
     )
-      flash[:success] = "Successfully Purchased item #{@product.try(:name)} for visitor #{@visitor.name}!"
+      flash[:success] = "Successfully Purchased item #{@product[:name]} for visitor #{@visitor[:name]}!"
     else
       flash[:error] = @optimizely_service.errors
     end
@@ -64,17 +68,15 @@ class DemoController < ApplicationController
   end
 
   def log_messages
-    @logs = LogMessage.order_by(datatime: 'desc')
+    @logs = LogMessage.all
   end
 
   def delete_messgaes
-    @logs = LogMessage.all
-    if @logs.destroy
-      flash[:success] = "log messages deleted successfully."
-    else
-      flash[:error] = @logs.errors
+    LogMessage.all.each do |log|
+      log.destroy
     end
     redirect_to messages_path
+    flash[:success] = "log messages deleted successfully."
   end
 
   private
@@ -84,7 +86,7 @@ class DemoController < ApplicationController
   end
 
   def validate_config!
-    @config = Config.where(project_id: demo_params[:project_id]).first_or_create
+    @config = Config.find_or_create_by_project_id(demo_params[:project_id])
     if @config.valid?
       @config
     else
@@ -94,7 +96,7 @@ class DemoController < ApplicationController
   end
 
   def get_project_configuration
-    @config = Config.where(project_id: session[:config_project_id]).first
+    @config = Config.find(:first, conditions: {project_id: session[:config_project_id]})
     unless @config.present? && @config.try(:experiment_key).present?
       flash[:alert] = "Project id and Experiment key can't be blank!"
       redirect_to demo_config_path

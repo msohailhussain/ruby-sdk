@@ -34,6 +34,8 @@ gem 'rest-client', '~> 2.0', '>= 2.0.2'
 
 gem 'optimizely-sdk', :git => 'https://github.com/msohailhussain/ruby-sdk'
 
+gem 'redis-objects'
+gem 'redis_orm', git: 'https://github.com/german/redis_orm.git'
 gem 'sinatra'
 
 group :development, :test do

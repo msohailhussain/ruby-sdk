@@ -31,11 +31,12 @@ class OptimizelyService
   end
 
   def activate_service!(visitor,experiment_key)
+    attributes = {'name' => visitor[:name].to_s, 'age'=> visitor[:age].to_s}
     begin
       @@variation = @optimizely_client.activate(
           experiment_key,
-          visitor.id.to_s,
-          visitor.user_attributes
+          visitor[:id].to_s,
+          attributes
       )
     rescue StandardError => error
       @errors.push(error.message)
@@ -44,11 +45,12 @@ class OptimizelyService
   end
 
   def track_service!(event_key, visitor, event_tags)
+    attributes = {'name' => visitor[:name].to_s, 'age'=> visitor[:age].to_s}
     begin
       result = @optimizely_client.track(
           event_key,
-          visitor.id,
-          visitor.user_attributes,
+          visitor[:id].to_s,
+          attributes,
           event_tags
       )
     rescue => e

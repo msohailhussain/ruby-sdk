@@ -19,7 +19,7 @@
         - @logs.each do |log|
           %tr{class:"#{get_level_class(log.type)}"}
             %td
-              = log.datatime.present? ? log.datatime.strftime("%m/%d/%Y at %I:%M %p") : ""
+              = log.created_at.present? ? log.created_at.strftime("%m/%d/%Y at %I:%M %p") : ""
             %td
               = "LOG #{LogMessage::LOGGER_LEVELS.key(log.type)}"
             %td

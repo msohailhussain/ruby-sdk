@@ -3,14 +3,13 @@ class ApplicationController < ActionController::Base
 
   def check_optimizely_client
     unless OptimizelyService.optimizely_client_present?
-      flash[:alert] = "Optimizely client does not exists!"
       redirect_to demo_config_path
     end
   end
 
   def get_visitor
-    visitor = Visitor.where(id: params[:id].to_i).first
-    @visitor = visitor.present? ? visitor : Visitor.first
+    visitor = Visitor.find(params[:id].to_i)
+    @visitor = visitor.present? ? visitor : Visitor::VISITORS.first
   end
 
 end

@@ -8,7 +8,7 @@
   .form-group
     = f.label :event_key
     = f.text_field :event_key, class: "form-control"
-  - if @config.project_configuration_json
+  - if @config.project_configuration_json && !@config.project_configuration_json.empty?
     .form-group
       = f.label :project_configuration_json
       = f.text_area :project_configuration_json,readonly: true, value: generate_json_view(@config.project_configuration_json),:rows => 20, style: 'width:300%;' ,class: "form-control"
