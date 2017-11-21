@@ -556,8 +556,18 @@ describe 'Optimizely' do
       } 
       expect(project_instance.get_variation('test_experiment_with_audience', 'test_user', user_attributes))
             .to eq('control_with_audience')
-    end    
+    end
 
+    it 'should have get_variation return nil when User ID is not an String' do
+      user_attributes = {
+       'browser_type' => 'firefox',
+       OptimizelySpec::RESERVED_ATTRIBUTE_KEY_BUCKETING_ID => 'pid'
+      }
+      user_id = 1
+      expect(project_instance.get_variation('test_experiment_with_audience', user_id, user_attributes)).to eq(nil)
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, "User id: #{user_id} is not an String")
+    end
+    
     it 'should have get_variation return nil when attributes are invalid' do
       allow(project_instance).to receive(:attributes_valid?).and_return(false)
       expect(project_instance.get_variation('test_experiment_with_audience', 'test_user', 'invalid')).to eq(nil)
