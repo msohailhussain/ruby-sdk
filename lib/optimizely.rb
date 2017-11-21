@@ -24,6 +24,7 @@ require_relative 'optimizely/helpers/group'
 require_relative 'optimizely/helpers/validator'
 require_relative 'optimizely/helpers/variable_type'
 require_relative 'optimizely/logger'
+require_relative 'optimizely/notification_center'
 require_relative 'optimizely/project_config'
 
 module Optimizely
@@ -38,6 +39,7 @@ module Optimizely
     attr_reader :event_builder
     attr_reader :event_dispatcher
     attr_reader :logger
+    attr_reader :notification_center
 
     def initialize(datafile, event_dispatcher = nil, logger = nil, error_handler = nil, skip_json_validation = false, user_profile_service = nil)
       # Constructor for Projects.
@@ -83,6 +85,7 @@ module Optimizely
 
       @decision_service = DecisionService.new(@config, @user_profile_service)
       @event_builder = EventBuilder.new(@config)
+      @notification_center = NotificationCenter.new(@logger, @error_handler)
     end
 
     def activate(experiment_key, user_id, attributes = nil)
@@ -132,7 +135,7 @@ module Optimizely
       end
 
       unless user_id.is_a? String
-        @logger.log(Logger::ERROR, "User id: #{user_id} is not a string")
+        @logger.log(Logger::ERROR, "User id: #{user_id} is not an String")
         return nil
       end
 
@@ -231,6 +234,10 @@ module Optimizely
       rescue => e
         @logger.log(Logger::ERROR, "Unable to dispatch conversion event. Error: #{e}")
       end
+      @notification_center.fire_notifications(
+          NotificationCenter::NOTIFICATION_TYPES[:TRACK],
+          event_key, user_id, attributes, event_tags, conversion_event
+      )
     end
 
     def is_feature_enabled(feature_flag_key, user_id, attributes = nil)
@@ -263,7 +270,23 @@ module Optimizely
         # Send event if Decision came from an experiment.
         if decision.source == Optimizely::DecisionService::DECISION_SOURCE_EXPERIMENT
           send_impression(decision.experiment, variation['key'], user_id, attributes)
+          @notification_center.fire_notifications(
+           NotificationCenter::NOTIFICATION_TYPES[:FEATURE_EXPERIMENT],
+           feature_flag_key, user_id, attributes, decision.experiment, variation
+          )
         else
+          audience = nil
+          if decision.experiment
+            audience_ids = decision.experiment['audienceIds']
+            if audience_ids
+              audience_id = audience_ids[0]
+              audience = @config.get_audience_from_id(audience_id)
+            end
+          end
+          @notification_center.fire_notifications(
+           NotificationCenter::NOTIFICATION_TYPES[:FEATURE_ROLLOUT],
+           feature_flag_key, user_id, attributes, [audience]
+          )
           @logger.log(Logger::DEBUG,
                       "The user '#{user_id}' is not being experimented on in feature '#{feature_flag_key}'.")
         end
@@ -525,6 +548,11 @@ module Optimizely
       rescue => e
         @logger.log(Logger::ERROR, "Unable to dispatch impression event. Error: #{e}")
       end
+      variation = @config.get_variation_from_id(experiment_key, variation_id)
+      @notification_center.fire_notifications(
+          NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE],
+          experiment,user_id, attributes, variation, impression_event
+      )
     end
   end
 end
