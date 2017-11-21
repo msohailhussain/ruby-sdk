@@ -1,4 +1,4 @@
-= form_for @config,url: demo_config_path(@config), html: { method: :post }  do |f|
+= form_for :config,url: demo_config_path, html: { method: :post }  do |f|
   .form-group
     = f.label "Proejct Id"
     = f.text_field :project_id, class: "form-control"

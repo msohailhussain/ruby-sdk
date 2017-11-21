@@ -1,40 +1,36 @@
 class DemoController < ApplicationController
 
-  before_action :validate_config!, only: :create
-  before_action :get_visitor, only: [:shop,:buy]
-  before_action :get_project_configuration, only: [:shop,:buy]
-  before_action :check_optimizely_client, only: [:shop,:buy]
-  before_action :get_product, only: [:buy]
+  # before_action :validate_config!, only: :create
+  # before_action :get_visitor, only: [:shop,:buy]
+  # before_action :get_project_configuration, only: [:shop,:buy]
+  # before_action :check_optimizely_client, only: [:shop,:buy]
+  # before_action :get_product, only: [:buy]
 
   def new
-    if session[:config_project_id].present?
-      @config = Config.where(project_id: session[:config_project_id]).first
-      get_or_generate_optimizely_client
-    else
-      @config = Config.new
-    end
+    # if session[:config_project_id].present?
+    #   @config = Config.where(project_id: session[:config_project_id]).first
+    #   get_or_generate_optimizely_client
+    # else
+    #   @config = Config.new
+    # end
+    @config = Config.new
   end
 
   def create
+    @config = Config.new
     begin
-      response = RestClient.get "#{Config::URL}/"+"#{@config.project_id}.json"
+      response = RestClient.get "#{Config::URL}/"+"#{demo_params[:project_id]}.json"
       @optimizely_service = OptimizelyService.new(response.body)
       if @optimizely_service.instantiate!
-        if @config.update(
-            demo_params.merge(
-                project_configuration_json: response.body
-            )
-        )
-          session[:config_project_id] = @config.project_id
-        else
-          flash[:error] = @config.errors.full_messages.first
-        end
+        reset_session
+        byebug
       else
         flash[:error] = @optimizely_service.errors
       end
     rescue StandardError => error
       flash[:error] = error
     end
+    @config = Config.new
     render "new"
   end
 
