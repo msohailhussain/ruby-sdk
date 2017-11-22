@@ -1,18 +1,28 @@
-class Config < RedisOrm::Base
-  property :project_id, String
-  property :experiment_key, String
-  property :event_key, String
-  property :project_configuration_json, String
-
-  validates_presence_of :project_id
+class Config < ActiveHash::Base
+  @@data = []
   
-  index :project_id
-  index [:project_id, :event_key, :experiment_key]
+  fields :project_id, :experiment_key, :event_key, :project_configuration_json
   
   URL="https://cdn.optimizely.com/json"
   
+  def self.find_by_project_id project_id
+    @@data.find { |config| config.project_id == project_id }
+  end
+  
   def self.find_or_create_by_project_id project_id
-    self.find(:first, conditions: {project_id: project_id}) || self.create(project_id: project_id)
+    @@data.find { |config| config.project_id == project_id } || (@@data << self.create(project_id: project_id)).last
+  end
+  
+  def self.reset!
+    @@data = []
+    OptimizelyService.reset!
+  end
+  
+  def update params
+    self.experiment_key = params[:experiment_key]
+    self.event_key = params[:event_key]
+    self.project_configuration_json = params[:project_configuration_json]
+    self.save
   end
   
 end

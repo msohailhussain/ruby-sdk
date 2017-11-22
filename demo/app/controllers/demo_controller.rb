@@ -8,7 +8,7 @@ class DemoController < ApplicationController
 
   def new
     if session[:config_project_id].present?
-      @config = Config.find(:first, conditions: {project_id: session[:config_project_id]})
+      @config = Config.find_by_project_id(session[:config_project_id])
       get_or_generate_optimizely_client
     else
       @config = Config.new
@@ -20,10 +20,8 @@ class DemoController < ApplicationController
       response = RestClient.get "#{Config::URL}/"+"#{@config.project_id}.json"
       @optimizely_service = OptimizelyService.new(response.body)
       if @optimizely_service.instantiate!
-        if @config.update_attributes(
-          experiment_key: demo_params[:experiment_key],
-          event_key: demo_params[:event_key],
-          project_configuration_json: response.body
+        if @config.update(
+          demo_params.merge(project_configuration_json: response.body)
         )
           session[:config_project_id] = @config.project_id
         else
@@ -60,21 +58,20 @@ class DemoController < ApplicationController
         @visitor,
         @product.present? ? @product.except(:id) : {}
     )
+      Config.reset!
       flash[:success] = "Successfully Purchased item #{@product[:name]} for visitor #{@visitor[:name]}!"
     else
       flash[:error] = @optimizely_service.errors
     end
-    redirect_to shop_path
+    redirect_to messages_path
   end
 
   def log_messages
-    @logs = LogMessage.all
+    @logs = LogMessage.all_logs
   end
 
   def delete_messgaes
-    LogMessage.all.each do |log|
-      log.destroy
-    end
+    LogMessage.delete_all_logs
     redirect_to messages_path
     flash[:success] = "log messages deleted successfully."
   end
@@ -96,9 +93,9 @@ class DemoController < ApplicationController
   end
 
   def get_project_configuration
-    @config = Config.find(:first, conditions: {project_id: session[:config_project_id]})
+    @config = Config.find_by_project_id(session[:config_project_id])
     unless @config.present? && @config.try(:experiment_key).present?
-      flash[:alert] = "Project id and Experiment key can't be blank!"
+      flash[:alert] = "Project id or Experiment key can't be blank!"
       redirect_to demo_config_path
     end
   end

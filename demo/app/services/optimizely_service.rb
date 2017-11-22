@@ -16,6 +16,10 @@ class OptimizelyService
     @@optimizely_client.present?
   end
 
+  def self.reset!
+    @@optimizely_client = nil
+    @@variation = nil
+  end
 
   def instantiate!
     @logger = SinatraLogger.new(Logger.new(STDOUT))
@@ -75,7 +79,7 @@ class SinatraLogger
 
   def log(level=nil, message)
     @logger.info message
-    LogMessage.create(type: level, message: message)
+    LogMessage.create_record(level, message)
   end
 
 end
