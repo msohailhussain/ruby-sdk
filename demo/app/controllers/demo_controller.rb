@@ -7,6 +7,12 @@ class DemoController < ApplicationController
   before_action :get_product, only: [:buy]
 
   def new
+    # Finds Project ID if stored in session.
+    # Returns new config object if Project ID not found
+    #   else Finds config by Project ID stored in session
+    #   Initializes OptimizelyService and generates Optimizely client object
+    # Returns config
+    
     if session[:config_project_id].present?
       @config = Config.find_by_project_id(session[:config_project_id])
       get_or_generate_optimizely_client
@@ -16,6 +22,14 @@ class DemoController < ApplicationController
   end
 
   def create
+    # Calls before_action validate_config! from Private methods to
+    #   get or create config object by Project ID given in params
+    # Calls API https://cdn.optimizely.com/json
+    # Initializes OptimizelyService class with API response body as datafile
+    # instantiate! method initializes Optimizely::Project with datafile
+    # Updates config by permitted params
+    # If config is updated by params then store Project ID in session else return error.
+    
     begin
       response = RestClient.get "#{Config::URL}/"+"#{@config.project_id}.json"
       @optimizely_service = OptimizelyService.new(response.body)
@@ -37,10 +51,17 @@ class DemoController < ApplicationController
   end
 
   def visitors
+    # Returns list of visitors from model Visitor
     @visitors = Visitor::VISITORS
   end
 
   def shop
+    # Calls before_action get_visitor from Application Controller to get visitor
+    # Calls before_action get_project_configuration from Private methods to get config object
+    # Calls before_action check_optimizely_client to check optimizely_client object exists
+    # Lists all products from Product model
+    # Calls optimizely client activate method to create variation(Static object) in OptimizelyService class
+    
     @products = Product::PRODUCTS
     @optimizely_service = OptimizelyService.new(@config.project_configuration_json)
     if @optimizely_service.activate_service!(@visitor,@config.experiment_key )
@@ -52,6 +73,11 @@ class DemoController < ApplicationController
   end
 
   def buy
+    # Calls before_action get_visitor from Application Controller to get visitor
+    # Calls before_action get_project_configuration from Private methods to get config object
+    # Calls before_action check_optimizely_client to check optimizely_client object exists
+    # Calls before_action get_product to get selected project
+    # Calls optmizely client's track method from OptimizelyService class
     @optimizely_service = OptimizelyService.new(@config.project_configuration_json)
     if @optimizely_service.track_service!(
         @config.event_key,
@@ -67,6 +93,7 @@ class DemoController < ApplicationController
   end
 
   def log_messages
+    # Returns all log messages
     @logs = LogMessage.all_logs
   end
 
@@ -79,6 +106,7 @@ class DemoController < ApplicationController
   private
 
   def demo_params
+    # Params passed on form submit to be permitted before save
     params[:config].permit(:project_id, :experiment_key, :event_key,:project_configuration_json)
   end
 
