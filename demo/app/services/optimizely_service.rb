@@ -15,12 +15,7 @@ class OptimizelyService
   def self.optimizely_client_present?
     @@optimizely_client.present?
   end
-
-  def self.reset!
-    @@optimizely_client = nil
-    @@variation = nil
-  end
-
+  
   def instantiate!
     @logger = SinatraLogger.new(Logger.new(STDOUT))
     @@optimizely_client = Optimizely::Project.new(

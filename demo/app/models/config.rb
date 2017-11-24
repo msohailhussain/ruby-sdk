@@ -13,11 +13,6 @@ class Config < ActiveHash::Base
     @@data.find { |config| config.project_id == project_id } || (@@data << self.create(project_id: project_id)).last
   end
   
-  def self.reset!
-    @@data = []
-    OptimizelyService.reset!
-  end
-  
   def update params
     self.experiment_key = params[:experiment_key]
     self.event_key = params[:event_key]

@@ -84,7 +84,6 @@ class DemoController < ApplicationController
         @visitor,
         @product.present? ? @product.except(:id) : {}
     )
-      Config.reset!
       flash[:success] = "Successfully Purchased item #{@product[:name]} for visitor #{@visitor[:name]}!"
     else
       flash[:error] = @optimizely_service.errors
