@@ -5,9 +5,11 @@ application up and running.
 
 Things you may want to cover:
 
-* Install Rails at the command prompt if you haven't yet:
+* Ruby version should be ruby 2.3.1 
 
-    $ `gem install rails`
+    Run $ ` ruby -v`
+    
+    Returns $ 'ruby 2.3.1p112 (2016-04-26 revision 54768) [x86_64-linux]'
 
 * Run following commands to clone optimizely sdk repository and change directory to demo app, if you haven't yet:
   
