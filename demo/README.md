@@ -15,8 +15,6 @@ Things you may want to cover:
     
     $ `cd ruby-sdk`
     
-    $ `git checkout demo-app`
-    
     $ `cd demo`
 
 * To install the dependencies in your Gemfile 

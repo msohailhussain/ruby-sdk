@@ -1,6 +1,5 @@
 require 'logger'
 require 'optimizely'
-require 'sinatra'
 
 class OptimizelyService
   @@optimizely_client = nil
@@ -17,12 +16,12 @@ class OptimizelyService
   end
   
   def instantiate!
-    @logger = SinatraLogger.new(Logger.new(STDOUT))
+    @logger = DemoLogger.new(Logger.new(STDOUT))
     @@optimizely_client = Optimizely::Project.new(
         @datafile,
         Optimizely::EventDispatcher.new,
         @logger,
-        Optimizely::NoOpErrorHandler.new,
+        nil,
         false
     )
     @errors.push("Invalid Optimizely client request!") unless @@optimizely_client.is_valid
@@ -30,7 +29,7 @@ class OptimizelyService
   end
 
   def activate_service!(visitor,experiment_key)
-    attributes = {'name' => visitor[:name].to_s, 'age'=> visitor[:age].to_s}
+    attributes = {}
     begin
       @@variation = @optimizely_client.activate(
           experiment_key,
@@ -44,7 +43,7 @@ class OptimizelyService
   end
 
   def track_service!(event_key, visitor, event_tags)
-    attributes = {'name' => visitor[:name].to_s, 'age'=> visitor[:age].to_s}
+    attributes = {}
     begin
       result = @optimizely_client.track(
           event_key,
@@ -64,9 +63,7 @@ class OptimizelyService
 
 end
 
-
-# Semi-hacky wrapper around Sinatra's internal logger so we actually see log messages in Jenkins
-class SinatraLogger
+class DemoLogger
 
   def initialize(logger)
     @logger = logger

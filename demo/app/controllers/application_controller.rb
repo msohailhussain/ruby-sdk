@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
 
-  def check_optimizely_client
+  def optimizely_client_present?
     unless OptimizelyService.optimizely_client_present?
       redirect_to demo_config_path
     end

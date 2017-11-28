@@ -6,7 +6,8 @@
       - @products.each do |product|
         .item.col-xs-4.col-lg-4
           .thumbnail
-            %img.img-fluid.group.list-group-image{:alt => "", :src => "http://placehold.it/400x250/000/fff"}/
+            -#%img.img-fluid.group.list-group-image{:alt => "", :src => "#{product[:image_url]}"}/
+            = image_tag "#{product[:image_url]}", class: 'img-fluid group list-group-image',style: 'width: 100%;height: 340px;'
             .caption
               %h4.group.inner.list-group-item-heading
                 #{product[:name]}

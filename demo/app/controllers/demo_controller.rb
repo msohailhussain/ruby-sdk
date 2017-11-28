@@ -3,7 +3,7 @@ class DemoController < ApplicationController
   before_action :validate_config!, only: :create
   before_action :get_visitor, only: [:shop,:buy]
   before_action :get_project_configuration, only: [:shop,:buy]
-  before_action :check_optimizely_client, only: [:shop,:buy]
+  before_action :optimizely_client_present?, only: [:shop,:buy]
   before_action :get_product, only: [:buy]
 
   def new
@@ -13,12 +13,10 @@ class DemoController < ApplicationController
     #   Initializes OptimizelyService and generates Optimizely client object
     # Returns config
     
-    if session[:config_project_id].present?
-      @config = Config.find_by_project_id(session[:config_project_id])
-      get_or_generate_optimizely_client
-    else
-      @config = Config.new
-    end
+    return (@config = Config.new) unless session[:config_project_id].present?
+    
+    @config = Config.find_by_project_id(session[:config_project_id]) || Config.new
+    @config = get_config unless @config.new_record?
   end
 
   def create
@@ -58,7 +56,7 @@ class DemoController < ApplicationController
   def shop
     # Calls before_action get_visitor from Application Controller to get visitor
     # Calls before_action get_project_configuration from Private methods to get config object
-    # Calls before_action check_optimizely_client to check optimizely_client object exists
+    # Calls before_action optimizely_client_present? to check optimizely_client object exists
     # Lists all products from Product model
     # Calls optimizely client activate method to create variation(Static object) in OptimizelyService class
     
@@ -75,7 +73,7 @@ class DemoController < ApplicationController
   def buy
     # Calls before_action get_visitor from Application Controller to get visitor
     # Calls before_action get_project_configuration from Private methods to get config object
-    # Calls before_action check_optimizely_client to check optimizely_client object exists
+    # Calls before_action optimizely_client_present? to check optimizely_client object exists
     # Calls before_action get_product to get selected project
     # Calls optmizely client's track method from OptimizelyService class
     @optimizely_service = OptimizelyService.new(@config.project_configuration_json)
@@ -94,9 +92,10 @@ class DemoController < ApplicationController
   def log_messages
     # Returns all log messages
     @logs = LogMessage.all_logs
+    
   end
 
-  def delete_messgaes
+  def delete_messages
     LogMessage.delete_all_logs
     redirect_to messages_path
     flash[:success] = "log messages deleted successfully."
@@ -127,21 +126,10 @@ class DemoController < ApplicationController
     end
   end
 
-  def get_or_generate_optimizely_client
-    if @config.present?
-      if OptimizelyService.optimizely_client_present?
-        @config
-      else
-        @optimizely_service = OptimizelyService.new(@config.project_configuration_json)
-        if @optimizely_service.instantiate!
-          @config
-        else
-          @config = Config.new
-        end
-      end
-    else
-      @config = Config.new
-    end
+  def get_config
+    return @config if OptimizelyService.optimizely_client_present?
+    @optimizely_service = OptimizelyService.new(@config.project_configuration_json)
+    @config = @optimizely_service.instantiate! ? @config : Config.new
   end
 
   def get_product

@@ -8,11 +8,11 @@ class LogMessage < ActiveHash::Base
   LOGGER_LEVELS = {DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, FATAL: 4, UNKNOWN: 5}
 
   def self.create_record(type, message)
-    @@data << self.create(type: type, message: message)
+    @@data << self.create(type: type, message: message, created_at: Time.now)
   end
   
   def self.all_logs
-    @@data
+    @@data.reverse
   end
   
   def self.delete_all_logs

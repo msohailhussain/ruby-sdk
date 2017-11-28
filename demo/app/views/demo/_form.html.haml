@@ -1,15 +1,19 @@
 = form_for @config,url: demo_config_path(@config), html: { method: :post }  do |f|
-  .form-group
-    = f.label "Project Id"
-    = f.text_field :project_id, class: "form-control"
-  .form-group
-    = f.label :experiment_key
-    = f.text_field :experiment_key, class: "form-control"
-  .form-group
-    = f.label :event_key
-    = f.text_field :event_key, class: "form-control"
-  - if @config.project_configuration_json && !@config.project_configuration_json.empty?
-    .form-group
-      = f.label :project_configuration_json
-      = f.text_area :project_configuration_json,readonly: true, value: generate_json_view(@config.project_configuration_json),:rows => 20, style: 'width:300%;' ,class: "form-control"
-  = f.submit class: "btn btn-primary",value:"Save"
+  .row
+    .col.col-lg-4
+      .form-group
+        = f.label "Project Id"
+        = f.text_field :project_id, class: "form-control"
+      .form-group
+        = f.label :experiment_key
+        = f.text_field :experiment_key, class: "form-control"
+      .form-group
+        = f.label :event_key
+        = f.text_field :event_key, class: "form-control"
+      .form-group
+        = f.submit class: "btn btn-primary",value:"Save"
+    .col.col-lg-8
+      - if @config.project_configuration_json && !@config.project_configuration_json.empty?
+        .form-group
+          = f.label :project_configuration_json
+          = f.text_area :project_configuration_json,readonly: true, value: generate_json_view(@config.project_configuration_json),:rows => 20 ,class: "form-control"

@@ -3,7 +3,7 @@
   = render "shared/tabs"
   .row
     = link_to 'Clear Messages',
-    delete_messgaes_path,
+    delete_messages_path,
     method: :delete,
     data: { confirm: 'Are you sure? want to delete all log messages!' },
     class:"btn btn-danger #{!@logs.present? ? 'disabled' : ''}"
