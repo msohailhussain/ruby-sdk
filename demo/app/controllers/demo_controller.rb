@@ -1,9 +1,8 @@
 class DemoController < ApplicationController
-
   before_action :validate_config!, only: :create
-  before_action :get_visitor, only: [:shop,:buy]
-  before_action :get_project_configuration, only: [:shop,:buy]
-  before_action :optimizely_client_present?, only: [:shop,:buy]
+  before_action :get_visitor, only: [:shop, :buy]
+  before_action :get_project_configuration, only: [:shop, :buy]
+  before_action :optimizely_client_present?, only: [:shop, :buy]
   before_action :get_product, only: [:buy]
 
   def new
@@ -12,9 +11,9 @@ class DemoController < ApplicationController
     #   else Finds config by Project ID stored in session
     #   Initializes OptimizelyService and generates Optimizely client object
     # Returns config
-    
+
     return (@config = Config.new) unless session[:config_project_id].present?
-    
+
     @config = Config.find_by_project_id(session[:config_project_id]) || Config.new
     @config = get_config unless @config.new_record?
   end
@@ -27,9 +26,9 @@ class DemoController < ApplicationController
     # instantiate! method initializes Optimizely::Project with datafile
     # Updates config by permitted params
     # If config is updated by params then store Project ID in session else return error.
-    
+
     begin
-      response = RestClient.get "#{Config::URL}/"+"#{@config.project_id}.json"
+      response = RestClient.get "#{Config::URL}/" + "#{@config.project_id}.json"
       @optimizely_service = OptimizelyService.new(response.body)
       if @optimizely_service.instantiate!
         if @config.update(
@@ -45,7 +44,7 @@ class DemoController < ApplicationController
     rescue StandardError => error
       flash[:error] = error
     end
-    render "new"
+    render 'new'
   end
 
   def visitors
@@ -59,10 +58,10 @@ class DemoController < ApplicationController
     # Calls before_action optimizely_client_present? to check optimizely_client object exists
     # Lists all products from Product model
     # Calls optimizely client activate method to create variation(Static object) in OptimizelyService class
-    
+
     @products = Product::PRODUCTS
     @optimizely_service = OptimizelyService.new(@config.project_configuration_json)
-    if @optimizely_service.activate_service!(@visitor,@config.experiment_key )
+    if @optimizely_service.activate_service!(@visitor, @config.experiment_key)
       @optimizely_service
     else
       flash[:error] = @optimizely_service.errors
@@ -78,9 +77,9 @@ class DemoController < ApplicationController
     # Calls optmizely client's track method from OptimizelyService class
     @optimizely_service = OptimizelyService.new(@config.project_configuration_json)
     if @optimizely_service.track_service!(
-        @config.event_key,
-        @visitor,
-        @product.present? ? @product.except(:id) : {}
+      @config.event_key,
+      @visitor,
+      @product.present? ? @product.except(:id) : {}
     )
       flash[:success] = "Successfully Purchased item #{@product[:name]} for visitor #{@visitor[:name]}!"
     else
@@ -92,20 +91,19 @@ class DemoController < ApplicationController
   def log_messages
     # Returns all log messages
     @logs = LogMessage.all_logs
-    
   end
 
   def delete_messages
     LogMessage.delete_all_logs
     redirect_to messages_path
-    flash[:success] = "log messages deleted successfully."
+    flash[:success] = 'log messages deleted successfully.'
   end
 
   private
 
   def demo_params
     # Params passed on form submit to be permitted before save
-    params[:config].permit(:project_id, :experiment_key, :event_key,:project_configuration_json)
+    params[:config].permit(:project_id, :experiment_key, :event_key, :project_configuration_json)
   end
 
   def validate_config!
@@ -114,7 +112,7 @@ class DemoController < ApplicationController
       @config
     else
       flash[:error] = @config.errors.full_messages.first
-      render "new"
+      render 'new'
     end
   end
 
@@ -135,5 +133,4 @@ class DemoController < ApplicationController
   def get_product
     @product = Product.find(params[:product_id].to_i)
   end
-
 end
