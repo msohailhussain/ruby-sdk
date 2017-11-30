@@ -5,7 +5,8 @@ application up and running.
 
 Things you may want to cover:
 
-* Ruby version should be ruby 2.3.1 
+* Install ruby using rvm:
+  https://gorails.com/setup/ubuntu/17.04
 
     Run $ ` ruby -v`
     
@@ -13,19 +14,20 @@ Things you may want to cover:
 
 * Run following commands to clone optimizely sdk repository and change directory to demo app, if you haven't yet:
   
-    $ `git@github.com:msohailhussain/ruby-sdk.git`
+    $ `git clone git@github.com:optimizely/ruby-sdk.git`
     
     $ `cd ruby-sdk`
     
     $ `cd demo`
 
+* To install the exact gems and versions that are needed
+
+    run $ `gem install bundler`
+
+
 * To install the dependencies in your Gemfile 
 
     run $ `bundle install`
-
-* To populate your db with the basic data- e.g visitors and products.
-
-    run $ `rake db:seed` 
 
 * To startup the Rails server, make sure that you are in the demo directory
 

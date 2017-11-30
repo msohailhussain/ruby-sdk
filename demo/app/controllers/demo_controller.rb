@@ -1,3 +1,18 @@
+#
+#    Copyright 2017, Optimizely and contributors
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
 class DemoController < ApplicationController
   before_action :validate_config!, only: :create
   before_action :get_visitor, only: [:shop, :buy]
@@ -58,11 +73,17 @@ class DemoController < ApplicationController
     # Calls before_action optimizely_client_present? to check optimizely_client object exists
     # Lists all products from Product model
     # Calls optimizely client activate method to create variation(Static object) in OptimizelyService class
-
-    @products = Product::PRODUCTS
+    
     @optimizely_service = OptimizelyService.new(@config.project_configuration_json)
-    if @optimizely_service.activate_service!(@visitor, @config.experiment_key)
-      @optimizely_service
+    @variation = @optimizely_service.activate_service!(@visitor, @config.experiment_key)
+    if @variation
+      if @variation == 'sort_by_price'
+        @products = Product::PRODUCTS.sort_by { |hsh| hsh[:price] }
+      elsif @variation == 'sort_by_name'
+        @products = Product::PRODUCTS.sort_by { |hsh| hsh[:name] }
+      else
+        @products = Product::PRODUCTS
+      end
     else
       flash[:error] = @optimizely_service.errors
       redirect_to demo_config_path
@@ -79,7 +100,7 @@ class DemoController < ApplicationController
     if @optimizely_service.track_service!(
       @config.event_key,
       @visitor,
-      @product.present? ? @product.except(:id) : {}
+      Product::Event_Tags
     )
       flash[:success] = "Successfully Purchased item #{@product[:name]} for visitor #{@visitor[:name]}!"
     else

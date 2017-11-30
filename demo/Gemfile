@@ -19,7 +19,7 @@ gem 'haml'
 gem 'jquery-rails'
 gem 'rest-client', '~> 2.0', '>= 2.0.2'
 
-gem 'optimizely-sdk', git: 'https://github.com/msohailhussain/ruby-sdk'
+gem 'optimizely-sdk', git: 'https://github.com/optimizely/ruby-sdk'
 # To use a ruby hash as a readonly datasource for an ActiveRecord-like model.
 gem 'active_hash'
 
