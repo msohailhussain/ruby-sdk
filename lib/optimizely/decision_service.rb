@@ -16,6 +16,7 @@
 require_relative './bucketer'
 
 module Optimizely
+
   RESERVED_ATTRIBUTE_KEY_BUCKETING_ID = "\$opt_bucketing_id".freeze
 
   class DecisionService
@@ -250,12 +251,12 @@ module Optimizely
 
         break
       end
-
+      
       # get last rule which is the everyone else rule
       everyone_else_experiment = rollout_rules[number_of_rules]
       variation = @bucketer.bucket(everyone_else_experiment, bucketing_id, user_id)
       return Decision.new(everyone_else_experiment, variation, DECISION_SOURCE_ROLLOUT) unless variation.nil?
-
+      
       @config.logger.log(
         Logger::DEBUG,
         "User '#{user_id}' was excluded from the 'Everyone Else' rule for feature flag"

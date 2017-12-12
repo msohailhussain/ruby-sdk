@@ -234,7 +234,6 @@ module Optimizely
       rescue => e
         @logger.log(Logger::ERROR, "Unable to dispatch conversion event. Error: #{e}")
       end
-
       @notification_center.send_notifications(
           NotificationCenter::NOTIFICATION_TYPES[:TRACK],
           event_key, user_id, attributes, event_tags, conversion_event

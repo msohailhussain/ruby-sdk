@@ -76,7 +76,7 @@ describe Optimizely::DecisionService do
       expect(decision_service.get_variation('test_experiment', 'forced_user2')).to eq('111129')
       expect(spy_logger).to have_received(:log)
         .once.with(Logger::INFO, "User 'forced_user2' is whitelisted into variation 'variation' of experiment 'test_experiment'.")
-
+      
       # whitelisted variations should short circuit bucketing
       expect(decision_service.bucketer).not_to have_received(:bucket)
       # whitelisted variations should short circuit audience evaluation
@@ -96,6 +96,25 @@ describe Optimizely::DecisionService do
       expect(spy_logger).to have_received(:log)
         .once.with(Logger::INFO, "User 'forced_user2' is whitelisted into variation 'variation' of experiment 'test_experiment'.")
 
+      # whitelisted variations should short circuit bucketing
+      expect(decision_service.bucketer).not_to have_received(:bucket)
+      # whitelisted variations should short circuit audience evaluation
+      expect(Optimizely::Audience).not_to have_received(:user_in_experiment?)
+    end
+
+    it 'should return correct variation ID (using Bucketing ID attrbiute) if user ID is in whitelisted Variations and variation is valid' do
+      user_attributes = {
+       'browser_type' => 'firefox',
+       OptimizelySpec::RESERVED_ATTRIBUTE_KEY_BUCKETING_ID => 'pid'
+      }
+      expect(decision_service.get_variation('test_experiment', 'forced_user1', user_attributes)).to eq('111128')
+      expect(spy_logger).to have_received(:log)
+                             .once.with(Logger::INFO, "User 'forced_user1' is whitelisted into variation 'control' of experiment 'test_experiment'.")
+  
+      expect(decision_service.get_variation('test_experiment', 'forced_user2', user_attributes)).to eq('111129')
+      expect(spy_logger).to have_received(:log)
+                             .once.with(Logger::INFO, "User 'forced_user2' is whitelisted into variation 'variation' of experiment 'test_experiment'.")
+  
       # whitelisted variations should short circuit bucketing
       expect(decision_service.bucketer).not_to have_received(:bucket)
       # whitelisted variations should short circuit audience evaluation
