@@ -48,7 +48,7 @@ module Optimizely
         return nil
       end
 
-      unless notification_callback.is_a? Method
+      unless notification_callback.respond_to? :call
         @logger.log Logger::ERROR, 'Invalid notification callback given.'
         return nil
       end

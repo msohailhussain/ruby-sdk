@@ -86,6 +86,29 @@ describe Optimizely::NotificationCenter do
         expect(notification_center.notifications[Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE]].length)
           .to eq(1)
       end
+      
+      it 'should add, and return notification ID when valid callbacks as closures are added' do
+        def sum(args)
+          spy_logger.log Logger::INFO, "Sum: #{args.inject(:+)}"
+        end
+  
+        callback_proc = Proc.new{ |args| sum(args)}
+        callback_lambda  = lambda { |args| sum(args) }
+  
+        expect(notification_center.add_notification_listener(
+         Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE],
+         callback_proc
+        )).to eq(1)
+  
+        expect(notification_center.add_notification_listener(
+         Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE],
+         callback_lambda
+        )).to eq(2)
+  
+        # verifies that two notifications are added
+        expect(notification_center.notifications[Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE]].length)
+         .to eq(2)
+      end
     end
 
     describe 'test add notification for multiple notification types' do
@@ -468,7 +491,7 @@ describe Optimizely::NotificationCenter do
           .with(Logger::INFO, 'delivered two.')
       end
 
-      it 'should send notifications and verify that all callbacks are called' do
+      it 'should send notifications and verify that all callbacks as method references are called' do
         notification_type_decision = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE]
         notification_type_track = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:TRACK]
 
@@ -486,6 +509,25 @@ describe Optimizely::NotificationCenter do
         expect(spy_logger).to_not have_received(:log)
           .with(Logger::INFO, 'delivered three.')
       end
+      
+      it 'should send notifications and verify that all callbacks as closures are called' do
+        notification_type_decision = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE]
+  
+        def sum(args)
+          spy_logger.log Logger::INFO, "Sum: #{args.inject(:+)}"
+        end
+  
+        callback_proc = Proc.new{ |args| sum(args)}
+        callback_lambda  = lambda { |args| sum(args) }
+  
+        notification_center.add_notification_listener(notification_type_decision, callback_lambda)
+        notification_center.add_notification_listener(notification_type_decision, callback_proc)
+        args = [8,8]
+        notification_center.send_notifications(notification_type_decision, args)
+        expect(spy_logger).to have_received(:log).twice
+                               .with(Logger::INFO, 'Sum: 16')
+      end
+      
     end
 
     describe '@error_handler' do
