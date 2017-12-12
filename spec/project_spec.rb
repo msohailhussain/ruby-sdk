@@ -19,7 +19,7 @@ require 'optimizely/audience'
 require 'optimizely/helpers/validator'
 require 'optimizely/exceptions'
 require 'optimizely/version'
-
+require 'byebug'
 describe 'Optimizely' do
   let(:config_body) { OptimizelySpec::VALID_CONFIG_BODY }
   let(:config_body_JSON) { OptimizelySpec::VALID_CONFIG_BODY_JSON }
@@ -707,6 +707,44 @@ describe 'Optimizely' do
       expect(project_instance.is_feature_enabled('multi_variate_feature', 'test_user')).to be true
       expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Dispatching impression event to URL https://logx.optimizely.com/v1/events with params #{expected_params}.")
       expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Feature 'multi_variate_feature' is enabled for user 'test_user'.")
+    end
+  end
+  
+  describe '#get_enabled_features' do
+    before(:example) do
+      allow(Time).to receive(:now).and_return(time_now)
+      allow(SecureRandom).to receive(:uuid).and_return('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+    
+      @expected_bucketed_params = {
+       account_id: '12001',
+       project_id: '111001',
+       visitors: [{
+        attributes: [],
+        snapshots: [{
+         decisions: [{
+          campaign_id: '4',
+          experiment_id: '122230',
+          variation_id: '122231'
+         }],
+         events: [{
+          entity_id: '4',
+          timestamp: (time_now.to_f * 1000).to_i,
+          key: 'campaign_activated',
+          uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
+         }]
+        }],
+        visitor_id: 'test_user'
+       }],
+       anonymize_ip: false,
+       revision: '42',
+       client_name: Optimizely::CLIENT_ENGINE,
+       client_version: Optimizely::VERSION
+      }
+    end
+  
+    it 'should return empty when called with invalid project config' do
+      invalid_project = Optimizely::Project.new('invalid',nil,spy_logger)
+      expect(invalid_project.get_enabled_features('test_user')).to be_empty
     end
   end
 
