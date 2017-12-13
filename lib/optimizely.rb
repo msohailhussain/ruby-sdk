@@ -285,6 +285,28 @@ module Optimizely
         "Feature '#{feature_flag_key}' is not enabled for user '#{user_id}'.")
       false
     end
+    
+    def get_enabled_features(user_id, attributes = nil)
+      # Returns the list of features that are enabled for the user.
+      # Args:
+      #   user_id: ID for user.
+      #   attributes: Dict representing user attributes.
+      # Returns:
+      #   A list of the keys of the features that are enabled for the user.
+      #
+      enabled_features = []
+      
+      unless @is_valid
+        logger = SimpleLogger.new
+        logger.log(Logger::ERROR, InvalidDatafileError.new('get_enabled_features').message)
+        return enabled_features
+      end
+      
+      for feature in @config.feature_flags
+        enabled_features.push(feature['key']) if is_feature_enabled(feature['key'], user_id, attributes)
+      end
+      enabled_features
+    end
 
     def get_feature_variable_string(feature_flag_key, variable_key, user_id, attributes = nil)
       # Get the String value of the specified variable in the feature flag.
