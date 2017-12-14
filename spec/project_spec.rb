@@ -702,10 +702,10 @@ describe 'Optimizely' do
       expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Feature 'multi_variate_feature' is enabled for user 'test_user'.")
     end
   end
-  
+
   describe '#get_enabled_features' do
     it 'should return empty when called with invalid project config' do
-      invalid_project = Optimizely::Project.new('invalid',nil,spy_logger)
+      invalid_project = Optimizely::Project.new('invalid', nil, spy_logger)
       expect(invalid_project.get_enabled_features('test_user')).to be_empty
     end
 
@@ -713,44 +713,44 @@ describe 'Optimizely' do
       allow(project_instance).to receive(:is_feature_enabled).and_return(false)
       expect(project_instance.get_enabled_features('test_user')).to be_empty
     end
-    
+
     it 'should return only enabled feature flags keys' do
       # Sets all feature-flags keys with randomly assigned status
-      features_keys = project_instance.config.feature_flags.map{|item|
-        {key: "#{item['key']}", value: [true, false].sample} # '[true, false].sample' generates random boolean
-      }
-      
-      enabled_features = features_keys.map{|x| x[:key] if x[:value] == true}.compact
-      prevented_features = features_keys.map{|x| x[:key] if x[:value] == false}.compact
-      booleans = features_keys.map{|x| x[:value]}.compact
-      
+      features_keys = project_instance.config.feature_flags.map do |item|
+        {key: (item['key']).to_s, value: [true, false].sample} # '[true, false].sample' generates random boolean
+      end
+
+      enabled_features = features_keys.map { |x| x[:key] if x[:value] == true }.compact
+      prevented_features = features_keys.map { |x| x[:key] if x[:value] == false }.compact
+      booleans = features_keys.map { |x| x[:value] }.compact
+
       # Checks enabled features are returned
       allow(project_instance).to receive(:is_feature_enabled).and_return(
-       booleans[0],
-       booleans[1],
-       booleans[2],
-       booleans[3],
-       booleans[4],
-       booleans[5],
-       booleans[6],
-       booleans[7],
-       booleans[8]
+        booleans[0],
+        booleans[1],
+        booleans[2],
+        booleans[3],
+        booleans[4],
+        booleans[5],
+        booleans[6],
+        booleans[7],
+        booleans[8]
       )
       expect(project_instance.get_enabled_features('test_user')).to eq(enabled_features)
-      
+
       # Checks prevented features should not return
       allow(project_instance).to receive(:is_feature_enabled).and_return(
-       booleans[0],
-       booleans[1],
-       booleans[2],
-       booleans[3],
-       booleans[4],
-       booleans[5],
-       booleans[6],
-       booleans[7],
-       booleans[8]
+        booleans[0],
+        booleans[1],
+        booleans[2],
+        booleans[3],
+        booleans[4],
+        booleans[5],
+        booleans[6],
+        booleans[7],
+        booleans[8]
       )
-      expect(project_instance.get_enabled_features('test_user')).not_to eq(prevented_features )
+      expect(project_instance.get_enabled_features('test_user')).not_to eq(prevented_features)
     end
   end
 
