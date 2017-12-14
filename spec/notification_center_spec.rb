@@ -109,6 +109,24 @@ describe Optimizely::NotificationCenter do
         expect(notification_center.notifications[Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE]].length)
           .to eq(2)
       end
+
+      it 'should add, and return notification ID when callback as a block is added' do
+        expect(notification_center.add_notification_listener(
+          Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE]
+        ) { |args| spy_logger.log Logger::INFO, "Sum: #{args.inject(:+)}" }).to eq(1)
+      end
+
+      it 'should add only closure callback when both closure and a block are sent' do
+        closure_callback = proc { |args| spy_logger.log Logger::INFO, "closure sum: #{args.inject(:+)}" }
+        expect(notification_center.add_notification_listener(
+          Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE],
+          closure_callback
+        ) { |args| spy_logger.log Logger::INFO, "block sum: #{args.inject(:+)}" }).to eq(1)
+
+        # verifies that only closure callback is added
+        expect(notification_center.notifications[Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE]][0][:callback])
+          .to eq(closure_callback)
+      end
     end
 
     describe 'test add notification for multiple notification types' do
@@ -509,6 +527,18 @@ describe Optimizely::NotificationCenter do
         args = [8, 8]
         notification_center.send_notifications(notification_type_decision, args)
         expect(spy_logger).to have_received(:log).twice
+                                                 .with(Logger::INFO, 'Sum: 16')
+      end
+
+      it 'should send notifications and verify that callback as a block is called' do
+        notification_type_decision = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE]
+
+        notification_center.add_notification_listener(
+          notification_type_decision
+        ) { |args| spy_logger.log Logger::INFO, "Sum: #{args.inject(:+)}" }
+        args = [8, 8]
+        notification_center.send_notifications(notification_type_decision, args)
+        expect(spy_logger).to have_received(:log).once
                                                  .with(Logger::INFO, 'Sum: 16')
       end
     end
