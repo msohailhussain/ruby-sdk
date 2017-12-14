@@ -725,31 +725,11 @@ describe 'Optimizely' do
       booleans = features_keys.map { |x| x[:value] }.compact
 
       # Checks enabled features are returned
-      allow(project_instance).to receive(:is_feature_enabled).and_return(
-        booleans[0],
-        booleans[1],
-        booleans[2],
-        booleans[3],
-        booleans[4],
-        booleans[5],
-        booleans[6],
-        booleans[7],
-        booleans[8]
-      )
+      allow(project_instance).to receive(:is_feature_enabled).and_return(*booleans)
       expect(project_instance.get_enabled_features('test_user')).to eq(enabled_features)
 
       # Checks prevented features should not return
-      allow(project_instance).to receive(:is_feature_enabled).and_return(
-        booleans[0],
-        booleans[1],
-        booleans[2],
-        booleans[3],
-        booleans[4],
-        booleans[5],
-        booleans[6],
-        booleans[7],
-        booleans[8]
-      )
+      allow(project_instance).to receive(:is_feature_enabled).and_return(*booleans)
       expect(project_instance.get_enabled_features('test_user')).not_to eq(prevented_features)
     end
   end
