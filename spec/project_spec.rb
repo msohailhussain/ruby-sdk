@@ -721,16 +721,16 @@ describe 'Optimizely' do
       end
 
       enabled_features = features_keys.map { |x| x[:key] if x[:value] == true }.compact
-      prevented_features = features_keys.map { |x| x[:key] if x[:value] == false }.compact
+      disabled_features = features_keys.map { |x| x[:key] if x[:value] == false }.compact
       booleans = features_keys.map { |x| x[:value] }.compact
 
       # Checks enabled features are returned
       allow(project_instance).to receive(:is_feature_enabled).and_return(*booleans)
-      expect(project_instance.get_enabled_features('test_user')).to eq(enabled_features)
+      expect(project_instance.get_enabled_features('test_user', 'browser_type' => 'chrome')).to eq(enabled_features)
 
       # Checks prevented features should not return
       allow(project_instance).to receive(:is_feature_enabled).and_return(*booleans)
-      expect(project_instance.get_enabled_features('test_user')).not_to eq(prevented_features)
+      expect(project_instance.get_enabled_features('test_user', 'browser_type' => 'chrome')).not_to eq(disabled_features)
     end
   end
 

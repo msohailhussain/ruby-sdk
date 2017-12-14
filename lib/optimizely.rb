@@ -283,12 +283,12 @@ module Optimizely
     end
 
     def get_enabled_features(user_id, attributes = nil)
-      # Returns the list of features that are enabled for the user.
+      # Gets keys of all feature flags which are enabled for the user.
       # Args:
       #   user_id: ID for user.
       #   attributes: Dict representing user attributes.
       # Returns:
-      #   A list of the keys of the features that are enabled for the user.
+      #   A List of feature flag keys that are enabled for the user.
       #
       enabled_features = []
 
@@ -299,7 +299,10 @@ module Optimizely
       end
 
       @config.feature_flags.each do |feature|
-        enabled_features.push(feature['key']) if is_feature_enabled(feature['key'], user_id, attributes)
+        enabled_features.push(feature['key']) if is_feature_enabled(
+          feature['key'],
+          user_id, attributes
+        ) == true
       end
       enabled_features
     end
