@@ -33,10 +33,9 @@ configure do
   set optimizely_service: OptimizelyService.new(response.body)
 end
 
-before 'login' do
-  content_type :json
+def authenticate_user!
   unless params[:user_id]
-   return { error: "user_id cant be blank!"}.to_json
+    halt 401, { error: 'Unauthorized' }.to_json
   end
 end
 
@@ -47,24 +46,36 @@ end
 
 post '/login' do
   content_type :json
+  authenticate_user!
   if settings.optimizely_service.instantiate!
     variation, succeeded = settings.optimizely_service.activate_service!(
-     params[:user_name],
+     params[:user_id],
      settings.experiment_key
     )
     if succeeded
       if variation == 'sort_by_price'
-        products = Product::PRODUCTS.sort_by { |hsh| hsh[:price] }
+        {variation: variation, rollout: false, products: Product::PRODUCTS.sort_by { |hsh| hsh[:price] }}.to_json
       elsif variation == 'sort_by_name'
-        products = Product::PRODUCTS.sort_by { |hsh| hsh[:name] }
+        {variation: variation, rollout: false, products: Product::PRODUCTS.sort_by { |hsh| hsh[:name] }}.to_json
       else
-        products = Product::PRODUCTS
+        {variation: variation, rollout: false, products: Product::PRODUCTS}.to_json
       end
-      { products: products}.to_json
     else
       { error: settings.optimizely_service.errors}.to_json
     end
   else
     { error: settings.optimizely_service.errors}.to_json
   end
+end
+
+post '/track' do
+  content_type :json
+  authenticate_user!
+  event_key = settings.event_key
+  user_id = @payload.fetch('user_id')
+  # attributes = @payload.fetch('attributes') { Hash.new }
+  # event_tags = @payload.fetch('event_tags') { Hash.new }
+  #
+  # result = @optly.track(event_key, user_id, attributes, event_tags)
+  # {:result => result, :user_profiles => user_profiles}.to_json
 end
