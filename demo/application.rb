@@ -23,20 +23,30 @@ require_relative './optimizely_service'
 require_relative './product'
 
 set :bind, '0.0.0.0'
-set :port, 3000
+set :port, 3001
+enable :sessions
 
 # On startup, read datafile and instantiate Optimizely
 configure do
   URL = 'https://cdn.optimizely.com/json'.freeze
-  set logging: Logger::DEBUG, project_id: '9110532340', experiment_key: 'experimentKey'
+  set logging: Logger::DEBUG, project_id: '9110532340',
+   experiment_key: 'My_ruby_experiment', event_key: 'exp2_event'
   response = RestClient.get "#{URL}/" + "#{settings.project_id}.json"
   set optimizely_service: OptimizelyService.new(response.body)
 end
 
+before do
+  @optimizely_service = settings.optimizely_service
+  @experiment_key = settings.experiment_key
+  @event_key = settings.event_key
+  content_type :json
+  halt 401, { error: 'Unauthorized' }.to_json unless params[:user_id]
+end
+
 def authenticate_user!
-  unless params[:user_id]
-    halt 401, { error: 'Unauthorized' }.to_json
-  end
+  content_type :json
+  @user_id = session['user_id']
+  halt 401, { error: 'Unauthorized' }.to_json unless @user_id || (@user_id == params[:user_id])
 end
 
 get '/' do
@@ -46,13 +56,13 @@ end
 
 post '/login' do
   content_type :json
-  authenticate_user!
-  if settings.optimizely_service.instantiate!
-    variation, succeeded = settings.optimizely_service.activate_service!(
+  if @optimizely_service.instantiate!
+    variation, succeeded = @optimizely_service.activate_service!(
      params[:user_id],
-     settings.experiment_key
+     @experiment_key
     )
     if succeeded
+      session['user_id'] = params[:user_id]
       if variation == 'sort_by_price'
         {variation: variation, rollout: false, products: Product::PRODUCTS.sort_by { |hsh| hsh[:price] }}.to_json
       elsif variation == 'sort_by_name'
@@ -61,21 +71,31 @@ post '/login' do
         {variation: variation, rollout: false, products: Product::PRODUCTS}.to_json
       end
     else
-      { error: settings.optimizely_service.errors}.to_json
+      { error: @optimizely_service.errors}.to_json
     end
   else
-    { error: settings.optimizely_service.errors}.to_json
+    { error: @optimizely_service.errors}.to_json
   end
 end
 
 post '/track' do
+  # Calls before_action get_visitor from Application Controller to get visitor
+  # Calls before_action get_project_configuration from Private methods to get config object
+  # Calls before_action optimizely_client_present? to check optimizely_client object exists
+  # Calls before_action get_product to get selected project
+  # Calls optmizely client's track method from OptimizelyService class
   content_type :json
   authenticate_user!
-  event_key = settings.event_key
-  user_id = @payload.fetch('user_id')
-  # attributes = @payload.fetch('attributes') { Hash.new }
-  # event_tags = @payload.fetch('event_tags') { Hash.new }
-  #
-  # result = @optly.track(event_key, user_id, attributes, event_tags)
-  # {:result => result, :user_profiles => user_profiles}.to_json
+  @product = Product.find(params[:product_id].to_i)
+  halt 401, { error: @optimizely_service.errors}.to_json unless @product
+  if @optimizely_service.track_service!(
+   @event_key,
+   @user_id,
+   Product::Event_Tags
+  )
+    Cart.create_record(@product[:id])
+    { success: "Successfully Purchased item #{@product[:name]} for visitor #{@user_id}!"}.to_json
+  else
+    { error: @optimizely_service.errors}.to_json
+  end
 end
