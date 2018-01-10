@@ -1,0 +1,5 @@
+url: "https://cdn.optimizely.com/json"
+project_id: "9110532340"
+experiment_key: "My_ruby_experiment"
+event_key: "add_to_cart"
+feature_flag_key: "checkout_feature"
