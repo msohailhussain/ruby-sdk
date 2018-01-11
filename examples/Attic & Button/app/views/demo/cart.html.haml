@@ -19,10 +19,10 @@
   = render "shared/tabs"
   .row
     = link_to 'Clear cart',
-    delete_purchases_path,
+    delete_cart_path,
     method: :delete,
-    data: { confirm: 'Are you sure? want to delete all purchases!' },
-    class:"btn btn-danger #{!@purchases.present? ? 'disabled' : ''}"
+    data: { confirm: 'Are you sure? want to delete all items!' },
+    class:"btn btn-danger #{!@cart.present? ? 'disabled' : ''}"
   %br
   .row
     %table#example.table.table-sm
@@ -34,7 +34,7 @@
       %tbody
         - sum = 0
         - qty = 0
-        - @purchases.each do |key,value|
+        - @cart.each do |key,value|
           - sum+=(value * Product.find(key)[:price])
           - qty = value * Product.find(key)[:price]
           %tr
@@ -47,15 +47,15 @@
         %tr
           %td Total
           %td
-            = "#{Purchase.total_qty.to_i}"
+            = "#{Cart.total_qty.to_i}"
           %td
             = "$ #{sum}"
-    -if @purchases.present?
+    -if @cart.present?
       - if @enabled
-        = link_to "Checkout",
+        = link_to "Buy Now",
           checkout_cart_path(user_id: session[:user_id]),
           method: :get, class:"btn btn-info"
       - else
         = link_to "Checkout",
-          checkout_path(user_id: session[:user_id]),
-          method: :get, class:"btn btn-info"
+          checkout_complete_path(user_id: session[:user_id]),
+          method: :post, class:"btn btn-info"

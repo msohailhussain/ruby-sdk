@@ -1,0 +1,18 @@
+.container
+  / Example row of columns
+  = render "shared/tabs"
+  .container
+    - if session[:checkout_variation_key]
+      .card-header.text-center
+        Variation: #{session[:checkout_variation_key]}
+    .row{style:'padding-top:20px;'}
+      .col-md-6
+        = render "shipping_form"
+      .col-md-5.offset-md-1#CreditCardPartial{class: ("d-none" unless session[:checkout_variation_key] == 'one_step_checkout')}
+        = render "credit_card_form"
+
+  :javascript
+    function NextFunction() {
+      $('#CreditCardPartial').removeClass('d-none');
+      $('#Next-button-grp').hide();
+    }

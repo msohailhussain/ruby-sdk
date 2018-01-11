@@ -16,16 +16,19 @@
 
 Rails.application.routes.draw do
   resources :demo, only: [:new, :create]
-  get 'demo/:user_id/checkout', to: 'demo#purchases', as: :checkout
+  get 'demo/:user_id/cart', to: 'demo#cart', as: :cart
   get 'demo/:user_id/checkout_cart', to: 'demo#checkout_cart', as: :checkout_cart
   post 'demo/:user_id/buy', to: 'demo#buy', as: :buy
   get 'demo/login', to: 'demo#new'
   post 'demo/config', to: 'demo#create'
+  post  'demo/:user_id/checkout_complete', to: 'demo#checkout_complete', as: :checkout_complete
+  post  'demo/:user_id/checkout_payment', to: 'demo#checkout_payment', as: :checkout_payment
   delete 'demo/:user_id/delete_messages', to: 'demo#delete_messages', as: :delete_messages
-  delete 'demo/:user_id/delete_purchases', to: 'demo#delete_purchases', as: :delete_purchases
+  delete 'demo/:user_id/delete_cart', to: 'demo#delete_cart', as: :delete_cart
   delete 'demo/logout', to: 'demo#logout', as: :logout
   get 'demo/:user_id/messages', to: 'demo#log_messages', as: :messages
   get "/demo/:user_id/shop" => "demo#shop", :as => :shop
+  get "/demo/:user_id/payment" => "demo#payment", :as => :payment
   # root path
   root 'home#index'
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html

@@ -17,11 +17,6 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
 
-  
-  def optimizely_client_present?
-    redirect_to new_demo_path unless OptimizelyService.optimizely_client_present?
-  end
-
   def get_visitor
     visitor = Visitor.find(session[:visitor_id])
     @visitor = visitor.present? ? visitor : Visitor::VISITORS.first

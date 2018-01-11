@@ -45,7 +45,7 @@ class OptimizelyService
   def activate_service!(visitor, experiment_key)
     attributes = {}
     begin
-      variation = @optimizely_client.activate(
+      variation_key = @optimizely_client.activate(
        experiment_key,
        visitor,
        attributes
@@ -53,7 +53,7 @@ class OptimizelyService
     rescue StandardError => error
       @errors.push(error.message)
     end
-    return variation, @errors.empty?
+    return variation_key, @errors.empty?
   end
   
   def track_service!(event_key, visitor, event_tags)

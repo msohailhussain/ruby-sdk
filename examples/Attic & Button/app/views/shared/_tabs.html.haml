@@ -20,6 +20,9 @@
       %li.nav-item
         = link_to "Shop", shop_path(user_id: session[:user_id]), class:"nav-link #{assign_active_class(shop_path)}"
       %li.nav-item
-        = link_to "Cart", checkout_path(user_id: session[:user_id]), class:"nav-link #{assign_active_class(checkout_path)}"
+        = link_to "Cart", cart_path(user_id: session[:user_id]), class:"nav-link #{assign_active_class(cart_path)}"
+      - if session[:checkout_variation_key]
+        %li.nav-item
+          = link_to "Payment", payment_path(user_id: session[:user_id]), class:"nav-link #{assign_active_class(payment_path)}"
       %li.nav-item
         = link_to "Messages(Logs and Errors)", messages_path(user_id: session[:user_id]), class:"nav-link #{assign_active_class(messages_path)}"

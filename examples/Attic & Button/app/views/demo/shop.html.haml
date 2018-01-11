@@ -18,9 +18,9 @@
   / Example row of columns
   = render "shared/tabs"
   .container
-    - if @variation
+    - if session[:variation_key]
       .card-header.text-center
-        Variation: #{@variation}
+        Variation: #{session[:variation_key]}
     .row.grid-group
       - @products.each do |product|
         .item.col-xs-3.col-lg-3{style:'margin-bottom:45px;'}

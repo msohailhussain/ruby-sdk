@@ -14,7 +14,7 @@
 #    limitations under the License.
 #
 
-class Purchase < ActiveHash::Base
+class Cart < ActiveHash::Base
   
   @@data = []
   
@@ -24,11 +24,11 @@ class Purchase < ActiveHash::Base
     @@data << product_id
   end
   
-  def self.all_purchases
+  def self.get_items
     @@data.group_by{|e| e}.map{|k, v| [k, v.length]}.to_h
   end
   
-  def self.delete_all_purchases
+  def self.delete_all_items
     delete_all
     @@data = []
   end
