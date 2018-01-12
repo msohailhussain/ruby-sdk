@@ -13,24 +13,23 @@
 -# See the License for the specific language governing permissions and
 -# limitations under the License.
 -#
-%section#login
-  .container
-    .row
-      .col-lg-12
-        .form-wrap
-          %h1 Log in with your account
+.card.border-0
+  = image_tag('optimizely.svg', class:'card-img-top')
+  .card-block
+    %section#login
+      .form-wrap
+        =form_tag({:action=>"create", method: :post},{id: 'login-form'}) do
+          .form-group
+            %label.sr-only{:for => "email"} Email
+            = email_field_tag :email, params[:email], placeholder: "Enter email" ,class: 'form-control', id: 'exampleInputEmail1', 'aria-describedby' => 'emailHelp'
+          .form-group
+            %label.sr-only{:for => "password"} Password
+            = password_field_tag :password, params[:password], class: 'form-control', id:'key', placeholder: "Password"
+          .checkbox
+            %span.character-checkbox{:onclick => "showPassword()"}
+            %span.label Show password
+          = button_tag 'Log in' , class: 'btn btn-info btn-lg btn-block', id: '#btn-login', type: :submit
 
-          =form_tag({:action=>"create", method: :post},{id: 'login-form'}) do
-            .form-group
-              %label.sr-only{:for => "user_id"} User Id
-              =text_field_tag :user_id, params[:user_id], class: 'form-control', id:'user_id', placeholder: "rashid"
-            .form-group
-              %label.sr-only{:for => "password"} Password
-              = password_field_tag :password, params[:password], class: 'form-control', id:'key', placeholder: "Password"
-            .checkbox
-              %span.character-checkbox{:onclick => "showPassword()"}
-              %span.label Show password
-            =button_tag 'Log in' , class: 'btn btn-custom btn-lg btn-block', id: '#btn-login', type: :submit
 
 :javascript
   showPassword = function() {

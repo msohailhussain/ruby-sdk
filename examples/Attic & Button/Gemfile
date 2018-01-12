@@ -13,7 +13,7 @@ gem 'coffee-rails', '~> 4.2'
 # Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
 gem 'turbolinks', '~> 5'
 # gem for bootstrap integration
-gem 'bootstrap', '~> 4.0.0.alpha6'
+gem 'bootstrap', '~> 4.0.0.beta3'
 # Haml is a templating engine for HTML.
 gem 'haml'
 gem 'jquery-rails'

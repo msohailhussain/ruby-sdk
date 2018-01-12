@@ -22,7 +22,6 @@ class OptimizelyService
   def initialize(datafile)
     @datafile = datafile
     @errors = []
-    @optimizely_client = @@optimizely_client
   end
   
   def self.optimizely_client_present?
@@ -45,7 +44,7 @@ class OptimizelyService
   def activate_service!(visitor, experiment_key)
     attributes = {}
     begin
-      variation_key = @optimizely_client.activate(
+      variation_key = @@optimizely_client.activate(
        experiment_key,
        visitor,
        attributes
@@ -59,7 +58,7 @@ class OptimizelyService
   def track_service!(event_key, visitor, event_tags)
     attributes = {}
     begin
-      @optimizely_client.track(
+      @@optimizely_client.track(
        event_key,
        visitor,
        attributes,
@@ -74,7 +73,7 @@ class OptimizelyService
   def is_feature_enabled_service!(feature_flag_key, visitor)
     attributes = {}
     begin
-      enabled = @optimizely_client.is_feature_enabled(feature_flag_key, visitor, attributes)
+      enabled = @@optimizely_client.is_feature_enabled(feature_flag_key, visitor, attributes)
     rescue => e
       @errors.push(e.message)
     end

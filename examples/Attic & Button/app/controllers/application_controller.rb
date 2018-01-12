@@ -17,8 +17,8 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
 
-  def get_visitor
-    visitor = Visitor.find(session[:visitor_id])
-    @visitor = visitor.present? ? visitor : Visitor::VISITORS.first
+  def initialize_optimizely_client!
+    @optimizely_service = OptimizelyService.new(DATAFILE)
+    @optimizely_service.instantiate! unless OptimizelyService.optimizely_client_present?
   end
 end

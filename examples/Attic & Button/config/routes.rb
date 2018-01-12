@@ -30,6 +30,5 @@ Rails.application.routes.draw do
   get "/demo/:user_id/shop" => "demo#shop", :as => :shop
   get "/demo/:user_id/payment" => "demo#payment", :as => :payment
   # root path
-  root 'home#index'
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+  root 'demo#new'
 end
