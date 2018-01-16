@@ -22,10 +22,10 @@
       .form-row
         .form-group.col-md-6
           %label{:for => "inputEmail4"} First Name
-          %input#inputFirstName4.form-control{:placeholder => "Rashid", :type => "text"}/
+          %input#inputFirstName4.form-control{placeholder:'First Name', :value => get_first_name(@current_user), :type => "text"}/
         .form-group.col-md-6
           %label{:for => "inputPassword4"} Last Name
-          %input#inputLastName4.form-control{:placeholder => "Siddique", :type => "text"}/
+          %input#inputLastName4.form-control{placeholder:'Last Name', :value => get_last_name(@current_user), :type => "text"}/
       .form-group
         %label{:for => "inputAddress"} Address
         %input#inputAddress.form-control{:placeholder => "1234 Main St", :type => "text"}/

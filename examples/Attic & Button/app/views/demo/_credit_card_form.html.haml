@@ -23,13 +23,13 @@
       .form-group.row
         %label.col-md-12 Card Number
         .col-md-3
-          %input.form-control{:autocomplete => "off", :maxlength => "4", :pattern => "\\d{4}", :required => "", :title => "First four digits", :type => "text"}/
+          %input.form-control{:autocomplete => "off", :value=>4242, :maxlength => "4", :pattern => "\\d{4}", :required => "", :title => "First four digits", :type => "text", disabled: true}/
         .col-md-3
-          %input.form-control{:autocomplete => "off", :maxlength => "4", :pattern => "\\d{4}", :required => "", :title => "Second four digits", :type => "text"}/
+          %input.form-control{:autocomplete => "off", :value=>4242, :maxlength => "4", :pattern => "\\d{4}", :required => "", :title => "Second four digits", :type => "text", disabled: true}/
         .col-md-3
-          %input.form-control{:autocomplete => "off", :maxlength => "4", :pattern => "\\d{4}", :required => "", :title => "Third four digits", :type => "text"}/
+          %input.form-control{:autocomplete => "off", :value=>4242, :maxlength => "4", :pattern => "\\d{4}", :required => "", :title => "Third four digits", :type => "text", disabled: true}/
         .col-md-3
-          %input.form-control{:autocomplete => "off", :maxlength => "4", :pattern => "\\d{4}", :required => "", :title => "Fourth four digits", :type => "text"}/
+          %input.form-control{:autocomplete => "off", :value=>4242, :maxlength => "4", :pattern => "\\d{4}", :required => "", :title => "Fourth four digits", :type => "text", disabled: true}/
       .form-group.row
         %label.col-md-12 Card Expiry Date
         .col-md-8
@@ -58,7 +58,7 @@
       .form-group.row
         %label.col-md-12 Card CVV
         .col-md-3
-          %input.form-control{:autocomplete => "off", :maxlength => "3", :pattern => "\\d{3}", :required => "", :title => "Three digits at back of your card", :type => "text"}/
+          %input.form-control{:autocomplete => "off", value: "123", :maxlength => "3", :pattern => "\\d{3}", :required => "", :title => "Three digits at back of your card", :type => "text", disabled: true}/
       .form-group.row
         .col-md-12.text-xs-left
           = link_to checkout_payment_path(user_id: @current_user['user_id']), class: 'btn btn-lg btn-info btn-block', id:'#payment-button', method: :post do

@@ -37,4 +37,8 @@ class Cart < ActiveHash::Base
     @@data.length
   end
   
+  def self.remove_item(product_id)
+    @@data.delete(product_id)
+  end
+  
 end

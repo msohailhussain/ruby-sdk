@@ -13,7 +13,6 @@
 -# See the License for the specific language governing permissions and
 -# limitations under the License.
 -#
-
 .container
   / Example row of columns
   = render "shared/tabs"
@@ -25,37 +24,136 @@
     class:"btn btn-danger #{!@cart.present? ? 'disabled' : ''}"
   %br
   .row
-    %table#example.table.table-sm
-      %thead
-        %tr
-          %th Products
-          %th Quantity
-          %th Price
-      %tbody
-        - sum = 0
-        - qty = 0
-        - @cart.each do |key,value|
-          - sum+=(value * Product.find(key)[:price])
-          - qty = value * Product.find(key)[:price]
-          %tr
-            %td
-              = "#{Product.find(key)[:name]}"
-            %td
-              = "#{value}"
-            %td
-              = "$ #{qty}"
-        %tr
-          %td Total
+    %table.table.table-xs
+      %tr
+        %th
+        %th Product
+        %th.text-right Amount
+        %th.text-right Price
+        %th.text-right Total
+        %th.text-right
+      - sum = 0
+      - qty = 0
+      - @cart.each do |key,value|
+        - product = Product.find(key)
+        - sum+=(value * product[:price])
+        - qty = value * product[:price]
+        %tr.item-row.product
+          %td{style:'width: 8rem;'}
+            = image_tag(product[:image_url], class: 'img-thumbnail')
           %td
-            = "#{Cart.total_qty.to_i}"
-          %td
-            = "$ #{sum}"
-    -if @cart.present?
-      - if @enabled
-        = link_to "Buy Now",
-          checkout_cart_path(user_id: @current_user['user_id']),
-          method: :get, class:"btn btn-info"
-      - else
-        = link_to "Checkout",
-          checkout_complete_path(user_id: @current_user['user_id']),
-          method: :post, class:"btn btn-info"
+            %p
+              %strong
+                = product[:name]
+            %p
+              %span Color: #{product[:color]}
+              %span Category: #{product[:category]}
+
+          %td.text-right.product-quantity{:title => "Amount"}
+            %input{:min => "1", :type => "number", :value => value, style:'width: 2.5rem;'}/
+          %td.text-right.product-price.totals-value{:title => "Price"} #{product[:price]}
+          %td.text-right.product-line-price.totals-value{:title => "Total"} #{qty}
+          %td.product-removal.text-right{:title => "delete"}
+            %button.btn.btn-danger.btn-sm.remove-product
+              Remove
+
+      %tr
+        %td.text-right
+        %td.text-right{:colspan => "4"} Subtotal
+        %td.text-right.totals-value#cart-subtotal #{sum}
+      %tr
+        %td.text-right.border-0
+        %td.border-0.text-right{:colspan => "4"} Discount (#{@discount}%)
+        %td.border-0.text-right.totals-value#cart-discount #{calculate_percentage(sum, @discount).to_f}
+      %tr
+        %td.text-right.border-0
+        %td.border-0.text-right{:colspan => "4"} Grand Total
+        %td.border-0.text-right.totals-value#cart-total #{cart_total(sum, @discount).to_f}
+      %tr
+        %td.border-0.text-right{:colspan => "8"}
+          -if @cart.present?
+            - if @enabled
+              = link_to "Buy Now",
+                checkout_cart_path(user_id: @current_user['user_id']),
+                method: :get, class:"btn btn-info checkout"
+            - else
+              = link_to "Checkout",
+                checkout_complete_path(user_id: @current_user['user_id']),
+                method: :post, class:"btn btn-info btn-lg checkout"
+
+
+:javascript
+
+  var DiscountRate = 0.05;
+  var fadeTime = 300;
+
+
+  /* Assign actions */
+  $('.product-quantity input').change( function() {
+    updateQuantity(this);
+  });
+
+  $('.product-removal button').click( function() {
+    removeItem(this);
+  });
+
+
+  /* Recalculate cart */
+  function recalculateCart()
+  {
+    var subtotal = 0;
+
+    /* Sum up row totals */
+    $('.product').each(function () {
+      subtotal += parseFloat($(this).children('.product-line-price').text());
+    });
+
+    /* Calculate totals */
+    var discount = subtotal * DiscountRate;
+    var total = subtotal - discount;
+
+    /* Update totals display */
+    $('.totals-value').fadeOut(fadeTime, function() {
+      $('#cart-subtotal').html(subtotal.toFixed(2));
+      $('#cart-discount').html(discount.toFixed(2));
+      $('#cart-total').html(total.toFixed(2));
+      if(total == 0){
+        $('.checkout').fadeOut(fadeTime);
+      }else{
+        $('.checkout').fadeIn(fadeTime);
+      }
+      $('.totals-value').fadeIn(fadeTime);
+    });
+  }
+
+
+  /* Update quantity */
+  function updateQuantity(quantityInput)
+  {
+    /* Calculate line price */
+    var productRow = $(quantityInput).parent().parent();
+    var price = parseFloat(productRow.children('.product-price').text());
+    var quantity = $(quantityInput).val();
+    var linePrice = price * quantity;
+
+    /* Update line price display and recalc cart totals */
+    productRow.children('.product-line-price').each(function () {
+      $(this).fadeOut(fadeTime, function() {
+        $(this).text(linePrice.toFixed(2));
+        recalculateCart();
+        $(this).fadeIn(fadeTime);
+      });
+    });
+  }
+
+
+  /* Remove item from cart */
+  function removeItem(removeButton)
+  {
+    /* Remove row from DOM and recalc cart total */
+    var productRow = $(removeButton).parent().parent();
+    productRow.slideUp(fadeTime, function() {
+      productRow.remove();
+      recalculateCart();
+    });
+  }

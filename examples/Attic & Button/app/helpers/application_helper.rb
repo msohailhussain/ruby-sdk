@@ -53,4 +53,29 @@ module ApplicationHelper
   def active_class(visitor_id)
     return 'active' if visitor_id == session[:visitor_id]
   end
+  
+  def calculate_percentage(number, percent)
+    (percent / number.to_f * 100.0).to_s(:rounded, precision: 2)
+  end
+  
+  def cart_total(sum, percent)
+    (sum.to_f - calculate_percentage(sum, percent).to_f).to_s(:rounded, precision: 2)
+  end
+  
+  def get_first_name(current_user)
+    first_name = current_user['email'].present? ? (current_user['name'].split('.')[0]).capitalize : ""
+  end
+
+  def get_last_name(current_user)
+    last_name = current_user['email'].present? ? (current_user['name'].split('.')[1]).capitalize : ""
+  end
+  
+  def full_name(current_user)
+    if current_user['name']
+      "#{get_first_name(current_user)}" + ' ' + "#{get_last_name(current_user)}"
+    else
+      "Guest User"
+    end
+  end
+  
 end

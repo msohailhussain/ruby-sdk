@@ -15,10 +15,10 @@
 #
 class DemoController < ApplicationController
   before_action :validate_login!, only: :create
-  before_action :authenticate_user!, except: [:new, :create, :logout]
-  before_action :initialize_optimizely_client!, only:[:create, :buy, :cart, :checkout_complete,:checkout_payment]
-  before_action :session_exists?, only: [:new]
-  before_action :get_product, only: [:buy]
+  before_action :authenticate_user!, except: [:new,:create, :logout, :guest_shop]
+  before_action :initialize_optimizely_client!, only:[:shop, :buy, :cart, :checkout_complete,:checkout_payment]
+  before_action :session_exists?, only: [:guest_shop]
+  before_action :get_product, only: [:buy, :remove_product]
   
   def create
     # Calls before_action validate_config! from Private methods to
@@ -28,29 +28,62 @@ class DemoController < ApplicationController
     # instantiate! method initializes Optimizely::Project with datafile
     # Updates config by permitted params
     # If config is updated by params then store Project ID in session else return error.
-    
-    begin
-      @variation_key, succeeded = @optimizely_service.activate_service!(
-       @current_user[:user_id],
-       OPTIMIZELY_CONFIG['experiment_key']
-      )
-      if succeeded
-        if @variation_key
-          session[:current_user] = @current_user
-          session[:variation_key] = @variation_key
-          redirect_to shop_path(user_id: @current_user[:user_id])
+  
+    if params[:email].present? && params[:password].present?
+      if params[:email] =~ /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
+        if OPTIMIZELY_CONFIG['experiment_key'].present?
+          session[:current_user] = {
+            email: params[:email],
+            user_id: SecureRandom.hex(10),
+            name: params[:email].split("@").first,
+            domain: (params[:email].split("@").last).split('.').first
+          }
+          respond_to do |format|
+            format.html{
+              redirect_to shop_path(user_id: session[:current_user][:user_id])
+            }
+            format.js
+          end
         else
-          flash.now[:error] = "Failed to create variation using Experiment key: #{OPTIMIZELY_CONFIG['experiment_key']}!"
-          render 'new'
+          @error = "Experiment key can't be blank! add in optimizely_config.yml!"
+          respond_to do |format|
+            format.html{
+              flash[:error] = @error
+              redirect_to new_demo_path
+            }
+            format.js
+          end
         end
       else
-        flash[:error] = @optimizely_service.errors
-        render 'new'
+        @error = "Invalid email given!"
+        respond_to do |format|
+          format.html{
+            flash[:error] = @error
+            redirect_to new_demo_path
+          }
+          format.js
+        end
       end
-    rescue StandardError => error
-      flash.now[:error] = "Failed to load datafile using Project ID: #{OPTIMIZELY_CONFIG['project_id']} (#{error})!"
-      render 'new'
+    else
+      @error = "Email or Password can't be blank!"
+      respond_to do |format|
+        format.html{
+          flash[:error] = @error
+          redirect_to new_demo_path
+        }
+        format.js
+      end
     end
+  end
+  
+  def guest_shop
+    unless session[:current_user]
+      delete_session!
+      session[:current_user] = {
+       user_id: SecureRandom.hex(10)
+      }.as_json
+    end
+    redirect_to shop_path(user_id: session[:current_user]['user_id'])
   end
   
   def shop
@@ -60,9 +93,29 @@ class DemoController < ApplicationController
     # Lists all products from Product model
     # Calls optimizely client activate method to create variation(Static object) in OptimizelyService class
     
-    if session[:variation_key] == 'sort_by_price'
+    @variation_key = session[:variation_key]
+    unless @variation_key
+      begin
+        @variation_key, succeeded = @optimizely_service.activate_service!(
+         @current_user['user_id'],
+         OPTIMIZELY_CONFIG['experiment_key']
+        )
+        if succeeded
+          if @variation_key
+            session[:variation_key] = @variation_key
+          else
+            flash.now[:error] = "Failed to create variation using Experiment key: #{OPTIMIZELY_CONFIG['experiment_key']}!"
+          end
+        else
+          flash[:error] = @optimizely_service.errors
+        end
+      rescue StandardError => error
+        flash.now[:error] = "Failed to load datafile using Project ID: #{OPTIMIZELY_CONFIG['project_id']} (#{error})!"
+      end
+    end
+    if @variation_key == 'sort_by_price'
       @products = Product::PRODUCTS.sort_by { |hsh| hsh[:price] }
-    elsif session[:variation_key] == 'sort_by_name'
+    elsif @variation_key == 'sort_by_name'
       @products = Product::PRODUCTS.sort_by { |hsh| hsh[:name] }
     else
       @products = Product::PRODUCTS
@@ -81,7 +134,7 @@ class DemoController < ApplicationController
       Product::Event_Tags
     )
       Cart.create_record(@product[:id])
-      flash.now[:success] = "Successfully Purchased item #{@product[:name]} for visitor #{@current_user['user_id']}!"
+      flash.now[:success] = "Item #{@product[:name]} added to Cart!"
     else
       flash.now[:error] = @optimizely_service.errors
     end
@@ -93,6 +146,9 @@ class DemoController < ApplicationController
       @current_user['user_id']
     )
     if succeeded
+      @discount = @current_user['domain'].present? ? (
+        @current_user['domain'].eql?('optimizely') ? 10 : 5
+      ) : 0
       @cart = Cart.get_items
     else
       flash[:error] = @optimizely_service.errors
@@ -143,7 +199,7 @@ class DemoController < ApplicationController
     )
       Cart.delete_all_items
       session.delete(:checkout_variation_key)
-      flash[:success] = "Order successfully placed!"
+      flash[:success] = "Thank you for shoping"
       redirect_to shop_path(user_id: @current_user['user_id'])
     else
       flash[:error] = @optimizely_service.errors
@@ -170,7 +226,12 @@ class DemoController < ApplicationController
   
   def logout
     delete_session!
-    redirect_to new_demo_path
+    redirect_to guest_shop_path
+  end
+  
+  def remove_product
+    Cart.remove_item(@product[:id])
+    redirect_to cart_path
   end
   
   private
@@ -180,55 +241,61 @@ class DemoController < ApplicationController
     session.delete(:variation_key)
     session.delete(:checkout_variation_key)
   end
-  
+
   def validate_login!
     if params[:email].present? && params[:password].present?
       if params[:email] =~ /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
         if OPTIMIZELY_CONFIG['experiment_key'].present?
           @current_user = {
-            email: params[:email],
-            user_id: params[:email].split("@").first,
-            domain: (params[:email].split("@").last).split('.').first
+           email: params[:email],
+           user_id: params[:email].split("@").first,
+           domain: (params[:email].split("@").last).split('.').first
           }
         else
-          flash[:error] = "Experiment key can't be blank! add in optimizely_config.yml!"
-          redirect_to new_demo_path
+          @error = "Experiment key can't be blank! add in optimizely_config.yml!"
+          respond_to do |format|
+            format.html{
+              flash[:error] = @error
+              redirect_to new_demo_path
+            }
+            format.js
+          end
         end
       else
-        flash[:error] = "Invalid email given!"
-        redirect_to new_demo_path
+        @error = "Invalid email given!"
+        respond_to do |format|
+          format.html{
+            flash[:error] = @error
+            redirect_to new_demo_path
+          }
+          format.js
+        end
       end
     else
-      flash[:error] = "Email or Password can't be blank!"
-      redirect_to new_demo_path
+      @error = "Email or Password can't be blank!"
+      respond_to do |format|
+        format.html{
+          flash[:error] = @error
+          redirect_to new_demo_path
+        }
+        format.js
+      end
     end
-    
-  end
 
+  end
+  
   def authenticate_user!
-    if session[:current_user]
-      if session[:current_user]['user_id'] == params[:user_id]
-        @current_user = session[:current_user]
-      else
-        delete_session!
-        flash[:error] = "Unauthorized user! #{params[:user_id]}"
-        redirect_to new_demo_path
-      end
-    else
-      flash[:error] = "Unauthorized user! #{params[:user_id]}"
-      redirect_to new_demo_path
+    unless session[:current_user] && (session[:current_user]['user_id'] == params[:user_id])
+      delete_session!
+      session[:current_user] = {
+        user_id: SecureRandom.hex(10)
+      }.to_json
     end
+    @current_user = session[:current_user]
   end
   
   def session_exists?
-    if session[:current_user]
-      if session[:current_user]['user_id']
-        redirect_to shop_path(user_id: session[:current_user]['user_id'])
-      else
-        delete_session!
-        redirect_to new_demo_path
-      end
-    else
+    unless session[:current_user]
       response = RestClient.get "#{OPTIMIZELY_CONFIG['url']}/" + "#{OPTIMIZELY_CONFIG['project_id']}.json"
       datafile = response.body
       optimizely_service = OptimizelyService.new(datafile)
@@ -239,5 +306,4 @@ class DemoController < ApplicationController
   def get_product
     @product = Product.find(params[:product_id].to_i)
   end
-  
 end

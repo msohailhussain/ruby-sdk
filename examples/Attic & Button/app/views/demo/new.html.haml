@@ -17,4 +17,9 @@
 .container
   .row
     .col-md-5.mx-auto.p-5
-      = render "form"
+      .card.border-0
+        = image_tag('optimizely.svg', class:'card-img-top')
+        .card-block
+          %section.login-form#login
+            .form-wrap
+              = render "form"
