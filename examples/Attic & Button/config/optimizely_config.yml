@@ -1,8 +1,11 @@
 url: "https://cdn.optimizely.com/json"
-project_id: "9110532340"
+project_id: "10111011215"
 experiment_key: "sorting_experiment"
 event_key: "add_to_cart"
-feature_flag_key: "buy_now_feature"
+buy_now_feature_flag: "buynow_feature"
+
+discount_feature_flag: "discount_feature"
+discount_feature_variable: "discount_percentage"
 
 checkout_flow_experiment: "checkout_flow_experiment"
 checkout_event_key: "checkout_complete"

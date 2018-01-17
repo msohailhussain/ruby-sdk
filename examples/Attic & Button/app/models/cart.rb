@@ -37,8 +37,9 @@ class Cart < ActiveHash::Base
     @@data.length
   end
   
-  def self.remove_item(product_id)
+  def self.update_items(product_id, qty)
     @@data.delete(product_id)
+    1.upto(qty) { @@data << product_id  }
   end
   
 end

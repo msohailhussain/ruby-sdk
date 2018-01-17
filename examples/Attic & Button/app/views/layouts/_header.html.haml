@@ -16,7 +16,6 @@
 
 %nav.navbar.navbar-expand-lg.navbar-light.navbar-dark.bg-dark{style:"background-color: #e3f2fd;"}
   %button.navbar-toggler{"aria-controls" => "navbarTogglerDemo03", "aria-expanded" => "false", "aria-label" => "Toggle navigation", "data-target" => "#navbarTogglerDemo03", "data-toggle" => "collapse", :type => "button"}
-  %span.navbar-toggler-icon
   = link_to "Optimizely Ruby SDK", root_path, class:"navbar-brand"
   #navbarTogglerDemo03.collapse.navbar-collapse
     %ul.navbar-nav.mr-auto.mt-2.mt-lg-0
@@ -27,18 +26,6 @@
       - else
         = link_to "Login",new_demo_path,class:"btn btn-outline-info my-2 my-sm-0", remote: true
 
-
--#%nav.navbar.navbar-toggleable-md.navbar-expand-lg.navbar-dark.bg-dark{style:"background-color: #e3f2fd;"}
--#  %button.navbar-toggler.navbar-toggler-right{"aria-controls" => "navbarSupportedContent", "aria-expanded" => "false", "aria-label" => "Toggle navigation", "data-target" => "#navbarSupportedContent", "data-toggle" => "collapse", :type => "button"}
--#    %span.navbar-toggler-icon
--#  = link_to "Optimizely Ruby SDK", root_path, class:"navbar-brand"
--#  #navbarTogglerDemo02.collapse.navbar-collapse
--#    %ul.navbar-nav.mr-auto
--#      %li.nav-item.active
--#        - if @current_user.present? && @current_user['email'].present?
--#          = link_to "Logout",logout_path,class:"nav-link", method: :delete
--#        - else
--#          = link_to "Login",new_demo_path,class:"nav-link", remote: true
 #exampleModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "exampleModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog{:role => "document"}
     .modal-content

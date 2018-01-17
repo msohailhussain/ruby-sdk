@@ -25,7 +25,7 @@
     class:"btn btn-danger #{!@logs.present? ? 'disabled' : ''}"
   %br
   .row
-    %table#example.table.table-sm
+    %table#messageTable.table.table-sm
       %thead
         %tr
           %th Timestamp
@@ -43,7 +43,7 @@
 
 :javascript
   $(document).ready(function() {
-    $('#example').dataTable({
+    $('#messageTable').dataTable({
       'bSort': false
     });
   });

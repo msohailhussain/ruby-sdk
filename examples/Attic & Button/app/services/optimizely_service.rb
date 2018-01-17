@@ -42,11 +42,12 @@ class OptimizelyService
   end
   
   def activate_service!(visitor, experiment_key)
+    user_id = visitor['email'].present? ? visitor['email'] : visitor['user_id']
     attributes = {}
     begin
       variation_key = @@optimizely_client.activate(
        experiment_key,
-       visitor,
+       user_id,
        attributes
       )
     rescue StandardError => error
@@ -56,11 +57,12 @@ class OptimizelyService
   end
   
   def track_service!(event_key, visitor, event_tags)
+    user_id = visitor['email'].present? ? visitor['email'] : visitor['user_id']
     attributes = {}
     begin
       @@optimizely_client.track(
        event_key,
-       visitor,
+       user_id,
        attributes,
        event_tags
       )
@@ -71,13 +73,30 @@ class OptimizelyService
   end
 
   def is_feature_enabled_service!(feature_flag_key, visitor)
+    user_id = visitor['email'].present? ? visitor['email'] : visitor['user_id']
     attributes = {}
     begin
-      enabled = @@optimizely_client.is_feature_enabled(feature_flag_key, visitor, attributes)
+      enabled = @@optimizely_client.is_feature_enabled(feature_flag_key, user_id, attributes)
     rescue => e
       @errors.push(e.message)
     end
     return enabled, @errors.empty?
+  end
+  
+  def get_feature_variable_integer_service!(feature_flag_key, variable_key, visitor)
+    user_id = visitor['email'].present? ? visitor['email'] : visitor['user_id']
+    attributes = visitor['domain'].present? ? {'domain'=> visitor['domain']} : {'domain'=> ""}
+    begin
+      discount_percentage = @@optimizely_client.get_feature_variable_integer(
+       feature_flag_key,
+       variable_key,
+       user_id,
+       attributes
+      )
+    rescue StandardError => error
+      @errors.push(error.message)
+    end
+    return discount_percentage.to_i, @errors.empty?
   end
   
   attr_reader :errors

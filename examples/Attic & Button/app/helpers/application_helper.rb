@@ -55,7 +55,7 @@ module ApplicationHelper
   end
   
   def calculate_percentage(number, percent)
-    (percent / number.to_f * 100.0).to_s(:rounded, precision: 2)
+    ( number.to_f * (percent/100.0)).to_s(:rounded, precision: 2)
   end
   
   def cart_total(sum, percent)
@@ -67,7 +67,7 @@ module ApplicationHelper
   end
 
   def get_last_name(current_user)
-    last_name = current_user['email'].present? ? (current_user['name'].split('.')[1]).capitalize : ""
+    last_name = current_user['email'].present? ? (current_user['name'].split('.')[1]).try(:capitalize) : ""
   end
   
   def full_name(current_user)
