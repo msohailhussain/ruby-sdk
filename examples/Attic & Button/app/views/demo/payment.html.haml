@@ -1,0 +1,36 @@
+-#
+-# Copyright 2018, Optimizely and contributors
+-#
+-# Licensed under the Apache License, Version 2.0 (the "License");
+-# you may not use this file except in compliance with the License.
+-# You may obtain a copy of the License at
+-#
+-#    http://www.apache.org/licenses/LICENSE-2.0
+-#
+-# Unless required by applicable law or agreed to in writing, software
+-# distributed under the License is distributed on an "AS IS" BASIS,
+-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-# See the License for the specific language governing permissions and
+-# limitations under the License.
+-#
+
+.container
+  = render "shared/tabs"
+  .container
+    - if session[:checkout_variation_key]
+      .card-header.text-center
+        Variation: #{session[:checkout_variation_key]}
+    .row{style:'padding-top:20px;'}
+      .col-md-6
+        = render "shipping_form"
+      .col-md-5.offset-md-1#CreditCardPartial
+        - unless session[:checkout_variation_key] == 'two_step_checkout'
+          = render "credit_card_form"
+
+:coffeescript
+  jQuery ->
+    $('#nextStep').click ->
+      $('#CreditCardPartial').html(
+        "#{escape_javascript render(partial: 'credit_card_form')}"
+      )
+      $('#Next-button-grp').hide()
