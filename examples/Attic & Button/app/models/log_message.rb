@@ -16,22 +16,31 @@
 
 class LogMessage < ActiveHash::Base
   @@data = []
-
-  fields :type, :message
+  @@user_id = nil
+  fields :type, :message, :user_id
   field  :created_at, default: Time.now
 
   LOGGER_LEVELS = {DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, FATAL: 4, UNKNOWN: 5}.freeze
 
   def self.create_record(type, message)
-    @@data << create(type: type, message: message, created_at: Time.now)
+    @@data << create(
+     type: type,
+     message: message,
+     created_at: Time.now,
+     user_id: @@user_id
+    )
+  end
+  
+  def self.assign_user!(user_id)
+    @@user_id = user_id
   end
 
-  def self.all_logs
-    @@data.reverse
+  def self.all_logs(user_id)
+    logs = @@data.select { |i| i[:user_id] == user_id }
+    logs.reverse
   end
 
-  def self.delete_all_logs
-    delete_all
-    @@data = []
+  def self.delete_all_logs(user_id)
+    @@data.delete_if {|i| i[:user_id] == user_id }
   end
 end

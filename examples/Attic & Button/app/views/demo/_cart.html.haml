@@ -1,0 +1,83 @@
+- unless receipt
+  .row
+    = link_to 'Clear',
+      delete_cart_path,
+      method: :delete,
+      data: { confirm: 'Are you sure? want to delete all items!' },
+      class:"btn btn-danger #{!cart.present? ? 'disabled' : ''}"
+  %br
+.row
+  %table.table.table-xs
+    %tr
+      %th
+      %th Product
+      %th.text-right Quantity
+      %th.text-right Price
+      %th.text-right Total
+      - unless receipt
+        %th.text-right
+    - sum = 0
+    - product_total_price = 0
+    - cart.each do |key,value|
+      - product = Product.find(key)
+      - if product
+        - product_qty = value
+        - sum+=(product_qty * product[:price])
+        - product_total_price = product_qty * product[:price]
+        %tr.item-row.product
+          %td{style:'width: 8rem;'}
+            = image_tag(product[:image_url], class: 'img-thumbnail')
+          %td
+            %p
+              %strong
+                = product[:name]
+            %p
+              %span Color: #{product[:color]},
+              %span Category: #{product[:category]}
+
+          %td.text-right.product-quantity{:title => "Amount"}
+            - unless receipt
+              %input{product_id: product[:id], :min => "1", :max=>'100', :type => "number", :value => product_qty, style:'width: 2.5rem;'}/
+            - else
+              #{product_qty}
+          %td.text-right.product-price.totals-value{:title => "Price"} #{product[:price]}
+          %td.text-right.product-line-price.totals-value{:title => "Total"} #{product_total_price}
+          - unless receipt
+            %td.product-removal.text-right{:title => "delete"}
+              %button.btn.btn-danger.btn-sm.remove-product{product_id: product[:id]}
+                Remove
+
+    - unless discount_percentage == 0
+      %tr
+        - unless receipt
+          %td.text-right
+        %td.text-right{:colspan => "4"} Subtotal
+        %td.text-right.totals-value#cart-subtotal #{sum}
+      %tr
+        - unless receipt
+          %td.text-right.border-0
+        %td.border-0.text-right{:colspan => "4"} Discount (#{discount_percentage}%)
+        %td.border-0.text-right.totals-value#cart-discount #{calculate_percentage(sum, discount_percentage).to_f}
+      %tr
+        - unless receipt
+          %td.text-right.border-0
+        %td.border-0.text-right{:colspan => "4"} Grand Total
+        %td.border-0.text-right.totals-value#cart-total #{cart_total(sum, discount_percentage).to_f}
+    - else
+      %tr
+        - unless receipt
+          %td.text-right
+        %td.text-right{:colspan => "4"} Total
+        %td.text-right.totals-value#cart-total #{sum}
+    - unless receipt
+      %tr
+        %td.border-0.text-right{:colspan => "8"}
+          -if cart.present?
+            - if @buy_now_enabled
+              = link_to "Buy Now",
+                  show_receipt_path(user_id: @current_user['user_id'], discount_percentage: discount_percentage),
+                  method: :get, remote: true, class:"btn btn-info btn-lg checkout"
+            - else
+              = link_to "Checkout",
+                  payment_path(user_id: @current_user['user_id'], total_price: sum),
+                  method: :get, class:"btn btn-info btn-lg checkout"

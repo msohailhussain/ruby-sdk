@@ -15,9 +15,10 @@
 #
 class DemoController < ApplicationController
   before_action :authenticate_user!, except: [:new,:create, :logout, :guest_shop]
-  before_action :initialize_optimizely_client!, only:[:guest_shop, :shop, :buy, :cart, :checkout_complete,:checkout_payment]
+  before_action :initialize_optimizely_client!, only:[:shop, :buy, :cart, :payment,:checkout_payment]
   before_action :session_exists?, only: [:guest_shop]
   before_action :get_product, only: [:buy, :update_cart]
+  before_action :discount_feature_enabled?, only: :cart
   
   def create
     # Calls before_action validate_config! from Private methods to
@@ -35,7 +36,8 @@ class DemoController < ApplicationController
             email: params[:email],
             user_id: SecureRandom.hex(10),
             name: params[:email].split("@").first,
-            domain: params[:email].split("@").last
+            domain: params[:email].split("@").last,
+            cart: []
           }
           error_response(@error)
         else
@@ -57,7 +59,8 @@ class DemoController < ApplicationController
     unless session[:current_user] && session[:current_user]['user_id']
       delete_session!
       session[:current_user] = {
-       user_id: SecureRandom.hex(10)
+       user_id: SecureRandom.hex(10),
+       cart: []
       }.as_json
     end
     redirect_to shop_path(user_id: session[:current_user]['user_id'])
@@ -111,23 +114,24 @@ class DemoController < ApplicationController
       @current_user,
       Product::Event_Tags
     )
-      Cart.create_record(@product[:id])
+      session[:current_user]['cart'] << @product[:id]
       flash.now[:success] = "Item #{@product[:name]} added to Cart!"
+      
     else
       flash.now[:error] = @optimizely_service.errors
     end
   end
 
   def cart
-    @enabled, succeeded = @optimizely_service.is_feature_enabled_service!(
-      OPTIMIZELY_CONFIG['discount_feature_flag'],
-      @current_user
-    )
-    if succeeded
-      if @enabled
-        @discount_percentage, succeeded = @optimizely_service.get_feature_variable_integer_service!(
-          OPTIMIZELY_CONFIG['discount_feature_flag'],
-          OPTIMIZELY_CONFIG['discount_feature_variable'],
+    if @discount_feature_enabled
+      @discount_percentage, succeeded = @optimizely_service.get_feature_variable_integer_service!(
+       OPTIMIZELY_CONFIG['discount_feature_flag'],
+       OPTIMIZELY_CONFIG['discount_feature_variable'],
+       @current_user
+      )
+      if succeeded
+        @buy_now_enabled, succeeded = @optimizely_service.is_feature_enabled_service!(
+          OPTIMIZELY_CONFIG['buy_now_feature_flag'],
           @current_user
         )
         unless succeeded
@@ -135,51 +139,53 @@ class DemoController < ApplicationController
           redirect_to shop_path(user_id: @current_user['user_id'])
         end
       else
-        @discount_percentage = 0
+        flash[:error] = @optimizely_service.errors
+        redirect_to shop_path(user_id: @current_user['user_id'])
       end
-      @cart = Cart.get_items
     else
-      flash[:error] = @optimizely_service.errors
-      redirect_to shop_path(user_id: @current_user['user_id'])
+      @discount_percentage = 0
+    end
+
+    if session[:current_user]['cart']
+      @cart = session[:current_user]['cart'].group_by{|e| e}.map{|k, v| [k, v.length]}.to_h
+    else
+      @cart = []
     end
   end
 
   def checkout_cart
-    Cart.delete_all_items
+    flash[:success] = "Thank you for shoping"
+    session[:current_user]['cart'] = []
     redirect_to shop_path(user_id: @current_user['user_id'])
   end
   
-  def checkout_complete
+  def show_receipt
+    if session[:current_user]['cart'].empty?
+      @cart = []
+    else
+      @cart = session[:current_user]['cart'].group_by{|e| e}.map{|k, v| [k, v.length]}.to_h
+    end
+    @discount_percentage = params[:discount_percentage].to_i
+  end
+  
+  
+  def payment
     begin
-      @enabled, succeeded = @optimizely_service.is_feature_enabled_service!(
-       OPTIMIZELY_CONFIG['buy_now_feature_flag'],
-       @current_user
+      variation_key, succeeded = @optimizely_service.activate_service!(
+       @current_user,
+       OPTIMIZELY_CONFIG['checkout_flow_experiment']
       )
       if succeeded
-        if @enabled
-          flash[:success] = "Thank you for shoping"
-          redirect_to checkout_cart_path(user_id: @current_user['user_id'])
+        if variation_key
+          @total_price = params[:total_price].to_i
+          session[:checkout_variation_key] = variation_key
         else
-          variation_key, succeeded = @optimizely_service.activate_service!(
-           @current_user,
-           OPTIMIZELY_CONFIG['checkout_flow_experiment']
-          )
-          if succeeded
-            if variation_key
-              session[:checkout_variation_key] = variation_key
-              redirect_to payment_path(user_id: @current_user['user_id'])
-            else
-              flash[:error] = "Failed to create variation using Experiment key: #{OPTIMIZELY_CONFIG['checkout_flow_experiment']}!"
-              redirect_to cart_path(user_id: @current_user['user_id'])
-            end
-          else
-            flash[:error] = @optimizely_service.errors
-            redirect_to cart_path(user_id: @current_user['user_id'])
-          end
+          flash[:error] = "Failed to create variation using Experiment key: #{OPTIMIZELY_CONFIG['checkout_flow_experiment']}!"
+          redirect_to cart_path(user_id: @current_user['user_id'])
         end
       else
         flash[:error] = @optimizely_service.errors
-        redirect_to shop_path(user_id: @current_user['user_id'])
+        redirect_to cart_path(user_id: @current_user['user_id'])
       end
     rescue StandardError => error
       flash[:error] = "Failed to load datafile using Project ID: #{OPTIMIZELY_CONFIG['project_id']} (#{error})!"
@@ -187,19 +193,13 @@ class DemoController < ApplicationController
     end
   end
   
-  def payment
-    unless session[:checkout_variation_key]
-      redirect_to cart_path(user_id: @current_user['user_id'])
-    end
-  end
-  
   def checkout_payment
     if @optimizely_service.track_service!(
-     OPTIMIZELY_CONFIG['checkout_event_key'],
-     @current_user,
-     Product::Event_Tags
+      OPTIMIZELY_CONFIG['checkout_event_key'],
+      @current_user,
+       {'revenue'=> params[:total_price].to_i}
     )
-      Cart.delete_all_items
+      session[:current_user]['cart'] = []
       session.delete(:checkout_variation_key)
       flash[:success] = "Thank you for shoping"
       redirect_to shop_path(user_id: @current_user['user_id'])
@@ -211,17 +211,17 @@ class DemoController < ApplicationController
   
   def log_messages
     # Returns all log messages
-    @logs = LogMessage.all_logs
+    @logs = LogMessage.all_logs(@current_user['user_id'])
   end
 
   def delete_messages
-    LogMessage.delete_all_logs
+    LogMessage.delete_all_logs(@current_user['user_id'])
     redirect_to messages_path
     flash[:success] = 'log messages deleted successfully.'
   end
   
   def delete_cart
-    Cart.delete_all_items
+    session[:current_user]['cart'] = []
     redirect_to cart_path
     flash[:success] = 'Cart items successfully removed.'
   end
@@ -234,11 +234,18 @@ class DemoController < ApplicationController
   def update_cart
     return render json: {success: false, message: 'Product not found!'} unless @product
     return render json: {success: false, message: 'Invalid Quantity! valid up to 100'} unless params[:quantity].to_i.between?(0, 100)
-    Cart.update_items(@product[:id], params[:quantity].to_i)
+    session[:current_user]['cart'].delete(@product[:id])
+    1.upto(params[:quantity].to_i) { session[:current_user]['cart'] << @product[:id]  }
     render json: {success: true}
   end
   
   private
+
+  def initialize_optimizely_client!
+    @optimizely_service = OptimizelyService.new(DATAFILE)
+    @optimizely_service.instantiate!() unless OptimizelyService.optimizely_client_present?
+    LogMessage.assign_user!(@current_user['user_id']) if @current_user
+  end
   
   def delete_session!
     session.delete(:current_user)
@@ -250,23 +257,36 @@ class DemoController < ApplicationController
     unless session[:current_user] && (session[:current_user]['user_id'] == params[:user_id])
       delete_session!
       session[:current_user] = {
-        user_id: SecureRandom.hex(10)
+        user_id: SecureRandom.hex(10),
+        cart: []
       }
     end
     @current_user = session[:current_user].as_json
   end
   
   def session_exists?
-    unless session[:current_user]
+    if session[:current_user]
       response = RestClient.get "#{OPTIMIZELY_CONFIG['url']}/" + "#{OPTIMIZELY_CONFIG['project_id']}.json"
       datafile = response.body
       optimizely_service = OptimizelyService.new(datafile)
       optimizely_service.instantiate! unless OptimizelyService.optimizely_client_present?
+      LogMessage.assign_user!(session[:current_user]['user_id'])
     end
   end
   
   def get_product
     @product = Product.find(params[:product_id].to_i)
+  end
+  
+  def discount_feature_enabled?
+    @discount_feature_enabled, succeeded = @optimizely_service.is_feature_enabled_service!(
+     OPTIMIZELY_CONFIG['discount_feature_flag'],
+     @current_user
+    )
+    unless succeeded
+      flash[:error] = @optimizely_service.errors
+      redirect_to shop_path(user_id: @current_user['user_id'])
+    end
   end
   
   def error_response(error)

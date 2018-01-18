@@ -16,162 +16,111 @@
 .container
   / Example row of columns
   = render "shared/tabs"
-  .row
-    = link_to 'Clear cart',
-    delete_cart_path,
-    method: :delete,
-    data: { confirm: 'Are you sure? want to delete all items!' },
-    class:"btn btn-danger #{!@cart.present? ? 'disabled' : ''}"
-  %br
-  .row
-    %table.table.table-xs
-      %tr
-        %th
-        %th Product
-        %th.text-right Amount
-        %th.text-right Price
-        %th.text-right Total
-        %th.text-right
-      - sum = 0
-      - qty = 0
-      - @cart.each do |key,value|
-        - product = Product.find(key)
-        - if product
-          - sum+=(value * product[:price])
-          - qty = value * product[:price]
-          %tr.item-row.product
-            %td{style:'width: 8rem;'}
-              = image_tag(product[:image_url], class: 'img-thumbnail')
-            %td
-              %p
-                %strong
-                  = product[:name]
-              %p
-                %span Color: #{product[:color]}
-                %span Category: #{product[:category]}
-
-            %td.text-right.product-quantity{:title => "Amount"}
-              %input{product_id: product[:id], :min => "1", :max=>'100', :type => "number", :value => value, style:'width: 2.5rem;'}/
-            %td.text-right.product-price.totals-value{:title => "Price"} #{product[:price]}
-            %td.text-right.product-line-price.totals-value{:title => "Total"} #{qty}
-            %td.product-removal.text-right{:title => "delete"}
-              %button.btn.btn-danger.btn-sm.remove-product{product_id: product[:id]}
-                Remove
-
-      - unless @discount_percentage == 0
-        %tr
-          %td.text-right
-          %td.text-right{:colspan => "4"} Subtotal
-          %td.text-right.totals-value#cart-subtotal #{sum}
-        %tr
-          %td.text-right.border-0
-          %td.border-0.text-right{:colspan => "4"} Discount (#{@discount_percentage}%)
-          %td.border-0.text-right.totals-value#cart-discount #{calculate_percentage(sum, @discount_percentage).to_f}
-        %tr
-          %td.text-right.border-0
-          %td.border-0.text-right{:colspan => "4"} Grand Total
-          %td.border-0.text-right.totals-value#cart-total #{cart_total(sum, @discount_percentage).to_f}
-      - else
-        %tr
-          %td.text-right
-          %td.text-right{:colspan => "4"} Total
-          %td.text-right.totals-value#CartTotal #{sum}
-      %tr
-        %td.border-0.text-right{:colspan => "8"}
-          -if @cart.present?
-            = link_to "Checkout",
-                checkout_complete_path(user_id: @current_user['user_id']),
-                method: :post, class:"btn btn-info btn-lg checkout"
+  = render partial: "cart", locals: { cart: @cart, discount_percentage: @discount_percentage, receipt: false}
+  #receiptModal.modal.fade.bd-example-modal-lg{"aria-hidden" => "true", "aria-labelledby" => "exampleModalLabel", :role => "dialog", :tabindex => "-1"}
+    .modal-dialog.modal-lg{:role => "document"}
+      .modal-content
+        .modal-header.card-header
+          %h5#exampleModalLongTitle.modal-title Order Summary
+          %button.close#closeCartModal{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+            %span{"aria-hidden" => "true"} ×
+        .modal-body.card-block#receiptBody
+        .modal-footer
+          = link_to "Buy Now",
+              checkout_cart_path(user_id: @current_user['user_id']),
+              method: :get, class:"btn btn-info btn-lg checkout"
 
 
-:coffeescript
+  :coffeescript
 
-  DiscountRate = #{@discount_percentage * 0.01}
-  fadeTime = 300
-  userId = "#{@current_user['user_id']}"
-  ### Assign actions ###
+    DiscountRate = #{@discount_percentage * 0.01}
+    fadeTime = 300
+    userId = "#{@current_user['user_id']}"
+    ### Assign actions ###
 
-  ### Recalculate cart ###
-  updateCart = (params) ->
-  recalculateCart = ->
-    subtotal = 0
+    ### Recalculate cart ###
+    updateCart = (params) ->
+    recalculateCart = ->
+      subtotal = 0
 
-    ### Sum up row totals ###
+      ### Sum up row totals ###
 
-    $('.product').each ->
-      subtotal += parseFloat($(this).children('.product-line-price').text())
+      $('.product').each ->
+        subtotal += parseFloat($(this).children('.product-line-price').text())
+      ### Calculate totals ###
 
-    ### Calculate totals ###
+      discount = subtotal * DiscountRate
+      total = subtotal - discount
 
-    discount = subtotal * DiscountRate
-    total = subtotal - discount
+      ### Update totals display ###
 
-    ### Update totals display ###
+      $('.totals-value').fadeOut fadeTime, ->
+        $('#cart-subtotal').html subtotal.toFixed(2)
+        $('#cart-discount').html discount.toFixed(2)
+        $('#cart-total').html total.toFixed(2)
+        if total == 0
+          $('.checkout').fadeOut fadeTime
+        else
+          $('.checkout').fadeIn fadeTime
+        $('.totals-value').fadeIn fadeTime
 
-    $('.totals-value').fadeOut fadeTime, ->
-      $('#cart-subtotal').html subtotal.toFixed(2)
-      $('#cart-discount').html discount.toFixed(2)
-      $('#cart-total').html total.toFixed(2)
-      if total == 0
-        $('.checkout').fadeOut fadeTime
-      else
-        $('.checkout').fadeIn fadeTime
-      $('.totals-value').fadeIn fadeTime
+    ### Update quantity ###
 
-  ### Update quantity ###
+    updateQuantity = (quantityInput) ->
 
-  updateQuantity = (quantityInput) ->
+      ### Calculate line price ###
+      product_id = quantityInput.getAttribute('product_id')
+      productRow = $(quantityInput).parent().parent()
+      price = parseFloat(productRow.children('.product-price').text())
+      quantity = $(quantityInput).val()
+      linePrice = price * quantity
+      params = {product_id: product_id, quantity: quantity}
+      $.ajax
+        url: '/demo/'+userId+'/update_cart.json'
+        type: 'PUT'
+        data: params
+        success: (result) ->
+          if result.success == true
+            ### Update line price display and recalc cart totals ###
+            productRow.children('.product-line-price').each ->
+              $(this).fadeOut fadeTime, ->
+                $(this).text linePrice.toFixed(2)
+                recalculateCart()
+                $(this).fadeIn fadeTime
+          else
+            alert result.message
+        error: (error) ->
+          return false
 
-    ### Calculate line price ###
-    product_id = quantityInput.getAttribute('product_id')
-    productRow = $(quantityInput).parent().parent()
-    price = parseFloat(productRow.children('.product-price').text())
-    quantity = $(quantityInput).val()
-    linePrice = price * quantity
-    params = {product_id: product_id, quantity: quantity}
-    $.ajax
-      url: '/demo/'+userId+'/update_cart.json'
-      type: 'PUT'
-      data: params
-      success: (result) ->
-        if result.success == true
-          ### Update line price display and recalc cart totals ###
-          productRow.children('.product-line-price').each ->
-            $(this).fadeOut fadeTime, ->
-              $(this).text linePrice.toFixed(2)
+
+    ### Remove item from cart ###
+
+    removeItem = (removeButton) ->
+
+      ### Remove row from DOM and recalc cart total ###
+
+      productRow = $(removeButton).parent().parent()
+      product_id = removeButton.getAttribute('product_id')
+      params = {product_id: product_id, quantity: 0}
+      $.ajax
+        url: '/demo/'+userId+'/update_cart.json'
+        type: 'PUT'
+        data: params
+        success: (result) ->
+          if result.success == true
+            productRow.slideUp fadeTime, ->
+              productRow.remove()
               recalculateCart()
-              $(this).fadeIn fadeTime
-        else
-          alert result.message
-      error: (error) ->
-        return false
+          else
+            alert result.message
+        error: (error) ->
+          return false
 
+    $('.product-quantity input').change ->
+      updateQuantity this
 
-  ### Remove item from cart ###
+    $('.product-removal button').click ->
+      removeItem this
 
-  removeItem = (removeButton) ->
-
-    ### Remove row from DOM and recalc cart total ###
-
-    productRow = $(removeButton).parent().parent()
-    product_id = removeButton.getAttribute('product_id')
-    params = {product_id: product_id, quantity: 0}
-    $.ajax
-      url: '/demo/'+userId+'/update_cart.json'
-      type: 'PUT'
-      data: params
-      success: (result) ->
-        if result.success == true
-          productRow.slideUp fadeTime, ->
-            productRow.remove()
-            recalculateCart()
-        else
-          alert result.message
-      error: (error) ->
-        return false
-
-  $('.product-quantity input').change ->
-    updateQuantity this
-
-  $('.product-removal button').click ->
-    removeItem this
+    $('#closeCartModal').click ->
+      $('#receiptBody').html("")

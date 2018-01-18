@@ -61,5 +61,5 @@
           %input.form-control{:autocomplete => "off", value: "123", :maxlength => "3", :pattern => "\\d{3}", :required => "", :title => "Three digits at back of your card", :type => "text", disabled: true}/
       .form-group.row
         .col-md-12.text-xs-left
-          = link_to checkout_payment_path(user_id: @current_user['user_id']), class: 'btn btn-lg btn-info btn-block', id:'#payment-button', method: :post do
-            %span#payment-button-amount Place Order
+          = link_to checkout_payment_path(user_id: @current_user['user_id'], total_price: @total_price), class: 'btn btn-lg btn-info btn-block', id:'#payment-button', method: :post do
+            %span#payment-button-amount Place Order ($#{@total_price})

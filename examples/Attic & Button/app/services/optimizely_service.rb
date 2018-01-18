@@ -74,7 +74,7 @@ class OptimizelyService
 
   def is_feature_enabled_service!(feature_flag_key, visitor)
     user_id = visitor['email'].present? ? visitor['email'] : visitor['user_id']
-    attributes = {}
+    attributes = visitor['domain'].present? ? {'domain'=> visitor['domain']} : {}
     begin
       enabled = @@optimizely_client.is_feature_enabled(feature_flag_key, user_id, attributes)
     rescue => e

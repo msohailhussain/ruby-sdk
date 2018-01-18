@@ -21,7 +21,6 @@ Rails.application.routes.draw do
   post 'demo/:user_id/buy', to: 'demo#buy', as: :buy
   get 'demo/login', to: 'demo#new'
   post 'demo/config', to: 'demo#create'
-  post  'demo/:user_id/checkout_complete', to: 'demo#checkout_complete', as: :checkout_complete
   post  'demo/:user_id/checkout_payment', to: 'demo#checkout_payment', as: :checkout_payment
   delete 'demo/:user_id/delete_messages', to: 'demo#delete_messages', as: :delete_messages
   delete 'demo/:user_id/delete_cart', to: 'demo#delete_cart', as: :delete_cart
@@ -31,6 +30,7 @@ Rails.application.routes.draw do
   get "/demo/:user_id/shop" => "demo#shop", :as => :shop
   get "/demo/:user_id/payment" => "demo#payment", :as => :payment
   put "/demo/:user_id/update_cart" => "demo#update_cart", :as => :update_cart
+  get "/show_receipt/:user_id/show_receipt" => "demo#show_receipt", :as => :show_receipt
   # root path
   root 'demo#guest_shop'
 end
