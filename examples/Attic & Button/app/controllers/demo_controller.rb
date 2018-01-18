@@ -1,5 +1,5 @@
 #
-#    Copyright 2017, Optimizely and contributors
+#    Copyright 2018, Optimizely and contributors
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
+
 class DemoController < ApplicationController
   before_action :authenticate_user!, except: [:new,:create, :logout, :guest_shop]
   before_action :initialize_optimizely_client!, only:[:shop, :buy, :cart, :payment,:checkout_payment]
@@ -21,14 +22,7 @@ class DemoController < ApplicationController
   before_action :discount_feature_enabled?, only: :cart
   
   def create
-    # Calls before_action validate_config! from Private methods to
-    #   get or create config object by Project ID given in params
-    # Calls API https://cdn.optimizely.com/json
-    # Initializes OptimizelyService class with API response body as datafile
-    # instantiate! method initializes Optimizely::Project with datafile
-    # Updates config by permitted params
-    # If config is updated by params then store Project ID in session else return error.
-  
+    
     if params[:email].present? && params[:password].present?
       if params[:email] =~ /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
         if OPTIMIZELY_CONFIG['experiment_key'].present?
@@ -67,11 +61,6 @@ class DemoController < ApplicationController
   end
   
   def shop
-    # Calls before_action get_visitor from Application Controller to get visitor
-    # Calls before_action get_project_configuration from Private methods to get config object
-    # Calls before_action optimizely_client_present? to check optimizely_client object exists
-    # Lists all products from Product model
-    # Calls optimizely client activate method to create variation(Static object) in OptimizelyService class
     
     @variation_key = session[:variation_key]
     unless @variation_key
@@ -103,11 +92,6 @@ class DemoController < ApplicationController
   end
 
   def buy
-    # Calls before_action get_visitor from Application Controller to get visitor
-    # Calls before_action get_project_configuration from Private methods to get config object
-    # Calls before_action optimizely_client_present? to check optimizely_client object exists
-    # Calls before_action get_product to get selected project
-    # Calls optmizely client's track method from OptimizelyService class
     
     if @optimizely_service.track_service!(
       OPTIMIZELY_CONFIG['event_key'],
