@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 #    Copyright 2018, Optimizely and contributors
 #
@@ -17,12 +19,12 @@
 class Product
   Event_Tags = {
     int_param: 4242,
-    string_param: "4242",
+    string_param: '4242',
     bool_param: true,
     revenue: 1337,
     value: 100
   }.freeze
-  
+
   PRODUCTS = [
     {
       id: 1,
@@ -77,5 +79,4 @@ class Product
   def self.find(id)
     PRODUCTS.find { |product| product[:id] == id }
   end
-  
 end
