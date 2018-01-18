@@ -99,7 +99,7 @@ class DemoController < ApplicationController
         @current_user
       )
       if succeeded
-        @buy_now_enabled, succeeded = @optimizely_service.is_feature_enabled_service!(
+        @buy_now_enabled, succeeded = @optimizely_service.feature_enabled_service?(
           OPTIMIZELY_CONFIG['buy_now_feature_flag'],
           @current_user
         )
@@ -244,7 +244,7 @@ class DemoController < ApplicationController
   end
 
   def discount_feature_enabled?
-    @discount_feature_enabled, succeeded = @optimizely_service.is_feature_enabled_service!(
+    @discount_feature_enabled, succeeded = @optimizely_service.feature_enabled_service?(
       OPTIMIZELY_CONFIG['discount_feature_flag'],
       @current_user
     )

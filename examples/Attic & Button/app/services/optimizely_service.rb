@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 #    Copyright 2018, Optimizely and contributors
 #
@@ -18,53 +20,58 @@ require 'logger'
 require 'optimizely'
 
 class OptimizelyService
-  @@optimizely_client = nil
+  @optimizely_client = nil
+
+  class << self
+    attr_accessor :optimizely_client
+  end
+
   def initialize(datafile)
     @datafile = datafile
     @errors = []
   end
-  
+
   def self.optimizely_client_present?
-    @@optimizely_client.present?
+    @optimizely_client.present?
   end
-  
+
   def instantiate!
     @logger = DemoLogger.new(Logger.new(STDOUT))
-    @@optimizely_client = Optimizely::Project.new(
-     @datafile,
-     Optimizely::EventDispatcher.new,
-     @logger,
-     nil,
-     false
+    @optimizely_client = Optimizely::Project.new(
+      @datafile,
+      Optimizely::EventDispatcher.new,
+      @logger,
+      nil,
+      false
     )
-    @errors.push('Invalid Optimizely client request!') unless @@optimizely_client.is_valid
+    @errors.push('Invalid Optimizely client request!') unless @optimizely_client.is_valid
     @errors.empty?
   end
-  
+
   def activate_service!(visitor, experiment_key)
     user_id = visitor['email'].present? ? visitor['email'] : visitor['user_id']
     attributes = {}
     begin
-      variation_key = @@optimizely_client.activate(
-       experiment_key,
-       user_id,
-       attributes
+      variation_key = @optimizely_client.activate(
+        experiment_key,
+        user_id,
+        attributes
       )
     rescue StandardError => error
       @errors.push(error.message)
     end
-    return variation_key, @errors.empty?
+    [variation_key, @errors.empty?]
   end
-  
+
   def track_service!(event_key, visitor, event_tags)
     user_id = visitor['email'].present? ? visitor['email'] : visitor['user_id']
     attributes = {}
     begin
-      @@optimizely_client.track(
-       event_key,
-       user_id,
-       attributes,
-       event_tags
+      @optimizely_client.track(
+        event_key,
+        user_id,
+        attributes,
+        event_tags
       )
     rescue => e
       @errors.push(e.message)
@@ -72,33 +79,33 @@ class OptimizelyService
     @errors.empty?
   end
 
-  def is_feature_enabled_service!(feature_flag_key, visitor)
+  def feature_enabled_service?(feature_flag_key, visitor)
     user_id = visitor['email'].present? ? visitor['email'] : visitor['user_id']
-    attributes = visitor['domain'].present? ? {'domain'=> visitor['domain']} : {}
+    attributes = visitor['domain'].present? ? {'domain' => visitor['domain']} : {}
     begin
-      enabled = @@optimizely_client.is_feature_enabled(feature_flag_key, user_id, attributes)
+      enabled = @optimizely_client.is_feature_enabled(feature_flag_key, user_id, attributes)
     rescue => e
       @errors.push(e.message)
     end
-    return enabled, @errors.empty?
+    [enabled, @errors.empty?]
   end
-  
+
   def get_feature_variable_integer_service!(feature_flag_key, variable_key, visitor)
     user_id = visitor['email'].present? ? visitor['email'] : visitor['user_id']
-    attributes = visitor['domain'].present? ? {'domain'=> visitor['domain']} : {'domain'=> ""}
+    attributes = visitor['domain'].present? ? {'domain' => visitor['domain']} : {'domain' => ''}
     begin
-      discount_percentage = @@optimizely_client.get_feature_variable_integer(
-       feature_flag_key,
-       variable_key,
-       user_id,
-       attributes
+      discount_percentage = @optimizely_client.get_feature_variable_integer(
+        feature_flag_key,
+        variable_key,
+        user_id,
+        attributes
       )
     rescue StandardError => error
       @errors.push(error.message)
     end
-    return discount_percentage.to_i, @errors.empty?
+    [discount_percentage.to_i, @errors.empty?]
   end
-  
+
   attr_reader :errors
 end
 
@@ -106,7 +113,7 @@ class DemoLogger
   def initialize(logger)
     @logger = logger
   end
-  
+
   def log(level = nil, message)
     @logger.info message
     LogMessage.create_record(level, message)
