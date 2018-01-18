@@ -33,7 +33,7 @@
           %th Message
       %tbody
         - @logs.each do |log|
-          %tr{class:"#{get_level_class(log.type)}"}
+          %tr.table-info
             %td
               = log.created_at.present? ? log.created_at.strftime("%m/%d/%Y at %I:%M %p") : ""
             %td

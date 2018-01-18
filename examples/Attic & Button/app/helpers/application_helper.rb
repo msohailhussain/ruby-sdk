@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 #    Copyright 2018, Optimizely and contributors
 #
@@ -34,48 +36,35 @@ module ApplicationHelper
     current_page?(path) ? 'active' : ''
   end
 
-  def get_level_class(type)
-    if type == LogMessage::LOGGER_LEVELS[:DEBUG] || type == LogMessage::LOGGER_LEVELS[:INFO]
-      'table-info'
-    elsif type == LogMessage::LOGGER_LEVELS[:WARN]
-      'table-warning'
-    elsif type == LogMessage::LOGGER_LEVELS[:ERROR] || type == LogMessage::LOGGER_LEVELS[:FATAL]
-      'table-danger'
-    else
-      ''
-    end
-  end
-  
   def generate_json_view(json)
     JSON.pretty_generate JSON.parse(json)
   end
-  
+
   def active_class(visitor_id)
     return 'active' if visitor_id == session[:visitor_id]
   end
-  
+
   def calculate_percentage(number, percent)
-    ( number.to_f * (percent/100.0)).to_s(:rounded, precision: 2)
+    (number.to_f * (percent / 100.0)).to_s(:rounded, precision: 2)
   end
-  
+
   def cart_total(sum, percent)
     (sum.to_f - calculate_percentage(sum, percent).to_f).to_s(:rounded, precision: 2)
   end
-  
+
   def get_first_name(current_user)
-    first_name = current_user['email'].present? ? (current_user['name'].split('.')[0]).capitalize : ""
+    current_user['email'].present? ? (current_user['name'].split('.')[0]).capitalize : ''
   end
 
   def get_last_name(current_user)
-    last_name = current_user['email'].present? ? (current_user['name'].split('.')[1]).try(:capitalize) : ""
+    current_user['email'].present? ? (current_user['name'].split('.')[1]).try(:capitalize) : ''
   end
-  
+
   def full_name(current_user)
     if current_user['name']
-      "#{get_first_name(current_user)}" + ' ' + "#{get_last_name(current_user)}"
+      get_first_name(current_user).to_s + ' ' + get_last_name(current_user).to_s
     else
-      "Guest User"
+      'Guest User'
     end
   end
-  
 end
