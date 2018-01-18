@@ -154,7 +154,7 @@ class DemoController < ApplicationController
   end
 
   def checkout_cart
-    flash[:success] = "Thank you for shoping"
+    flash[:success] = "Thank you for shopping!"
     session[:current_user]['cart'] = []
     redirect_to shop_path(user_id: @current_user['user_id'])
   end
