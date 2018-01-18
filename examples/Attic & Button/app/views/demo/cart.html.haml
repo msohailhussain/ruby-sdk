@@ -86,7 +86,7 @@
 
 :coffeescript
 
-  DiscountRate = 0.05
+  DiscountRate = #{@discount_percentage * 0.01}
   fadeTime = 300
   userId = "#{@current_user['user_id']}"
   ### Assign actions ###
