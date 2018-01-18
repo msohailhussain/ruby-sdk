@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 #    Copyright 2018, Optimizely and contributors
 #
@@ -16,5 +18,4 @@
 
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
-  
 end
