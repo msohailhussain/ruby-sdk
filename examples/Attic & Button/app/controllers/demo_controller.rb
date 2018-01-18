@@ -182,7 +182,7 @@ class DemoController < ApplicationController
 
   def delete_messages
     LogMessage.delete_all_logs(@current_user['user_id'])
-    redirect_to messages_path
+    redirect_to messages_path(user_id: @current_user['user_id'])
     flash[:success] = 'log messages deleted successfully.'
   end
 

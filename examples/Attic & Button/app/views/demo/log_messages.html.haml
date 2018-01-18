@@ -35,15 +35,13 @@
         - @logs.each do |log|
           %tr.table-info
             %td
-              = log.created_at.present? ? log.created_at.strftime("%m/%d/%Y at %I:%M %p") : ""
+              = log.created_at.present? ? log.created_at.strftime("%m/%d/%Y at %I:%M %p") : ''
             %td
               = "LOG #{LogMessage::LOGGER_LEVELS.key(log.type)}"
             %td
               = log.message
 
-:javascript
-  $(document).ready(function() {
-    $('#messageTable').dataTable({
-      'bSort': false
-    });
-  });
+:coffeescript
+  jQuery ->
+    $(document).ready ->
+      $('#messageTable').dataTable 'bSort': false
