@@ -58,7 +58,7 @@ class DemoController < ApplicationController
           if @variation_key
             session[:variation_key] = @variation_key
           else
-            flash.now[:error] = "Failed to create variation using Experiment key: #{EXPERIMENTS['sorting']}!"
+            flash.now[:error] = "Variation: Null"
           end
         else
           flash[:error] = @optimizely_service.errors

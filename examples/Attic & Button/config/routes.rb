@@ -19,25 +19,48 @@
 Rails.application.routes.draw do
   resources :demo, only: %i[new create]
 
-  # Binding user_id auth requests
-  post 'demo/:user_id/buy', to: 'demo#buy', constraints: { user_id:  /.*/ }, as: :buy
-  get 'demo/:user_id/cart', to: 'demo#cart', constraints: { user_id:  /.*/ }, as: :cart
-  get 'demo/:user_id/checkout_cart', to: 'demo#checkout_cart', constraints: { user_id:  /.*/ }, as: :checkout_cart
-  post 'demo/:user_id/checkout_payment', to: 'demo#checkout_payment', constraints: { user_id:  /.*/ }, as: :checkout_payment
-  delete 'demo/:user_id/delete_messages', to: 'demo#delete_messages', constraints: { user_id:  /.*/ }, as: :delete_messages
-  delete 'demo/:user_id/delete_cart', to: 'demo#delete_cart', constraints: { user_id:  /.*/ }, as: :delete_cart
-  get 'demo/:user_id/messages', to: 'demo#log_messages', constraints: { user_id:  /.*/ }, as: :messages
-  get '/demo/:user_id/payment' => 'demo#payment', constraints: { user_id:  /.*/ }, as: :payment
-  get '/demo/:user_id/shop' => 'demo#shop', constraints: { user_id:  /.*/ }, as: :shop
-  put '/demo/:user_id/update_cart' => 'demo#update_cart', constraints: { user_id:  /.*/ }, as: :update_cart
-  get '/show_receipt/:user_id/show_receipt' => 'demo#show_receipt', constraints: { user_id:  /.*/ }, as: :show_receipt
-
-  # Requests before user logged in
-  post 'demo/config', to: 'demo#create'
-  get 'demo/login', to: 'demo#new'
-  delete 'demo/logout', to: 'demo#logout', as: :logout
-  get '/demo/shop' => 'demo#guest_shop', as: :guest_shop
-
-  # root path
+  # Sets default request as root path;
   root 'demo#guest_shop'
+
+  ################ Requests for anonymous user ########################
+  # Default request e.g localhost:3000 OR '/'
+  get '/demo/shop' => 'demo#guest_shop', as: :guest_shop
+  # Renders login form modal
+  get 'demo/login', to: 'demo#new'
+  # Request on login form sumbit
+  post 'demo/config', to: 'demo#create'
+  # Deletes logged in user session
+  delete 'demo/logout', to: 'demo#logout', as: :logout
+  
+  ################ Shop page requests ########################
+  # Gets shop/Home page
+  get '/demo/:user_id/shop' => 'demo#shop', constraints: { user_id:  /.*/ }, as: :shop
+  # Buy now button event to add products in cart
+  post 'demo/:user_id/buy', to: 'demo#buy', constraints: { user_id:  /.*/ }, as: :buy
+  
+  ################ Cart page requests ########################
+  # Renders cart page
+  get 'demo/:user_id/cart', to: 'demo#cart', constraints: { user_id:  /.*/ }, as: :cart
+  # Updates cart products
+  put '/demo/:user_id/update_cart' => 'demo#update_cart', constraints: { user_id:  /.*/ }, as: :update_cart
+  # Sets associative user's cart empty
+  delete 'demo/:user_id/delete_cart', to: 'demo#delete_cart', constraints: { user_id:  /.*/ }, as: :delete_cart
+  # Renders receipt in modal
+  get '/show_receipt/:user_id/show_receipt' => 'demo#show_receipt', constraints: { user_id:  /.*/ }, as: :show_receipt
+  # Sets cart empty on successful purchase. Redirects to shop page
+  get 'demo/:user_id/checkout_cart', to: 'demo#checkout_cart', constraints: { user_id:  /.*/ }, as: :checkout_cart
+  
+  ################ Payment page requests ########################
+  # Renders payment page when feature is not enabled or in Guest user case.
+  get '/demo/:user_id/payment' => 'demo#payment', constraints: { user_id:  /.*/ }, as: :payment
+  # Places order for event 'checkout_complete'
+  post 'demo/:user_id/checkout_payment', to: 'demo#checkout_payment', constraints: { user_id:  /.*/ }, as: :checkout_payment
+  
+  ################ Messages page requests ########################
+  # Renders messages page
+  get 'demo/:user_id/messages', to: 'demo#log_messages', constraints: { user_id:  /.*/ }, as: :messages
+  # Deletes log messages of associative user
+  delete 'demo/:user_id/delete_messages', to: 'demo#delete_messages', constraints: { user_id:  /.*/ }, as: :delete_messages
+
+  
 end
