@@ -1,0 +1,65 @@
+-#
+-# Copyright 2018, Optimizely and contributors
+-#
+-# Licensed under the Apache License, Version 2.0 (the "License");
+-# you may not use this file except in compliance with the License.
+-# You may obtain a copy of the License at
+-#
+-#    http://www.apache.org/licenses/LICENSE-2.0
+-#
+-# Unless required by applicable law or agreed to in writing, software
+-# distributed under the License is distributed on an "AS IS" BASIS,
+-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-# See the License for the specific language governing permissions and
+-# limitations under the License.
+-#
+
+.card
+  .card-header.bg-dark.text-white
+    CREDIT CARD INFO
+    %img.img-responsive.pull-right{:src => "http://i76.imgup.net/accepted_c22e0.png"}/
+  .card-body
+    %fieldset
+      .form-group.row
+        %label.col-md-12 Card Number
+        .col-md-3
+          %input.form-control{:autocomplete => "off", :value=>4242, :maxlength => "4", :pattern => "\\d{4}", :required => "", :title => "First four digits", :type => "text", disabled: true}/
+        .col-md-3
+          %input.form-control{:autocomplete => "off", :value=>4242, :maxlength => "4", :pattern => "\\d{4}", :required => "", :title => "Second four digits", :type => "text", disabled: true}/
+        .col-md-3
+          %input.form-control{:autocomplete => "off", :value=>4242, :maxlength => "4", :pattern => "\\d{4}", :required => "", :title => "Third four digits", :type => "text", disabled: true}/
+        .col-md-3
+          %input.form-control{:autocomplete => "off", :value=>4242, :maxlength => "4", :pattern => "\\d{4}", :required => "", :title => "Fourth four digits", :type => "text", disabled: true}/
+      .form-group.row
+        %label.col-md-12 Card Expiry Date
+        .col-md-8
+          %select.form-control{:name => "cc_exp_mo"}
+            %option{:value => "01"} January
+            %option{:value => "02"} February
+            %option{:value => "03"} March
+            %option{:value => "04"} April
+            %option{:value => "05"} May
+            %option{:value => "06"} June
+            %option{:value => "07"} July
+            %option{:value => "08"} August
+            %option{:value => "09"} September
+            %option{:value => "10"} October
+            %option{:value => "11"} November
+            %option{:value => "12"} December
+        .col-md-4
+          %select.form-control{:name => "cc_exp_yr"}
+            %option 2016
+            %option 2017
+            %option 2018
+            %option 2019
+            %option 2020
+            %option 2021
+            %option 2022
+      .form-group.row
+        %label.col-md-12 Card CVV
+        .col-md-3
+          %input.form-control{:autocomplete => "off", value: "123", :maxlength => "3", :pattern => "\\d{3}", :required => "", :title => "Three digits at back of your card", :type => "text", disabled: true}/
+      .form-group.row
+        .col-md-12.text-xs-left
+          = link_to checkout_payment_path(user_id: @current_user['user_id'], total_price: @total_price), class: 'btn btn-lg btn-info btn-block', id:'#payment-button', method: :post do
+            %span#payment-button-amount Place Order ($#{@total_price})

@@ -1,0 +1,84 @@
+//
+//    Copyright 2018, Optimizely and contributors
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        http://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+//
+
+/*    --------------------------------------------------
+	:: Login Section
+	-------------------------------------------------- */
+.login-form {
+  padding-top: 50px
+}
+.login-form .form-wrap {
+  width: 100%;
+  margin: 0 auto;
+}
+.login-form h1 {
+  color: #1fa67b;
+  font-size: 18px;
+  text-align: center;
+  font-weight: bold;
+  padding-bottom: 20px;
+}
+.login-form .form-group {
+  margin-bottom: 25px;
+}
+.login-form .checkbox {
+  margin-bottom: 20px;
+  position: relative;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.login-form .checkbox.show:before {
+  content: '\e013';
+  color: #1fa67b;
+  font-size: 17px;
+  margin: 1px 0 0 3px;
+  position: absolute;
+  pointer-events: none;
+  font-family: 'Glyphicons Halflings';
+}
+.login-form .checkbox .character-checkbox {
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  vertical-align: middle;
+  display: inline-block;
+}
+.login-form .checkbox .label {
+  color: #6d6d6d;
+  font-size: 13px;
+  font-weight: normal;
+}
+.login-form .forget {
+  font-size: 13px;
+  text-align: center;
+  display: block;
+}
+
+/*    --------------------------------------------------
+	:: Inputs & Buttons
+	-------------------------------------------------- */
+.form-control {
+  color: #212121;
+}
+
+price:before, .totals-value:before {
+  content: '$';
+}

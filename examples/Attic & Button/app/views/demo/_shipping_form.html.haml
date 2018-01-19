@@ -1,0 +1,50 @@
+-#
+-# Copyright 2018, Optimizely and contributors
+-#
+-# Licensed under the Apache License, Version 2.0 (the "License");
+-# you may not use this file except in compliance with the License.
+-# You may obtain a copy of the License at
+-#
+-#    http://www.apache.org/licenses/LICENSE-2.0
+-#
+-# Unless required by applicable law or agreed to in writing, software
+-# distributed under the License is distributed on an "AS IS" BASIS,
+-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-# See the License for the specific language governing permissions and
+-# limitations under the License.
+-#
+
+.card
+  .card-header.bg-dark.text-white
+    SHIPPING INFO
+  .card-body
+    %form
+      .form-row
+        .form-group.col-md-6
+          %label{:for => "inputEmail4"} First Name
+          %input#inputFirstName4.form-control{placeholder:'First Name', :value => get_first_name(@current_user), :type => "text"}/
+        .form-group.col-md-6
+          %label{:for => "inputPassword4"} Last Name
+          %input#inputLastName4.form-control{placeholder:'Last Name', :value => get_last_name(@current_user), :type => "text"}/
+      .form-group
+        %label{:for => "inputAddress"} Address
+        %input#inputAddress.form-control{:placeholder => "1234 Main St", :type => "text", readonly: true}/
+      .form-group
+        %label{:for => "inputAddress2"} Address 2
+        %input#inputAddress2.form-control{:placeholder => "Apartment, studio, or floor", :type => "text", readonly: true}/
+      .form-row
+        .form-group.col-md-6
+          %label{:for => "inputCity"} City
+          %input#inputCity.form-control{:type => "text", value: "Trenton", readonly: true}/
+        .form-group.col-md-4
+          %label{:for => "inputState"} State
+          %select#inputState.form-control{disabled: true}
+            %option{:selected => "New Jersey"} New Jersey
+        .form-group.col-md-2
+          %label{:for => "inputZip"} Zip
+          %input#inputZip.form-control{:type => "text", value: '08608', readonly: true}/
+        - unless session[:checkout_variation_key] == 'one_step_checkout'
+          .form-group.row#Next-button-grp
+            .col-md-12.text-xs-left
+              %button#nextStep.btn.btn-info.btn-block{type: "button"}
+                %span#next-button-amount Next
