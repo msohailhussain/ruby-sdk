@@ -52,13 +52,13 @@ class DemoController < ApplicationController
       begin
         @variation_key, succeeded = @optimizely_service.activate_service!(
           @current_user,
-         EXPERIMENTS['sorting']
+          EXPERIMENTS['sorting']
         )
         if succeeded
           if @variation_key
             session[:variation_key] = @variation_key
           else
-            flash.now[:error] = "Variation: Null"
+            flash.now[:error] = 'Variation: Null'
           end
         else
           flash[:error] = @optimizely_service.errors
@@ -93,16 +93,16 @@ class DemoController < ApplicationController
   def cart
     if @discount_feature_enabled
       @discount_percentage, succeeded = @optimizely_service.get_feature_variable_integer_service!(
-       FEATURES['discount_feature'],
-       FEATURE_VARIABLES['discount_percentage'],
+        FEATURES['discount_feature'],
+        FEATURE_VARIABLES['discount_percentage'],
         @current_user
       )
       if succeeded
         @buy_now_enabled = false
         if @current_user['domain']
           @buy_now_enabled, succeeded = @optimizely_service.feature_enabled_service?(
-           FEATURES['buy_now_feature'],
-           @current_user
+            FEATURES['buy_now_feature'],
+            @current_user
           )
           unless succeeded
             flash[:error] = @optimizely_service.errors
@@ -142,7 +142,7 @@ class DemoController < ApplicationController
   def payment
     variation_key, succeeded = @optimizely_service.activate_service!(
       @current_user,
-     EXPERIMENTS['checkout_flow']
+      EXPERIMENTS['checkout_flow']
     )
     if succeeded
       if variation_key
@@ -163,7 +163,7 @@ class DemoController < ApplicationController
 
   def checkout_payment
     if @optimizely_service.track_service!(
-     EVENTS['checkout_complete'],
+      EVENTS['checkout_complete'],
       @current_user,
       'revenue' => params[:total_price].to_i
     )
@@ -248,7 +248,7 @@ class DemoController < ApplicationController
 
   def discount_feature_enabled?
     @discount_feature_enabled, succeeded = @optimizely_service.feature_enabled_service?(
-     FEATURES['discount_feature'],
+      FEATURES['discount_feature'],
       @current_user
     )
     return if succeeded
