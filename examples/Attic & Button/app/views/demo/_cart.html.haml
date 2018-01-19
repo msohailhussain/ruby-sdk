@@ -14,14 +14,6 @@
 -#    limitations under the License.
 -#
 
-- unless receipt
-  .row
-    = link_to 'Clear',
-      delete_cart_path,
-      method: :delete,
-      data: { confirm: 'Are you sure? want to delete all items!' },
-      class:"btn btn-danger #{!cart.present? ? 'disabled' : ''}"
-  %br
 .row
   %table.table.table-xs
     %tr
@@ -67,33 +59,38 @@
       %tr
         - unless receipt
           %td.text-right
-        %td.text-right{:colspan => "4"} Subtotal
+        %th.text-right{:colspan => "4"} Subtotal
         %td.text-right.totals-value#cart-subtotal #{sum}
       %tr
         - unless receipt
           %td.text-right.border-0
-        %td.border-0.text-right{:colspan => "4"} Discount (#{discount_percentage}%)
+        %th.border-0.text-right{:colspan => "4"} Discount (#{discount_percentage}%)
         %td.border-0.text-right.totals-value#cart-discount #{calculate_percentage(sum, discount_percentage).to_f}
       %tr
         - unless receipt
           %td.text-right.border-0
-        %td.border-0.text-right{:colspan => "4"} Grand Total
+        %th.border-0.text-right{:colspan => "4"} Grand Total
         %td.border-0.text-right.totals-value#cart-total #{cart_total(sum, discount_percentage).to_f}
     - else
       %tr
         - unless receipt
           %td.text-right
-        %td.text-right{:colspan => "4"} Total
+        %th.text-right{:colspan => "4"} Total
         %td.text-right.totals-value#cart-total #{sum}
-    - unless receipt
+    - unless receipt || !cart.present?
       %tr
-        %td.border-0.text-right{:colspan => "8"}
-          -if cart.present?
-            - if @buy_now_enabled
-              = link_to "Buy Now",
-                  show_receipt_path(user_id: @current_user['user_id'], discount_percentage: discount_percentage),
-                  method: :get, remote: true, class:"btn btn-info btn-lg checkout"
-            - else
-              = link_to "Checkout",
-                  payment_path(user_id: @current_user['user_id'], total_price: sum),
-                  method: :get, class:"btn btn-info btn-lg checkout"
+        %td.border-0.text-left{:colspan => "4"}
+          = link_to 'Clear',
+              delete_cart_path,
+              method: :delete,
+              data: { confirm: 'Are you sure? want to delete all items!' },
+              class:"btn btn-lg btn-danger #{!cart.present? ? 'disabled' : ''}"
+        %td.border-0.text-right{:colspan => "4"}
+          - if @buy_now_enabled
+            = link_to "Buy Now",
+                show_receipt_path(user_id: @current_user['user_id'], discount_percentage: discount_percentage),
+                method: :get, remote: true, class:"btn btn-info btn-lg checkout"
+          - else
+            = link_to "Checkout",
+                payment_path(user_id: @current_user['user_id'], total_price: sum),
+                method: :get, class:"btn btn-info btn-lg checkout"

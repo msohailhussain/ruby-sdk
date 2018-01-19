@@ -19,3 +19,9 @@ OPTIMIZELY_CONFIG = YAML.load_file(CONFIG_PATH)
 
 response = RestClient.get "#{OPTIMIZELY_CONFIG['url']}/" + "#{OPTIMIZELY_CONFIG['project_id']}.json"
 DATAFILE = response.body
+
+EXPERIMENTS = OPTIMIZELY_CONFIG['experiments']
+VARIATIONS =  OPTIMIZELY_CONFIG['variations']
+EVENTS =  OPTIMIZELY_CONFIG['events']
+FEATURES =  OPTIMIZELY_CONFIG['features']
+FEATURE_VARIABLES = OPTIMIZELY_CONFIG['feature_variables']

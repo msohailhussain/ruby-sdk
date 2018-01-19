@@ -53,11 +53,11 @@ module ApplicationHelper
   end
 
   def get_first_name(current_user)
-    current_user['email'].present? ? (current_user['name'].split('.')[0]).capitalize : ''
+    current_user['domain'].present? ? (current_user['name'].split('.')[0]).capitalize : ''
   end
 
   def get_last_name(current_user)
-    current_user['email'].present? ? (current_user['name'].split('.')[1]).try(:capitalize) : ''
+    current_user['domain'].present? ? (current_user['name'].split('.')[1]).try(:capitalize) : ''
   end
 
   def full_name(current_user)

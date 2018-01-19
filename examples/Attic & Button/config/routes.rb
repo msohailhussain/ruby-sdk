@@ -20,17 +20,17 @@ Rails.application.routes.draw do
   resources :demo, only: %i[new create]
 
   # Binding user_id auth requests
-  post 'demo/:user_id/buy', to: 'demo#buy', as: :buy
-  get 'demo/:user_id/cart', to: 'demo#cart', as: :cart
-  get 'demo/:user_id/checkout_cart', to: 'demo#checkout_cart', as: :checkout_cart
-  post 'demo/:user_id/checkout_payment', to: 'demo#checkout_payment', as: :checkout_payment
-  delete 'demo/:user_id/delete_messages', to: 'demo#delete_messages', as: :delete_messages
-  delete 'demo/:user_id/delete_cart', to: 'demo#delete_cart', as: :delete_cart
-  get 'demo/:user_id/messages', to: 'demo#log_messages', as: :messages
-  get '/demo/:user_id/payment' => 'demo#payment', as: :payment
-  get '/demo/:user_id/shop' => 'demo#shop', as: :shop
-  put '/demo/:user_id/update_cart' => 'demo#update_cart', as: :update_cart
-  get '/show_receipt/:user_id/show_receipt' => 'demo#show_receipt', as: :show_receipt
+  post 'demo/:user_id/buy', to: 'demo#buy', constraints: { user_id:  /.*/ }, as: :buy
+  get 'demo/:user_id/cart', to: 'demo#cart', constraints: { user_id:  /.*/ }, as: :cart
+  get 'demo/:user_id/checkout_cart', to: 'demo#checkout_cart', constraints: { user_id:  /.*/ }, as: :checkout_cart
+  post 'demo/:user_id/checkout_payment', to: 'demo#checkout_payment', constraints: { user_id:  /.*/ }, as: :checkout_payment
+  delete 'demo/:user_id/delete_messages', to: 'demo#delete_messages', constraints: { user_id:  /.*/ }, as: :delete_messages
+  delete 'demo/:user_id/delete_cart', to: 'demo#delete_cart', constraints: { user_id:  /.*/ }, as: :delete_cart
+  get 'demo/:user_id/messages', to: 'demo#log_messages', constraints: { user_id:  /.*/ }, as: :messages
+  get '/demo/:user_id/payment' => 'demo#payment', constraints: { user_id:  /.*/ }, as: :payment
+  get '/demo/:user_id/shop' => 'demo#shop', constraints: { user_id:  /.*/ }, as: :shop
+  put '/demo/:user_id/update_cart' => 'demo#update_cart', constraints: { user_id:  /.*/ }, as: :update_cart
+  get '/show_receipt/:user_id/show_receipt' => 'demo#show_receipt', constraints: { user_id:  /.*/ }, as: :show_receipt
 
   # Requests before user logged in
   post 'demo/config', to: 'demo#create'

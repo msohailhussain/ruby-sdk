@@ -28,22 +28,21 @@
           %input#inputLastName4.form-control{placeholder:'Last Name', :value => get_last_name(@current_user), :type => "text"}/
       .form-group
         %label{:for => "inputAddress"} Address
-        %input#inputAddress.form-control{:placeholder => "1234 Main St", :type => "text"}/
+        %input#inputAddress.form-control{:placeholder => "1234 Main St", :type => "text", readonly: true}/
       .form-group
         %label{:for => "inputAddress2"} Address 2
-        %input#inputAddress2.form-control{:placeholder => "Apartment, studio, or floor", :type => "text"}/
+        %input#inputAddress2.form-control{:placeholder => "Apartment, studio, or floor", :type => "text", readonly: true}/
       .form-row
         .form-group.col-md-6
           %label{:for => "inputCity"} City
-          %input#inputCity.form-control{:type => "text"}/
+          %input#inputCity.form-control{:type => "text", value: "Trenton", readonly: true}/
         .form-group.col-md-4
           %label{:for => "inputState"} State
-          %select#inputState.form-control
-            %option{:selected => "selected"} Choose...
-            %option ...
+          %select#inputState.form-control{disabled: true}
+            %option{:selected => "New Jersey"} New Jersey
         .form-group.col-md-2
           %label{:for => "inputZip"} Zip
-          %input#inputZip.form-control{:type => "text"}/
+          %input#inputZip.form-control{:type => "text", value: '08608', readonly: true}/
         - unless session[:checkout_variation_key] == 'one_step_checkout'
           .form-group.row#Next-button-grp
             .col-md-12.text-xs-left

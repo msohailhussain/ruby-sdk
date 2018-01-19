@@ -18,7 +18,7 @@
   .col-sm-9.pt-3.pb-3
     %ul.nav.nav-tabs
       %li.nav-item
-        = link_to "Shop", shop_path(user_id: @current_user['user_id']), class:"nav-link #{assign_active_class(shop_path)}"
+        = link_to "Home", shop_path(user_id: @current_user['user_id']), class:"nav-link #{assign_active_class(shop_path)}"
       %li.nav-item
         = link_to "Cart", cart_path(user_id: @current_user['user_id']), class:"nav-link #{assign_active_class(cart_path)}"
       - if session[:checkout_variation_key]

@@ -21,12 +21,12 @@
     .modal-dialog.modal-lg{:role => "document"}
       .modal-content
         .modal-header.card-header
-          %h5#exampleModalLongTitle.modal-title Order Summary
+          %h5#exampleModalLongTitle.modal-title Reciept # xxx
           %button.close#closeCartModal{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
             %span{"aria-hidden" => "true"} ×
         .modal-body.card-block#receiptBody
         .modal-footer
-          = link_to "Buy Now",
+          = link_to "OK",
               checkout_cart_path(user_id: @current_user['user_id']),
               method: :get, class:"btn btn-info btn-lg checkout"
 

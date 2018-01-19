@@ -16,12 +16,12 @@
 
 %nav.navbar.navbar-expand-lg.navbar-light.navbar-dark.bg-dark{style:"background-color: #e3f2fd;"}
   %button.navbar-toggler{"aria-controls" => "navbarTogglerDemo03", "aria-expanded" => "false", "aria-label" => "Toggle navigation", "data-target" => "#navbarTogglerDemo03", "data-toggle" => "collapse", :type => "button"}
-  = link_to "Optimizely Ruby SDK", root_path, class:"navbar-brand"
+  = link_to "Attic & Button", root_path, class:"navbar-brand"
   #navbarTogglerDemo03.collapse.navbar-collapse
     %ul.navbar-nav.mr-auto.mt-2.mt-lg-0
     .form-inline.my-2.my-lg-0
       = link_to "#{full_name(@current_user)}", root_path, class:"navbar-brand"
-      - if @current_user.present? && @current_user['email'].present?
+      - if @current_user.present? && @current_user['domain'].present?
         = link_to "Logout",logout_path,class:"btn btn-outline-info my-2 my-sm-0", method: :delete
       - else
         = link_to "Login",new_demo_path,class:"btn btn-outline-info my-2 my-sm-0", remote: true
@@ -29,8 +29,9 @@
 #exampleModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "exampleModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog{:role => "document"}
     .modal-content
-      .modal-header.card-header
-        = image_tag('optimizely.svg', class:'card-img',style:"width: 20rem;")
+      .modal-header.card-header.text-center
+        %h5#exampleModalLongTitle
+          %span.text-info Attic & Button
         %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
           %span{"aria-hidden" => "true"} ×
       .modal-body.card-block

@@ -73,7 +73,23 @@ class Product
       category: 'Shirts',
       price: 107,
       image_url: 'item_6.png'
-    }
+    },
+   {
+    id: 7,
+    name: 'Long Sleeve Tee',
+    color: 'Baby Blue',
+    category: 'Shirts',
+    price: 62,
+    image_url: 'item_8.png'
+   },
+   {
+    id: 7,
+    name: 'Simple Cardigan',
+    color: 'Olive Green',
+    category: 'Sweaters',
+    price: 238,
+    image_url: 'item_9.png'
+   }
   ].freeze
 
   def self.find(id)
