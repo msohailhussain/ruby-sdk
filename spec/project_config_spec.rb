@@ -59,7 +59,7 @@ describe Optimizely::ProjectConfig do
       
       expected_experiment_key_map = {
         'test_experiment' => config_body['experiments'][0],
-        'test_experiment_not_started' => project_config.get_experiment_from_key('test_experiment_not_started'),
+        'test_experiment_not_started' => config_body['experiments'][1],
         'test_experiment_with_audience' => config_body['experiments'][2],
         'test_experiment_multivariate' => config_body['experiments'][3],
         'test_experiment_with_feature_rollout' => config_body['experiments'][4],
@@ -71,6 +71,8 @@ describe Optimizely::ProjectConfig do
         'group2_exp2' => config_body['groups'][1]['experiments'][1].merge('groupId' => '102')
       }
 
+      expected_experiment_key_map['test_experiment_not_started']['variations'][1]['featureEnabled'] = false
+      
       expected_variation_id_map = {
         'test_experiment' => {
           '111128' => {
@@ -669,7 +671,7 @@ describe Optimizely::ProjectConfig do
       expect(project_config_v2.parsing_succeeded?).to be(true)
     end
   end
-
+  
   describe '@logger' do
     let(:spy_logger) { spy('logger') }
     let(:config) { Optimizely::ProjectConfig.new(config_body_JSON, spy_logger, error_handler) }
@@ -712,6 +714,11 @@ describe Optimizely::ProjectConfig do
       end
       it 'should return nil when provided variation key is invalid' do
         expect(config.get_variation_from_id('test_experiment', 'invalid_variation')).to eq(nil)
+      end
+      
+      it 'should return featureEnabled false when provided featureEnabled is null' do
+        expected_variation = {"key"=>"variation_not_started", "id"=>"100029", "featureEnabled"=>false}
+        expect(config.get_variation_from_id('test_experiment_not_started', '100029')).to eq(expected_variation)
       end
     end
 
