@@ -89,7 +89,7 @@ module OptimizelySpec
       'variations' => [{
         'key' => 'control_not_started',
         'id' => '100028',
-       'featureEnabled' => true
+        'featureEnabled' => true
       }, {
         'key' => 'variation_not_started',
         'id' => '100029'
@@ -114,11 +114,11 @@ module OptimizelySpec
       'variations' => [{
         'key' => 'control_with_audience',
         'id' => '122228',
-       'featureEnabled' => true
+        'featureEnabled' => true
       }, {
         'key' => 'variation_with_audience',
         'id' => '122229',
-       'featureEnabled' => true
+        'featureEnabled' => true
       }]
     }, {
       'key' => 'test_experiment_multivariate',
