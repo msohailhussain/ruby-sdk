@@ -128,7 +128,7 @@ module Optimizely
         variations = exp.fetch('variations')
         variations.each do |variation|
           variation_id = variation['id']
-          variation['featureEnabled'] = variation['featureEnabled'].present?
+          variation[Optimizely::Helpers::Constants::FEATURE_ENABLED] = variation[Optimizely::Helpers::Constants::FEATURE_ENABLED] == true
           variation_variables = variation['variables']
           unless variation_variables.nil?
             @variation_id_to_variable_usage_map[variation_id] = generate_key_map(variation_variables, 'id')
