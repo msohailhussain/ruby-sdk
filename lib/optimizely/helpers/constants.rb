@@ -18,7 +18,6 @@
 module Optimizely
   module Helpers
     module Constants
-      FEATURE_ENABLED = 'featureEnabled'
       JSON_SCHEMA_V2 = {
         'type' => 'object',
         'properties' => {
