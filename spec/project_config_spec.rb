@@ -69,8 +69,6 @@ describe Optimizely::ProjectConfig do
         'group2_exp2' => config_body['groups'][1]['experiments'][1].merge('groupId' => '102')
       }
 
-      expected_experiment_key_map['test_experiment_not_started']['variations'][1][Optimizely::Helpers::Constants::FEATURE_ENABLED] = false
-
       expected_variation_id_map = {
         'test_experiment' => {
           '111128' => {
@@ -715,8 +713,13 @@ describe Optimizely::ProjectConfig do
       end
 
       it 'should return variation having featureEnabled false when not provided' do
-        expected_variation = {'key' => 'variation_not_started', 'id' => '100029', Optimizely::Helpers::Constants::FEATURE_ENABLED => false}
-        expect(config.get_variation_from_id('test_experiment_not_started', '100029')).to eq(expected_variation)
+        config_body = OptimizelySpec::VALID_CONFIG_BODY
+        experiment_key = config_body['experiments'][1]['key']
+        variation_id = config_body['experiments'][1]['variations'][1]['id']
+        config_body['experiments'][1]['variations'][1][Optimizely::Helpers::Constants::FEATURE_ENABLED] = nil
+        config_body_json = JSON.dump(config_body)
+        project_config = Optimizely::ProjectConfig.new(config_body_json, logger, error_handler)
+        expect(project_config.get_variation_from_id(experiment_key, variation_id)[Optimizely::Helpers::Constants::FEATURE_ENABLED]).to eq(false)
       end
     end
 

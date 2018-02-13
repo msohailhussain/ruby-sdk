@@ -65,11 +65,11 @@ module OptimizelySpec
       'variations' => [{
         'key' => 'control',
         'id' => '111128',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true
+        'featureEnabled' => true
       }, {
         'key' => 'variation',
         'id' => '111129',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true
+        'featureEnabled' => true
       }]
     }, {
       'key' => 'test_experiment_not_started',
@@ -89,10 +89,11 @@ module OptimizelySpec
       'variations' => [{
         'key' => 'control_not_started',
         'id' => '100028',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true
+        'featureEnabled' => true
       }, {
         'key' => 'variation_not_started',
-        'id' => '100029'
+        'id' => '100029',
+        'featureEnabled' => false
       }]
     }, {
       'key' => 'test_experiment_with_audience',
@@ -114,11 +115,11 @@ module OptimizelySpec
       'variations' => [{
         'key' => 'control_with_audience',
         'id' => '122228',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true
+        'featureEnabled' => true
       }, {
         'key' => 'variation_with_audience',
         'id' => '122229',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true
+        'featureEnabled' => true
       }]
     }, {
       'key' => 'test_experiment_multivariate',
@@ -143,7 +144,7 @@ module OptimizelySpec
       'variations' => [{
         'id' => '122231',
         'key' => 'Fred',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+        'featureEnabled' => true,
         'variables' => [
           {
             'id' => '155560',
@@ -157,7 +158,7 @@ module OptimizelySpec
       }, {
         'id' => '122232',
         'key' => 'Feorge',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => false,
+        'featureEnabled' => false,
         'variables' => [
           {
             'id' => '155560',
@@ -171,7 +172,7 @@ module OptimizelySpec
       }, {
         'id' => '122233',
         'key' => 'Gred',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+        'featureEnabled' => true,
         'variables' => [
           {
             'id' => '155560',
@@ -185,7 +186,7 @@ module OptimizelySpec
       }, {
         'id' => '122234',
         'key' => 'George',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+        'featureEnabled' => true,
         'variables' => [
           {
             'id' => '155560',
@@ -214,7 +215,7 @@ module OptimizelySpec
       'variations' => [{
         'id' => '122236',
         'key' => 'control',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+        'featureEnabled' => true,
         'variables' => [{
           'id' => '155558',
           'value' => 'cta_1'
@@ -222,7 +223,7 @@ module OptimizelySpec
       }, {
         'id' => '122237',
         'key' => 'variation',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+        'featureEnabled' => true,
         'variables' => [{
           'id' => '155558',
           'value' => 'cta_2'
@@ -245,7 +246,7 @@ module OptimizelySpec
       'variations' => [{
         'id' => '122239',
         'key' => 'control',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+        'featureEnabled' => true,
         'variables' => [
           {
             'id' => '155551',
@@ -255,7 +256,7 @@ module OptimizelySpec
       }, {
         'id' => '122240',
         'key' => 'variation',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+        'featureEnabled' => true,
         'variables' => [
           {
             'id' => '155551',
@@ -280,7 +281,7 @@ module OptimizelySpec
       'variations' => [{
         'id' => '122242',
         'key' => 'control',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+        'featureEnabled' => true,
         'variables' => [
           {
             'id' => '155553',
@@ -290,7 +291,7 @@ module OptimizelySpec
       }, {
         'id' => '122243',
         'key' => 'variation',
-        Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+        'featureEnabled' => true,
         'variables' => [
           {
             'id' => '155553',
@@ -342,7 +343,7 @@ module OptimizelySpec
         'variations' => [{
           'key' => 'g1_e1_v1',
           'id' => '130001',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+          'featureEnabled' => true,
           'variables' => [
             {
               'id' => '155563',
@@ -352,7 +353,7 @@ module OptimizelySpec
         }, {
           'key' => 'g1_e1_v2',
           'id' => '130002',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+          'featureEnabled' => true,
           'variables' => [
             {
               'id' => '155563',
@@ -380,7 +381,7 @@ module OptimizelySpec
         'variations' => [{
           'key' => 'g1_e2_v1',
           'id' => '130003',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+          'featureEnabled' => true,
           'variables' => [
             {
               'id' => '155563',
@@ -390,7 +391,7 @@ module OptimizelySpec
         }, {
           'key' => 'g1_e2_v2',
           'id' => '130004',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+          'featureEnabled' => true,
           'variables' => [
             {
               'id' => '155563',
@@ -421,11 +422,11 @@ module OptimizelySpec
         'variations' => [{
           'key' => 'g2_e1_v1',
           'id' => '144443',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => true
+          'featureEnabled' => true
         }, {
           'key' => 'g2_e1_v2',
           'id' => '144444',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => true
+          'featureEnabled' => true
         }]
       }, {
         'id' => '144442',
@@ -445,11 +446,11 @@ module OptimizelySpec
         'variations' => [{
           'key' => 'g2_e2_v1',
           'id' => '144445',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => true
+          'featureEnabled' => true
         }, {
           'key' => 'g2_e2_v2',
           'id' => '144446',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => true
+          'featureEnabled' => true
         }]
       }]
     }],
@@ -561,7 +562,7 @@ module OptimizelySpec
         'variations' => [{
           'id' => '177771',
           'key' => '177771',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => false,
+          'featureEnabled' => false,
           'variables' => [
             {
               'id' => '155556',
@@ -582,7 +583,7 @@ module OptimizelySpec
         'variations' => [{
           'id' => '177773',
           'key' => '177773',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+          'featureEnabled' => true,
           'variables' => [
             {
               'id' => '155556',
@@ -603,7 +604,7 @@ module OptimizelySpec
         'variations' => [{
           'id' => '177778',
           'key' => '177778',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+          'featureEnabled' => true,
           'variables' => [
             {
               'id' => '155556',
@@ -627,7 +628,7 @@ module OptimizelySpec
         'variations' => [{
           'id' => '177775',
           'key' => '177775',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+          'featureEnabled' => true,
           'variables' => []
         }],
         'trafficAllocation' => [{
@@ -643,7 +644,7 @@ module OptimizelySpec
         'variations' => [{
           'id' => '177780',
           'key' => '177780',
-          Optimizely::Helpers::Constants::FEATURE_ENABLED => true,
+          'featureEnabled' => true,
           'variables' => []
         }],
         'trafficAllocation' => [{
