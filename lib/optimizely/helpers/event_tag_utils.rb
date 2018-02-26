@@ -31,11 +31,18 @@ module Optimizely
         false
       end
 
+      def valid_numeric?(value)
+        return false unless string_numeric?(value)
+        a = value.to_s.split('.')
+        return true unless a.length > 1
+        a[1].to_f.zero?
+      end
+
       def get_revenue_value(event_tags, logger)
         # Grab the revenue value from the event tags. "revenue" is a reserved keyword.
-        # The revenue value must be an integer.
         #
         # event_tags - Hash representing metadata associated with the event.
+        # logger - Optional component which provides a log method to log messages.
         # Returns revenue value as an integer number
         # Returns nil if revenue can't be retrieved from the event tags.
 
@@ -47,18 +54,13 @@ module Optimizely
 
         raw_value = event_tags[REVENUE_EVENT_METRIC_NAME]
 
-        unless raw_value.is_a? Numeric
-          logger.log(Logger::WARN, "Failed to parse revenue value #{raw_value} from event tags.")
-          return nil
-        end
-
-        if raw_value.is_a? Float
+        unless valid_numeric?(raw_value)
           logger.log(Logger::WARN, "Failed to parse revenue value #{raw_value} from event tags.")
           return nil
         end
 
         logger.log(Logger::INFO, "Parsed revenue value #{raw_value} from event tags.")
-        raw_value
+        raw_value.to_i
       end
 
       def get_numeric_value(event_tags, logger)
@@ -66,6 +68,7 @@ module Optimizely
         # The value of 'value' can be a float or a numeric string
         #
         # event_tags - +Hash+ representing metadata associated with the event.
+        # logger - Optional component which provides a log method to log messages.
         # Returns  +Number+ | +nil+ if value can't be retrieved from the event tags.
 
         if event_tags.nil?

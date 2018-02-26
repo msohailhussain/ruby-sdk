@@ -193,11 +193,13 @@ describe Optimizely::EventBuilder do
     expect(conversion_event.http_verb).to eq(:post)
   end
 
-  it 'should create a valid Event when create_conversion_event is called with invalid revenue event tag' do
+  it 'should create a valid Event when create_conversion_event is called with valid string revenue event tag' do
     event_tags = {'revenue' => '4200'}
 
     @expected_conversion_params[:visitors][0][:attributes] = []
-    @expected_conversion_params[:visitors][0][:snapshots][0][:events][0][:tags] = event_tags
+    @expected_conversion_params[:visitors][0][:snapshots][0][:events][0].merge!(revenue: 4200,
+                                                                                tags: event_tags)
+
     conversion_event = @event_builder.create_conversion_event('test_event', 'test_user', nil, event_tags,
                                                               '111127' => '111128')
     expect(conversion_event.params).to eq(@expected_conversion_params)

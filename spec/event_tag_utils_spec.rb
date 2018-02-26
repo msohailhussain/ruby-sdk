@@ -48,13 +48,13 @@ describe 'EventTagUtils' do
         .with(Logger::WARN, 'Failed to parse revenue value string from event tags.')
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to be_nil
     end
-    it 'should return nil if event tags contains the revenue with a string value' do
+    it 'should return correct value if event tags contains the revenue with a valid string value' do
       event_tags = {
         'revenue' => '65536'
       }
       expect(logger).to receive(:log)
-        .with(Logger::WARN, 'Failed to parse revenue value 65536 from event tags.')
-      expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to be_nil
+        .with(Logger::INFO, 'Parsed revenue value 65536 from event tags.')
+      expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to eq(65_536)
     end
     it 'should return nil if event tags contains the revenue with a boolean true value' do
       event_tags = {
