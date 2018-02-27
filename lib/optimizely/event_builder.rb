@@ -49,6 +49,7 @@ module Optimizely
     CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom'
 
     attr_reader :config
+    attr_reader :logger
 
     def initialize(config, logger)
       @config = config

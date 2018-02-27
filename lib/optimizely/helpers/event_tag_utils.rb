@@ -17,6 +17,7 @@
 #
 require 'optimizely/logger'
 require 'optimizely/helpers/validator'
+
 module Optimizely
   module Helpers
     module EventTagUtils
@@ -43,7 +44,7 @@ module Optimizely
         end
 
         unless Helpers::Validator.event_tags_valid?(event_tags)
-          logger.log(Logger::DEBUG, 'Event tags is not a dictionary.')
+          logger.log(Logger::DEBUG, 'Event tags is not a hash.')
           return nil
         end
 
@@ -53,7 +54,7 @@ module Optimizely
         end
 
         if event_tags[REVENUE_EVENT_METRIC_NAME].nil?
-          logger.log(Logger::DEBUG, 'The revenue key is null.')
+          logger.log(Logger::DEBUG, 'The revenue key is nil.')
           return nil
         end
 

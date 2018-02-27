@@ -21,18 +21,18 @@ require 'optimizely/logger'
 require 'optimizely/helpers/event_tag_utils'
 
 describe 'EventTagUtils' do
-  let(:logger) { Optimizely::SimpleLogger.new }
+  let(:logger) { Optimizely::NoOpLogger.new }
 
   describe '.get_revenue_value' do
     it 'should return nil if argument is undefined' do
       expect(logger).to receive(:log).with(Logger::DEBUG,
-                                           'Event tags is undefined.')
+                                           'Event tags is undefined.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(nil, logger)).to be_nil
     end
 
     it 'should return nil if argument is not a Hash' do
       expect(logger).to receive(:log).with(Logger::DEBUG,
-                                           'Event tags is not a dictionary.').exactly(7).times
+                                           'Event tags is not a hash.').exactly(7).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(0.5, logger)).to be_nil
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(65_536, logger)).to be_nil
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(9_223_372_036_854_775_807, logger)).to be_nil
@@ -47,16 +47,16 @@ describe 'EventTagUtils' do
         'non-revenue' => 5432
       }
       expect(logger).to receive(:log)
-        .with(Logger::DEBUG, 'The revenue key is not defined in the event tags.')
+        .with(Logger::DEBUG, 'The revenue key is not defined in the event tags.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to be_nil
     end
 
-    it 'should return nil if event tags contains the revenue key with NULL value' do
+    it 'should return nil if event tags contains the revenue key with nil value' do
       event_tags = {
         'revenue' => nil
       }
       expect(logger).to receive(:log).with(Logger::DEBUG,
-                                           'The revenue key is null.')
+                                           'The revenue key is nil.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to be_nil
     end
 
@@ -65,38 +65,42 @@ describe 'EventTagUtils' do
         'revenue' => 'string'
       }
       expect(logger).to receive(:log)
-        .with(Logger::WARN, 'Revenue value is not an integer or float, or is not a numeric string.')
+        .with(Logger::WARN, 'Revenue value is not an integer or float, or is not a numeric string.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to be_nil
     end
+
     it 'should return nil if event tags contains the revenue with a boolean true value' do
       event_tags = {
         'revenue' => true
       }
       expect(logger).to receive(:log)
-        .with(Logger::WARN, 'Revenue value is not an integer or float, or is not a numeric string.')
+        .with(Logger::WARN, 'Revenue value is not an integer or float, or is not a numeric string.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to be_nil
     end
+
     it 'should return nil if event tags contains the revenue with a boolean false value' do
       event_tags = {
         'revenue' => false
       }
       expect(logger).to receive(:log)
-        .with(Logger::WARN, 'Revenue value is not an integer or float, or is not a numeric string.')
+        .with(Logger::WARN, 'Revenue value is not an integer or float, or is not a numeric string.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to be_nil
     end
+
     it 'should return nil if event tags contains the revenue with a list value' do
       event_tags = {
         'revenue' => []
       }
       expect(logger).to receive(:log)
-        .with(Logger::WARN, 'Revenue value is not an integer or float, or is not a numeric string.')
+        .with(Logger::WARN, 'Revenue value is not an integer or float, or is not a numeric string.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to be_nil
     end
+
     it 'should return nil if event tags contains the revenue with a invalid float value' do
       expect(logger).to receive(:log)
-        .with(Logger::WARN, 'Failed to parse revenue value 0.5 from event tags.')
+        .with(Logger::WARN, 'Failed to parse revenue value 0.5 from event tags.').exactly(1).times
       expect(logger).to receive(:log)
-        .with(Logger::WARN, 'Failed to parse revenue value 2.5 from event tags.')
+        .with(Logger::WARN, 'Failed to parse revenue value 2.5 from event tags.').exactly(1).times
       event_tags = {
         'revenue' => 0.5
       }
@@ -104,11 +108,12 @@ describe 'EventTagUtils' do
       event_tags['revenue'] = 2.5
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to be_nil
     end
+
     it 'should return nil if event tags contains the revenue with a invalid string numeric' do
       expect(logger).to receive(:log)
-        .with(Logger::WARN, 'Failed to parse revenue value 0.5 from event tags.')
+        .with(Logger::WARN, 'Failed to parse revenue value 0.5 from event tags.').exactly(1).times
       expect(logger).to receive(:log)
-        .with(Logger::WARN, 'Failed to parse revenue value 2.5 from event tags.')
+        .with(Logger::WARN, 'Failed to parse revenue value 2.5 from event tags.').exactly(1).times
       event_tags = {
         'revenue' => '0.5'
       }
@@ -116,71 +121,80 @@ describe 'EventTagUtils' do
       event_tags['revenue'] = '2.5'
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to be_nil
     end
+
     it 'should return correct value if event tags contains the revenue with a valid float value' do
       expect(logger).to receive(:log)
-        .with(Logger::INFO, 'Parsed revenue value 65536 from event tags.')
+        .with(Logger::INFO, 'Parsed revenue value 65536 from event tags.').exactly(1).times
       event_tags = {
         'revenue' => 65_536.0
       }
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to eq(65_536)
     end
-    it 'should return correct value if event tags contains the revenue with a valid string numeric' do
+
+    it 'should return correct value if event tags contains the revenue with a valid float string' do
       expect(logger).to receive(:log)
-        .with(Logger::INFO, 'Parsed revenue value 65536 from event tags.')
+        .with(Logger::INFO, 'Parsed revenue value 65536 from event tags.').exactly(1).times
       event_tags = {
         'revenue' => '65536.0'
       }
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to eq(65_536)
     end
-    it 'should return correct value if event tags contains the revenue with a valid string value' do
+
+    it 'should return correct value if event tags contains the revenue with a valid integer string' do
       event_tags = {
         'revenue' => '65536'
       }
       expect(logger).to receive(:log)
-        .with(Logger::INFO, 'Parsed revenue value 65536 from event tags.')
+        .with(Logger::INFO, 'Parsed revenue value 65536 from event tags.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to eq(65_536)
     end
+
     it 'should return correct value if event tags contains the revenue with an integer value' do
       event_tags = {
         'revenue' => 65_536
       }
       expect(logger).to receive(:log)
-        .with(Logger::INFO, 'Parsed revenue value 65536 from event tags.')
+        .with(Logger::INFO, 'Parsed revenue value 65536 from event tags.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to eq(65_536)
     end
+
     it 'should return correct value if event tags contains the revenue with an integer zero value' do
       event_tags = {
         'revenue' => 0
       }
       expect(logger).to receive(:log)
-        .with(Logger::INFO, 'Parsed revenue value 0 from event tags.')
+        .with(Logger::INFO, 'Parsed revenue value 0 from event tags.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to eq(0)
     end
+
     it 'should return correct value if event tags contains the revenue with an float zero value' do
       event_tags = {
         'revenue' => 0.0
       }
       expect(logger).to receive(:log)
-        .with(Logger::INFO, 'Parsed revenue value 0 from event tags.')
+        .with(Logger::INFO, 'Parsed revenue value 0 from event tags.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to eq(0.0)
     end
+
     it 'should return correct value if event tags contains the revenue with a long integer value' do
       event_tags = {
         'revenue' => 9_223_372_036_854_775_807
       }
       expect(logger).to receive(:log)
-        .with(Logger::INFO, 'Parsed revenue value 9223372036854775807 from event tags.')
+        .with(Logger::INFO, 'Parsed revenue value 9223372036854775807 from event tags.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to eq(9_223_372_036_854_775_807)
     end
+
     it 'should return correct value if event tags contains the revenue with a long float value' do
       value = 9_223_372_036_854_775_807.to_f
       event_tags = {
         'revenue' => value
       }
       expect(logger).to receive(:log)
-        .with(Logger::INFO, "Parsed revenue value #{value.to_i} from event tags.")
+        .with(Logger::INFO, "Parsed revenue value #{value.to_i} from event tags.").exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to eq(value.to_i)
     end
+
     it 'should return correct value if event tags contains the revenue with a long string value' do
       value = '9_223_372_036_854_775_807'
       event_tags = {
@@ -189,7 +203,7 @@ describe 'EventTagUtils' do
       # Float converts long number to E-notation i.e "9.223372036854776e+18"
       value = value.to_f
       expect(logger).to receive(:log)
-        .with(Logger::INFO, "Parsed revenue value #{value.to_i} from event tags.")
+        .with(Logger::INFO, "Parsed revenue value #{value.to_i} from event tags.").exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_revenue_value(event_tags, logger)).to eq(value.to_i)
     end
   end
@@ -199,7 +213,7 @@ describe 'EventTagUtils' do
 
     it 'should return nil if argument is undefined' do
       expect(spy_logger).to receive(:log).with(Logger::DEBUG,
-                                               'Event tags is undefined.')
+                                               'Event tags is undefined.').exactly(1).times
       expect(Optimizely::Helpers::EventTagUtils.get_numeric_value(nil, spy_logger)).to be_nil
     end
 
@@ -217,8 +231,8 @@ describe 'EventTagUtils' do
     end
 
     it 'should return nil if event tags does not contain the numeric tag value' do
-      expect(spy_logger).to receive(:log)
-        .with(Logger::DEBUG, 'The numeric metric key is not defined in the event tags.')
+      expect(spy_logger).to receive(:log).exactly(1).times
+                                         .with(Logger::DEBUG, 'The numeric metric key is not defined in the event tags.')
       event_tags = {
         'non-value' => 5432
       }
@@ -227,7 +241,7 @@ describe 'EventTagUtils' do
 
     it 'should return nil if event tags contains the numeric tag value with NULL value' do
       expect(spy_logger).to receive(:log).with(Logger::DEBUG,
-                                               'The numeric metric key is null.')
+                                               'The numeric metric key is null.').exactly(1).times
       event_tags = {
         'value' => nil
       }
@@ -292,42 +306,42 @@ describe 'EventTagUtils' do
 
     it 'should return correct value if event tags contains the numeric metric tag with correct values' do
       expect(spy_logger).to receive(:log).with(Logger::INFO,
-                                               'The numeric metric value 0.5 will be sent to results.')
+                                               'The numeric metric value 0.5 will be sent to results.').exactly(1).times
       event_tags = {
         'value' => 0.5
       }
       expect(Optimizely::Helpers::EventTagUtils.get_numeric_value(event_tags, spy_logger)).to eq(0.5)
 
       expect(spy_logger).to receive(:log)
-        .with(Logger::INFO, 'The numeric metric value 65536.0 will be sent to results.')
+        .with(Logger::INFO, 'The numeric metric value 65536.0 will be sent to results.').exactly(1).times
       event_tags = {
         'value' => '65536'
       }
       expect(Optimizely::Helpers::EventTagUtils.get_numeric_value(event_tags, spy_logger)).to eq(65_536)
 
       expect(spy_logger).to receive(:log)
-        .with(Logger::INFO, 'The numeric metric value 65536.0 will be sent to results.')
+        .with(Logger::INFO, 'The numeric metric value 65536.0 will be sent to results.').exactly(1).times
       event_tags = {
         'value' => 65_536
       }
       expect(Optimizely::Helpers::EventTagUtils.get_numeric_value(event_tags, spy_logger)).to eq(65_536)
 
       expect(spy_logger).to receive(:log).with(Logger::INFO,
-                                               'The numeric metric value 0.0 will be sent to results.')
+                                               'The numeric metric value 0.0 will be sent to results.').exactly(1).times
       event_tags = {
         'value' => 0.0
       }
       expect(Optimizely::Helpers::EventTagUtils.get_numeric_value(event_tags, spy_logger)).to eq(0.0)
 
       expect(spy_logger).to receive(:log)
-        .with(Logger::INFO, "The numeric metric value #{Float::MAX} will be sent to results.")
+        .with(Logger::INFO, "The numeric metric value #{Float::MAX} will be sent to results.").exactly(1).times
       event_tags = {
         'value' => Float::MAX
       }
       expect(Optimizely::Helpers::EventTagUtils.get_numeric_value(event_tags, spy_logger)).to eq(Float::MAX)
 
       expect(spy_logger).to receive(:log)
-        .with(Logger::INFO, "The numeric metric value #{Float::MIN} will be sent to results.")
+        .with(Logger::INFO, "The numeric metric value #{Float::MIN} will be sent to results.").exactly(1).times
       event_tags = {
         'value' => Float::MIN
       }
