@@ -30,7 +30,7 @@ module Optimizely
       rescue
         false
       end
-      
+
       def get_revenue_value(event_tags, logger)
         # Grab the revenue value from the event tags. "revenue" is a reserved keyword.
         # The value will be parsed to an integer if possible.
@@ -42,12 +42,12 @@ module Optimizely
         #
         # Returns revenue value as an integer number
         # Returns nil if revenue can't be retrieved from the event tags.
-  
+
         if event_tags.nil?
           logger.log(Logger::DEBUG, 'Event tags is undefined.')
           return nil
         end
-  
+
         unless Helpers::Validator.event_tags_valid?(event_tags)
           logger.log(Logger::DEBUG, 'Event tags is not a dictionary.')
           return nil
@@ -66,12 +66,12 @@ module Optimizely
         raw_value = event_tags[REVENUE_EVENT_METRIC_NAME]
 
         unless Helpers::Validator.string_numeric?(raw_value)
-          logger.log(Logger::WARN, "Revenue value is not an integer or float, or is not a numeric string.")
+          logger.log(Logger::WARN, 'Revenue value is not an integer or float, or is not a numeric string.')
           return nil
         end
 
         raw_value = raw_value.to_f if raw_value.is_a? String
-        
+
         unless raw_value == raw_value.to_i
           logger.log(Logger::WARN, "Failed to parse revenue value #{raw_value} from event tags.")
           return nil
