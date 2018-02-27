@@ -25,12 +25,6 @@ module Optimizely
       REVENUE_EVENT_METRIC_NAME = 'revenue'
       NUMERIC_EVENT_METRIC_NAME = 'value'
 
-      def string_numeric?(str)
-        !Float(str).nil?
-      rescue
-        false
-      end
-
       def get_revenue_value(event_tags, logger)
         # Grab the revenue value from the event tags. "revenue" is a reserved keyword.
         # The value will be parsed to an integer if possible.
