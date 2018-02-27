@@ -231,8 +231,8 @@ describe 'EventTagUtils' do
     end
 
     it 'should return nil if event tags does not contain the numeric tag value' do
-      expect(spy_logger).to receive(:log).exactly(1).times
-                                         .with(Logger::DEBUG, 'The numeric metric key is not defined in the event tags.')
+      expect(spy_logger).to receive(:log)
+        .with(Logger::DEBUG, 'The numeric metric key is not defined in the event tags.').exactly(1).times
       event_tags = {
         'non-value' => 5432
       }
