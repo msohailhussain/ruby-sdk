@@ -734,6 +734,26 @@ describe 'Optimizely' do
       # Checks prevented features should not return
       expect(project_instance.get_enabled_features('test_user', 'browser_type' => 'chrome')).not_to include(*disabled_features)
     end
+
+    it 'should return sorted feature keys' do
+      # Unordered feature keys
+      features_keys = %w[
+        integer_single_variable_feature
+        double_single_variable_feature
+        boolean_single_variable_feature
+        string_single_variable_feature
+        multi_variate_feature
+        mutex_group_feature
+        empty_feature
+        boolean_feature
+      ]
+
+      # Mock is_feature_enabled to return specific values
+      features_keys.each do |feature_key|
+        allow(project_instance).to receive(:is_feature_enabled).with(feature_key, 'test_user', 'browser_type' => 'chrome').and_return(true)
+      end
+      expect(project_instance.get_enabled_features('test_user', 'browser_type' => 'chrome')).to eq(features_keys.sort)
+    end
   end
 
   describe '#get_feature_variable_string' do
