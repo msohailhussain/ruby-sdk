@@ -655,7 +655,7 @@ describe 'Optimizely' do
     it 'should return false when user_id is empty or nil' do
       expect(project_instance.is_feature_enabled('boolean_single_variable_feature', '')).to be false
       expect(project_instance.is_feature_enabled('boolean_single_variable_feature', nil)).to be false
-      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, 'User ID cannot be empty.').twice
+      expect(spy_logger).to have_received(:log).twice.with(Logger::ERROR, 'User ID cannot be empty.')
     end
 
     it 'should return false when the feature flag key is invalid' do
