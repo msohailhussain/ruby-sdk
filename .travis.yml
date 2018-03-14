@@ -8,11 +8,6 @@ before_install: gem install bundler -v 1.10.6
 install:
   - bundle install
   - bundle exec rake install
-  - docker build --build-arg SDK_REPO=$TRAVIS_REPO_SLUG --build-arg SDK_BRANCH=$TRAVIS_BRANCH -t e2eapp ruby-testapp
-  - docker run -d -p 3000:3000 --name rubye2e e2eapp
-
-script: 
-  - docker ps
-  - rake spec
-
+before_script: "rubocop"
+script: "rake spec"
 after_success: "coveralls"
