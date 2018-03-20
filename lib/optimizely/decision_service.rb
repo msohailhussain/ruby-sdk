@@ -235,29 +235,19 @@ module Optimizely
           next
         end
 
-        # User failed traffic allocation, jump to Everyone Else rule
-        @config.logger.log(
-          Logger::DEBUG,
-          "Attempting to bucket user '#{user_id}' into rollout rule for audience '#{audience_name}'."
-        )
-
         # Evaluate if user satisfies the traffic allocation for this rollout rule
         variation = @bucketer.bucket(rollout_rule, bucketing_id, user_id)
         return Decision.new(rollout_rule, variation, DECISION_SOURCE_ROLLOUT) unless variation.nil?
-        # User failed traffic allocation, jump to Everyone Else rule
-        @config.logger.log(
-          Logger::DEBUG,
-          "User '#{user_id}' was excluded due to traffic allocation. Checking 'Everyone Else' rule now."
-        )
-
         break
       end
 
       # get last rule which is the everyone else rule
       everyone_else_experiment = rollout_rules[number_of_rules]
-      variation = @bucketer.bucket(everyone_else_experiment, bucketing_id, user_id)
-      return Decision.new(everyone_else_experiment, variation, DECISION_SOURCE_ROLLOUT) unless variation.nil?
-
+      # Check that user meets audience conditions for last rule
+      if Audience.user_in_experiment?(@config, everyone_else_experiment, attributes)
+        variation = @bucketer.bucket(everyone_else_experiment, bucketing_id, user_id)
+        return Decision.new(everyone_else_experiment, variation, DECISION_SOURCE_ROLLOUT) unless variation.nil?
+      end
       @config.logger.log(
         Logger::DEBUG,
         "User '#{user_id}' was excluded from the 'Everyone Else' rule for feature flag"
