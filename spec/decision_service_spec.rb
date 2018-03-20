@@ -518,10 +518,6 @@ describe Optimizely::DecisionService do
                                                                                .with(config, rollout['experiments'][0], user_attributes)
             expect(Optimizely::Audience).not_to have_received(:user_in_experiment?)
               .with(config, rollout['experiments'][1], user_attributes)
-
-            # verify log messages
-            expect(spy_logger).to have_received(:log).once
-                                                     .with(Logger::DEBUG, "User '#{user_id}' was excluded from the 'Everyone Else' rule for feature flag")
           end
         end
 
@@ -553,7 +549,7 @@ describe Optimizely::DecisionService do
     end
 
     describe 'when the user is not bucketed into any targeting rules' do
-      it 'should bucket the user into the "Everyone Else" rule' do
+      it 'should try to bucket the user into the "Everyone Else" rule' do
         feature_flag = config.feature_flag_key_map['boolean_single_variable_feature']
         rollout = config.rollout_id_map[feature_flag['rolloutId']]
         everyone_else_experiment = rollout['experiments'][2]
@@ -592,19 +588,15 @@ describe Optimizely::DecisionService do
                                                  .with(Logger::DEBUG, "User '#{user_id}' does not meet the conditions to be in rollout rule for audience '#{audience_name}'.")
       end
 
-      it 'should not bucket the user into the "Everyone Else" rule' do
+      it 'should not bucket the user into the "Everyone Else" rule when audience mismatch' do
         feature_flag = config.feature_flag_key_map['boolean_single_variable_feature']
         rollout = config.rollout_id_map[feature_flag['rolloutId']]
         everyone_else_experiment = rollout['experiments'][2]
-        variation = everyone_else_experiment['variations'][0]
+        everyone_else_experiment['audienceIds'] = ['11155']
         allow(Optimizely::Audience).to receive(:user_in_experiment?).and_return(false)
 
-        allow(Optimizely::Audience).to receive(:user_in_experiment?)
-          .with(config, everyone_else_experiment, user_attributes)
-          .and_return(false)
-        allow(decision_service.bucketer).to receive(:bucket)
+        expect(decision_service.bucketer).not_to receive(:bucket)
           .with(everyone_else_experiment, user_id, user_id)
-          .and_return(variation)
 
         expect(decision_service.get_variation_for_feature_rollout(feature_flag, user_id, user_attributes)).to eq(nil)
 
@@ -626,11 +618,8 @@ describe Optimizely::DecisionService do
         experiment = rollout['experiments'][1]
         audience_id = experiment['audienceIds'][0]
         audience_name = config.get_audience_from_id(audience_id)['name']
-        expect(spy_logger).to have_received(:log).once
+        expect(spy_logger).to have_received(:log).twice
                                                  .with(Logger::DEBUG, "User '#{user_id}' does not meet the conditions to be in rollout rule for audience '#{audience_name}'.")
-
-        expect(spy_logger).to have_received(:log).once
-                                                 .with(Logger::DEBUG, "User '#{user_id}' was excluded from the 'Everyone Else' rule for feature flag")
       end
     end
   end

@@ -244,14 +244,18 @@ module Optimizely
       # get last rule which is the everyone else rule
       everyone_else_experiment = rollout_rules[number_of_rules]
       # Check that user meets audience conditions for last rule
-      if Audience.user_in_experiment?(@config, everyone_else_experiment, attributes)
-        variation = @bucketer.bucket(everyone_else_experiment, bucketing_id, user_id)
-        return Decision.new(everyone_else_experiment, variation, DECISION_SOURCE_ROLLOUT) unless variation.nil?
+      unless Audience.user_in_experiment?(@config, everyone_else_experiment, attributes)
+        audience_id = everyone_else_experiment['audienceIds'][0]
+        audience = @config.get_audience_from_id(audience_id)
+        audience_name = audience['name']
+        @config.logger.log(
+          Logger::DEBUG,
+          "User '#{user_id}' does not meet the conditions to be in rollout rule for audience '#{audience_name}'."
+        )
+        return nil
       end
-      @config.logger.log(
-        Logger::DEBUG,
-        "User '#{user_id}' was excluded from the 'Everyone Else' rule for feature flag"
-      )
+      variation = @bucketer.bucket(everyone_else_experiment, bucketing_id, user_id)
+      return Decision.new(everyone_else_experiment, variation, DECISION_SOURCE_ROLLOUT) unless variation.nil?
       nil
     end
 
