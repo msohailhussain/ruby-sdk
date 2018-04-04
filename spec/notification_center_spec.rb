@@ -50,15 +50,6 @@ describe Optimizely::NotificationCenter do
                                                  .with(Logger::ERROR, 'Notification type can not be empty.')
       end
 
-      it 'should log and return nil if notification callback is empty' do
-        expect(notification_center.add_notification_listener(
-                 Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE],
-                 nil
-        )).to eq(nil)
-        expect(spy_logger).to have_received(:log).once
-                                                 .with(Logger::ERROR, 'Callback can not be empty.')
-      end
-
       it 'should log and return nil if invalid notification type given' do
         expect(notification_center.add_notification_listener(
                  'Test notification type',
