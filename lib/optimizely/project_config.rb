@@ -307,10 +307,8 @@ module Optimizely
       variation_key = variation['key'] if variation
 
       # check if the variation exists in the datafile
-      if variation_key.empty?
-        # this case is logged in get_variation_from_id
-        return nil
-      end
+      # this case is logged in get_variation_from_id
+      return nil if variation_key.empty?
 
       @logger.log(Logger::DEBUG, "Variation '#{variation_key}' is mapped to experiment '#{experiment_key}' "\
                   "and user '#{user_id}' in the forced variation map")
