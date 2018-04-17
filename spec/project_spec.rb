@@ -1061,18 +1061,18 @@ describe 'Optimizely' do
         .to eq(nil)
       expect(spy_logger).to have_received(:log).twice.with(Logger::ERROR, 'User ID is invalid')
     end
-    
+
     it 'should return nil if user_id is non string value' do
       expect(project_instance.get_feature_variable_integer('integer_single_variable_feature', 'integer_variable', 2, user_attributes))
-       .to eq(nil)
+        .to eq(nil)
       expect(project_instance.get_feature_variable_integer('integer_single_variable_feature', 'integer_variable', 2.0, user_attributes))
-       .to eq(nil)
+        .to eq(nil)
       expect(project_instance.get_feature_variable_integer('integer_single_variable_feature', 'integer_variable', [], user_attributes))
-       .to eq(nil)
+        .to eq(nil)
       expect(project_instance.get_feature_variable_integer('integer_single_variable_feature', 'integer_variable', true, user_attributes))
-       .to eq(nil)
+        .to eq(nil)
       expect(project_instance.get_feature_variable_integer('integer_single_variable_feature', 'integer_variable', false, user_attributes))
-       .to eq(nil)
+        .to eq(nil)
       expect(spy_logger).to have_received(:log).with(Logger::ERROR, 'User ID is invalid').exactly(5).times
     end
   end

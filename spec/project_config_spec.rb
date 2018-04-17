@@ -878,8 +878,7 @@ describe Optimizely::ProjectConfig do
       expect(config.get_forced_variation(@valid_experiment[:key], [])).to eq(nil)
       expect(config.get_forced_variation(@valid_experiment[:key], true)).to eq(nil)
       expect(config.get_forced_variation(@valid_experiment[:key], false)).to eq(nil)
-      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
-       'User ID is invalid').exactly(5).times
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG, 'User ID is invalid').exactly(5).times
     end
     # User ID is not defined in the forced variation map
     it 'should log a message and return nil when user is not in forced variation map' do
@@ -942,8 +941,7 @@ describe Optimizely::ProjectConfig do
       expect(config.set_forced_variation(@valid_experiment[:key], [], @valid_variation[:key])).to eq(false)
       expect(config.set_forced_variation(@valid_experiment[:key], true, @valid_variation[:key])).to eq(false)
       expect(config.set_forced_variation(@valid_experiment[:key], false, @valid_variation[:key])).to eq(false)
-      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
-       'User ID is invalid').exactly(5).times
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG, 'User ID is invalid').exactly(5).times
     end
     # Experiment key is nil
     it 'should return false when experiment_key is passed as nil' do
@@ -985,7 +983,7 @@ describe Optimizely::ProjectConfig do
       expect(config.set_forced_variation(@valid_experiment[:key], @user_id, true)).to eq(true)
       expect(config.set_forced_variation(@valid_experiment[:key], @user_id, false)).to eq(true)
       expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
-       "Variation mapped to experiment '#{@valid_experiment[:key]}' has been removed for user '#{@user_id}'.").exactly(5).times
+                                                     "Variation mapped to experiment '#{@valid_experiment[:key]}' has been removed for user '#{@user_id}'.").exactly(5).times
     end
     # Variation key does not exist in the datafile
     it 'return false when variation_key is not in datafile' do
