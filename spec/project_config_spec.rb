@@ -898,14 +898,6 @@ describe Optimizely::ProjectConfig do
     it 'should return nil when experiment_key is passed as empty string for get_forced_variation' do
       expect(config.get_forced_variation('', @user_id)).to eq(nil)
     end
-    # Experiment key is non string value
-    it 'should return nil when experiment_key is passed as non string value for get_forced_variation' do
-      expect(config.get_forced_variation(2, @user_id)).to eq(nil)
-      expect(config.get_forced_variation(2.0, @user_id)).to eq(nil)
-      expect(config.get_forced_variation([], @user_id)).to eq(nil)
-      expect(config.get_forced_variation(true, @user_id)).to eq(nil)
-      expect(config.get_forced_variation(false, @user_id)).to eq(nil)
-    end
   end
 
   # Only those log messages have been asserted, which are directly logged in these methods.
@@ -951,14 +943,6 @@ describe Optimizely::ProjectConfig do
     it 'should return false when experiment_key is passed as empty string' do
       expect(config.set_forced_variation('', @user_id, @valid_variation[:key])).to eq(false)
     end
-    # Experiment key is non string value
-    it 'should return false when experiment_key is passed non string value' do
-      expect(config.set_forced_variation(2, @user_id, @valid_variation[:key])).to eq(false)
-      expect(config.set_forced_variation(2.0, @user_id, @valid_variation[:key])).to eq(false)
-      expect(config.set_forced_variation([], @user_id, @valid_variation[:key])).to eq(false)
-      expect(config.set_forced_variation(true, @user_id, @valid_variation[:key])).to eq(false)
-      expect(config.set_forced_variation(false, @user_id, @valid_variation[:key])).to eq(false)
-    end
     # Experiment key does not exist in the datafile
     it 'return nil when experiment key is not in datafile' do
       expect(config.set_forced_variation(@invalid_experiment_key, @user_id, @valid_variation[:key])).to eq(false)
@@ -974,16 +958,6 @@ describe Optimizely::ProjectConfig do
       expect(config.set_forced_variation(@valid_experiment[:key], @user_id, '')).to eq(true)
       expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
                                                      "Variation mapped to experiment '#{@valid_experiment[:key]}' has been removed for user '#{@user_id}'.")
-    end
-    # Variation key is non string value
-    it 'should delete forced varaition maping, log a message and return true when variation_key is passed non string value' do
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, 2)).to eq(true)
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, 2.0)).to eq(true)
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, [])).to eq(true)
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, true)).to eq(true)
-      expect(config.set_forced_variation(@valid_experiment[:key], @user_id, false)).to eq(true)
-      expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
-                                                     "Variation mapped to experiment '#{@valid_experiment[:key]}' has been removed for user '#{@user_id}'.").exactly(5).times
     end
     # Variation key does not exist in the datafile
     it 'return false when variation_key is not in datafile' do
