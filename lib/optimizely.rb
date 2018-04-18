@@ -135,10 +135,12 @@ module Optimizely
         return nil
       end
 
-      if user_id.to_s.empty?
-        @logger.log(Logger::ERROR, 'User ID cannot be empty.')
-        return nil
-      end
+      return nil unless Optimizely::Helpers::Validator.inputs_valid?(
+        {
+          experiment_key: experiment_key,
+          user_id: user_id
+        }, @logger, Logger::ERROR
+      )
 
       unless user_inputs_valid?(attributes)
         @logger.log(Logger::INFO, "Not activating user '#{user_id}.")
@@ -196,10 +198,12 @@ module Optimizely
         return nil
       end
 
-      if user_id.to_s.empty?
-        @logger.log(Logger::ERROR, 'User ID cannot be empty.')
-        return nil
-      end
+      return nil unless Optimizely::Helpers::Validator.inputs_valid?(
+        {
+          event_key: event_key,
+          user_id: user_id
+        }, @logger, Logger::ERROR
+      )
 
       return nil unless user_inputs_valid?(attributes, event_tags)
 
@@ -254,15 +258,12 @@ module Optimizely
         return false
       end
 
-      unless feature_flag_key
-        @logger.log(Logger::ERROR, 'Feature flag key cannot be empty.')
-        return false
-      end
-
-      if user_id.to_s.empty?
-        @logger.log(Logger::ERROR, 'User ID cannot be empty.')
-        return false
-      end
+      return false unless Optimizely::Helpers::Validator.inputs_valid?(
+        {
+          feature_flag_key: feature_flag_key,
+          user_id: user_id
+        }, @logger, Logger::ERROR
+      )
 
       feature_flag = @config.get_feature_flag_from_key(feature_flag_key)
       unless feature_flag
@@ -305,6 +306,8 @@ module Optimizely
       #   A List of feature flag keys that are enabled for the user.
       #
       enabled_features = []
+
+      return enabled_features unless Optimizely::Helpers::Validator.inputs_valid?({user_id: user_id}, @logger, Logger::ERROR)
 
       unless @is_valid
         logger = SimpleLogger.new
@@ -426,20 +429,15 @@ module Optimizely
       # Returns nil if the feature flag or variable or user ID is empty
       #             in case of variable type mismatch
 
-      unless feature_flag_key
-        @logger.log(Logger::ERROR, 'Feature flag key cannot be empty.')
-        return nil
-      end
-
-      unless variable_key
-        @logger.log(Logger::ERROR, 'Variable key cannot be empty.')
-        return nil
-      end
-
-      if user_id.to_s.empty?
-        @logger.log(Logger::ERROR, 'User ID cannot be empty.')
-        return nil
-      end
+      return nil unless Optimizely::Helpers::Validator.inputs_valid?(
+        {
+          feature_flag_key: feature_flag_key,
+          variable_key: variable_key,
+          variable_type: variable_type,
+          user_id: user_id
+        },
+        @logger, Logger::ERROR
+      )
 
       feature_flag = @config.get_feature_flag_from_key(feature_flag_key)
       unless feature_flag
