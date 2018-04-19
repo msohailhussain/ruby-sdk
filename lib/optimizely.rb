@@ -105,6 +105,13 @@ module Optimizely
         return nil
       end
 
+      return nil unless Optimizely::Helpers::Validator.inputs_valid?(
+        {
+          experiment_key: experiment_key,
+          user_id: user_id
+        }, @logger, Logger::ERROR
+      )
+
       variation_key = get_variation(experiment_key, user_id, attributes)
 
       if variation_key.nil?
@@ -307,13 +314,13 @@ module Optimizely
       #
       enabled_features = []
 
-      return enabled_features unless Optimizely::Helpers::Validator.inputs_valid?({user_id: user_id}, @logger, Logger::ERROR)
-
       unless @is_valid
         logger = SimpleLogger.new
         logger.log(Logger::ERROR, InvalidDatafileError.new('get_enabled_features').message)
         return enabled_features
       end
+
+      return enabled_features unless Optimizely::Helpers::Validator.inputs_valid?({user_id: user_id}, @logger, Logger::ERROR)
 
       @config.feature_flags.each do |feature|
         enabled_features.push(feature['key']) if is_feature_enabled(

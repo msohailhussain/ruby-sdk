@@ -276,7 +276,6 @@ module Optimizely
       #
       # Returns Variation The variation which the given user and experiment should be forced into.
 
-      # user ID should be non empty string
       return nil unless Optimizely::Helpers::Validator.inputs_valid?(
         {
           experiment_key: experiment_key,
@@ -326,7 +325,6 @@ module Optimizely
       #
       # Returns a boolean value that indicates if the set completed successfully.
 
-      #  user ID should be non empty string
       return false unless Optimizely::Helpers::Validator.inputs_valid?(
         {
           user_id: user_id,
