@@ -18,7 +18,6 @@
 require_relative 'constants'
 require 'json'
 require 'json-schema'
-require 'optimizely/logger'
 
 module Optimizely
   module Helpers
@@ -104,7 +103,7 @@ module Optimizely
           next unless !value.is_a?(String) || value.empty?
           valid = false
           if logger_valid?(logger) && level
-            logger.log(level, "#{Optimizely::Helpers::Constants::INPUT_VARIABLES[key.to_s]} is invalid")
+            logger.log(level, "#{Optimizely::Helpers::Constants::INPUT_VARIABLES[key.to_s.upcase]} is invalid")
           end
         end
         valid

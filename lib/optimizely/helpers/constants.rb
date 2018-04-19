@@ -308,12 +308,12 @@ module Optimizely
       }.freeze
 
       INPUT_VARIABLES = {
-        'feature_flag_key' => 'Feature flag key',
-        'experiment_key' => 'Experiment Key',
-        'user_id' => 'User ID',
-        'variation_key' => 'Variation Key',
-        'variable_key' => 'Variable Key',
-        'variable_type' => 'Variable type'
+        'FEATURE_FLAG_KEY' => 'Feature flag key',
+        'EXPERIMENT_KEY' => 'Experiment Key',
+        'USER_ID' => 'User ID',
+        'VARIATION_KEY' => 'Variation Key',
+        'VARIABLE_KEY' => 'Variable Key',
+        'VARIABLE_TYPE' => 'Variable type'
       }.freeze
     end
   end
