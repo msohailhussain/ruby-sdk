@@ -421,7 +421,7 @@ describe Optimizely::EventBuilder do
       Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['USER_AGENT'] => 'test'
     }
     experiment = config.get_experiment_from_key('test_experiment')
-    allow(@event_builder).to receive(:get_bot_filtering).and_return(false)
+    allow(@event_builder).to receive(:bot_filtering).and_return(false)
     impression_event = @event_builder.create_impression_event(experiment, '111128', 'test_user', user_attributes)
     expect(impression_event.params).to eq(@expected_impression_params)
     expect(impression_event.url).to eq(@expected_endpoint)
@@ -494,7 +494,7 @@ describe Optimizely::EventBuilder do
     user_attributes = {
       Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['USER_AGENT'] => 'test'
     }
-    allow(@event_builder).to receive(:get_bot_filtering).and_return(false)
+    allow(@event_builder).to receive(:bot_filtering).and_return(false)
     conversion_event = @event_builder.create_conversion_event('test_event', 'test_user', user_attributes, nil,
                                                               '111127' => '111128')
     expect(conversion_event.params).to eq(@expected_conversion_params)

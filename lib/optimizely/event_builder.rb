@@ -56,7 +56,7 @@ module Optimizely
 
     private
 
-    def get_bot_filtering
+    def bot_filtering
       # Get bot filtering bool
       #
       # Returns 'botFiltering' value in the datafile.
@@ -89,12 +89,12 @@ module Optimizely
         end
       end
       # Append Bot Filtering Attribute
-      if !!get_bot_filtering == get_bot_filtering
+      if bot_filtering.is_a?(TrueClass) || bot_filtering.is_a?(FalseClass)
         visitor_attributes.push(
           entity_id: Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['BOT_FILTERING'],
           key: Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['BOT_FILTERING'],
           type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
-          value: get_bot_filtering
+          value: bot_filtering
         )
       end
 
