@@ -15,8 +15,8 @@
 #    limitations under the License.
 #
 require 'json'
-require_relative 'helpers/validator'
 require_relative 'helpers/constants'
+require_relative 'helpers/validator'
 
 module Optimizely
   V1_CONFIG_VERSION = '1'

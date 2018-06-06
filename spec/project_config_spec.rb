@@ -1040,5 +1040,11 @@ describe Optimizely::ProjectConfig do
     it 'should return attribute ID when provided attribute key is valid' do
       expect(config.get_attribute_id('browser_type')).to eq('111094')
     end
+    it 'should return nil when provided attribute key is bot_filtering_constant' do
+      expect(config.get_attribute_id('$opt_bot_filtering')).to eq(nil)
+    end
+    it 'should return attribute key as attribute ID when key has reserved prefix but is not present in data file' do
+      expect(config.get_attribute_id('$opt_user_agent')).to eq('$opt_user_agent')
+    end
   end
 end

@@ -74,7 +74,7 @@ module Optimizely
       visitor_attributes = []
 
       attributes&.keys&.each do |attribute_key|
-        # Omit falsy attribute values
+        # Omit null attribute values
         attribute_value = attributes[attribute_key]
         unless attribute_value.nil?
           attribute_id = @config.get_attribute_id attribute_key

@@ -369,7 +369,7 @@ describe Optimizely::EventBuilder do
 
     user_attributes = {
       'browser_type' => 'firefox',
-      Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['BUCKETING_ID'] => 'variation'
+      '$opt_bucketing_id' => 'variation'
     }
     experiment = config.get_experiment_from_key('test_experiment')
     impression_event = @event_builder.create_impression_event(experiment, '111128', 'test_user', user_attributes)
@@ -390,7 +390,7 @@ describe Optimizely::EventBuilder do
       value: 'test'
     )
     user_attributes = {
-      Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['USER_AGENT'] => 'test'
+      '$opt_user_agent' => 'test'
     }
     experiment = config.get_experiment_from_key('test_experiment')
     impression_event = @event_builder.create_impression_event(experiment, '111128', 'test_user', user_attributes)
@@ -418,7 +418,7 @@ describe Optimizely::EventBuilder do
     )
 
     user_attributes = {
-      Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['USER_AGENT'] => 'test'
+      '$opt_user_agent' => 'test'
     }
     experiment = config.get_experiment_from_key('test_experiment')
     allow(@event_builder).to receive(:bot_filtering).and_return(false)
@@ -442,7 +442,7 @@ describe Optimizely::EventBuilder do
 
     user_attributes = {
       'browser_type' => 'firefox',
-      Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['BUCKETING_ID'] => 'variation'
+      '$opt_bucketing_id' => 'variation'
     }
     conversion_event = @event_builder.create_conversion_event('test_event', 'test_user', user_attributes, nil,
                                                               '111127' => '111128')
@@ -464,7 +464,7 @@ describe Optimizely::EventBuilder do
     )
 
     user_attributes = {
-      Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['USER_AGENT'] => 'test'
+      '$opt_user_agent' => 'test'
     }
     conversion_event = @event_builder.create_conversion_event('test_event', 'test_user', user_attributes, nil,
                                                               '111127' => '111128')
@@ -492,7 +492,7 @@ describe Optimizely::EventBuilder do
     )
 
     user_attributes = {
-      Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['USER_AGENT'] => 'test'
+      '$opt_user_agent' => 'test'
     }
     allow(@event_builder).to receive(:bot_filtering).and_return(false)
     conversion_event = @event_builder.create_conversion_event('test_event', 'test_user', user_attributes, nil,
