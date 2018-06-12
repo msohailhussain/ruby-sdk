@@ -5,7 +5,6 @@ pkg/*
 Gemfile.lock
 /_yardoc/
 /coverage/
-/doc/
 /spec/reports/
 /tmp/
 *.DS_Store
