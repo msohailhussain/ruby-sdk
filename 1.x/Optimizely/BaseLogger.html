@@ -4,7 +4,7 @@
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>
-  Class: Optimizely::NoOpLogger
+  Class: Optimizely::BaseLogger
   
     &mdash; Documentation by YARD 0.9.14
   
@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
 
 <script type="text/javascript" charset="utf-8">
-  pathId = "Optimizely::NoOpLogger";
+  pathId = "Optimizely::BaseLogger";
   relpath = '../';
 </script>
 
@@ -36,10 +36,10 @@
       <div id="header">
         <div id="menu">
   
-    <a href="../_index.html">Index (N)</a> &raquo;
+    <a href="../_index.html">Index (B)</a> &raquo;
     <span class='title'><span class='object_link'><a href="../Optimizely.html" title="Optimizely (module)">Optimizely</a></span></span>
      &raquo; 
-    <span class="title">NoOpLogger</span>
+    <span class="title">BaseLogger</span>
   
 </div>
 
@@ -59,7 +59,7 @@
         <div class="clear"></div>
       </div>
 
-      <div id="content"><h1>Class: Optimizely::NoOpLogger
+      <div id="content"><h1>Class: Optimizely::BaseLogger
   
   
   
@@ -69,14 +69,12 @@
   <dl>
     <dt>Inherits:</dt>
     <dd>
-      <span class="inheritName"><span class='object_link'><a href="BaseLogger.html" title="Optimizely::BaseLogger (class)">BaseLogger</a></span></span>
+      <span class="inheritName">Object</span>
       
         <ul class="fullTree">
           <li>Object</li>
           
-            <li class="next"><span class='object_link'><a href="BaseLogger.html" title="Optimizely::BaseLogger (class)">BaseLogger</a></span></li>
-          
-            <li class="next">Optimizely::NoOpLogger</li>
+            <li class="next">Optimizely::BaseLogger</li>
           
         </ul>
         <a href="#" class="inheritanceTree">show all</a>
@@ -101,6 +99,10 @@
   
 </div>
 
+<div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="NoOpLogger.html" title="Optimizely::NoOpLogger (class)">NoOpLogger</a></span>, <span class='object_link'><a href="SimpleLogger.html" title="Optimizely::SimpleLogger (class)">SimpleLogger</a></span></p>
+</div>
 
 
 
@@ -134,7 +136,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>Class providing log method which logs nothing.</p>
+<p>Class encapsulating logging functionality.</p>
 </div></span>
   
 </li>
@@ -144,12 +146,6 @@
   
 
 
-  
-  
-  
-  
-  
-  
 
   <div id="instance_method_details" class="method_details_list">
     <h2>Instance Method Details</h2>
@@ -167,7 +163,8 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Class providing log method which logs nothing.</p>
+<p>Class encapsulating logging functionality. Override with your own logger
+providing log method.</p>
 
 
   </div>
@@ -181,12 +178,14 @@
       <pre class="lines">
 
 
-30</pre>
+22
+23</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/optimizely/logger.rb', line 30</span>
+      <pre class="code"><span class="info file"># File 'lib/optimizely/logger.rb', line 22</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='id identifier rubyid__level'>_level</span><span class='comma'>,</span> <span class='id identifier rubyid__message'>_message</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+<span class='kw'>def</span> <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='id identifier rubyid__level'>_level</span><span class='comma'>,</span> <span class='id identifier rubyid__message'>_message</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
     </td>
   </tr>
 </table>
@@ -197,7 +196,7 @@
 </div>
 
       <div id="footer">
-  Generated on Tue Jun 12 18:45:26 2018 by
+  Generated on Wed Jun 13 19:12:27 2018 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.14 (ruby-2.3.1).
 </div>

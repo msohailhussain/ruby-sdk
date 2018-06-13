@@ -176,6 +176,7 @@
       <pre class="lines">
 
 
+29
 30
 31
 32
@@ -196,11 +197,10 @@
 47
 48
 49
-50
-51</pre>
+50</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/optimizely/event_dispatcher.rb', line 30</span>
+      <pre class="code"><span class="info file"># File 'lib/optimizely/event_dispatcher.rb', line 29</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_dispatch_event'>dispatch_event</span><span class='lparen'>(</span><span class='id identifier rubyid_event'>event</span><span class='rparen'>)</span>
   <span class='comment'># Dispatch the event being represented by the Event object.
@@ -216,9 +216,9 @@
   <span class='kw'>elsif</span> <span class='id identifier rubyid_event'>event</span><span class='period'>.</span><span class='id identifier rubyid_http_verb'>http_verb</span> <span class='op'>==</span> <span class='symbol'>:post</span>
     <span class='kw'>begin</span>
       <span class='const'>HTTParty</span><span class='period'>.</span><span class='id identifier rubyid_post'>post</span><span class='lparen'>(</span><span class='id identifier rubyid_event'>event</span><span class='period'>.</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span>
-                    <span class='label'>body:</span> <span class='id identifier rubyid_event'>event</span><span class='period'>.</span><span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_to_json'>to_json</span><span class='comma'>,</span>
-                    <span class='label'>headers:</span> <span class='id identifier rubyid_event'>event</span><span class='period'>.</span><span class='id identifier rubyid_headers'>headers</span><span class='comma'>,</span>
-                    <span class='label'>timeout:</span> <span class='const'><span class='object_link'><a href="#REQUEST_TIMEOUT-constant" title="Optimizely::EventDispatcher::REQUEST_TIMEOUT (constant)">REQUEST_TIMEOUT</a></span></span><span class='rparen'>)</span>
+               <span class='label'>body:</span> <span class='id identifier rubyid_event'>event</span><span class='period'>.</span><span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_to_json'>to_json</span><span class='comma'>,</span>
+               <span class='label'>headers:</span> <span class='id identifier rubyid_event'>event</span><span class='period'>.</span><span class='id identifier rubyid_headers'>headers</span><span class='comma'>,</span>
+               <span class='label'>timeout:</span> <span class='const'><span class='object_link'><a href="#REQUEST_TIMEOUT-constant" title="Optimizely::EventDispatcher::REQUEST_TIMEOUT (constant)">REQUEST_TIMEOUT</a></span></span><span class='rparen'>)</span>
     <span class='kw'>rescue</span> <span class='const'>Timeout</span><span class='op'>::</span><span class='const'>Error</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span>
       <span class='kw'>return</span> <span class='id identifier rubyid_e'>e</span>
     <span class='kw'>end</span>
@@ -234,7 +234,7 @@
 </div>
 
       <div id="footer">
-  Generated on Tue Jun 12 18:45:26 2018 by
+  Generated on Wed Jun 13 19:12:27 2018 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.14 (ruby-2.3.1).
 </div>
