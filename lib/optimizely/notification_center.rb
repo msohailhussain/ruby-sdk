@@ -86,7 +86,7 @@ module Optimizely
       false
     end
 
-    def clear_notifications(notification_type)
+    def clear_notification_listeners(notification_type)
       # Removes notifications for a certain notification type
       #
       # Args:
@@ -98,7 +98,7 @@ module Optimizely
       @logger.log Logger::INFO, "All callbacks for notification type #{notification_type} have been removed."
     end
 
-    def clean_all_notifications
+    def clear_all_notification_listeners
       # Removes all notifications
       @notifications.each_key { |key| @notifications[key] = [] }
     end
