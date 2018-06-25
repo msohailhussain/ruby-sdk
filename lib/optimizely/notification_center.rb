@@ -86,6 +86,12 @@ module Optimizely
       false
     end
 
+    def clear_notifications(notification_type)
+      # Deprecated
+      clear_notification_listeners(notification_type)
+      @logger.log Logger::WARN, "'clear_notifications' is deprecated. Call 'clear_notification_listeners' instead."
+    end
+
     def clear_notification_listeners(notification_type)
       # Removes notifications for a certain notification type
       #
@@ -96,6 +102,12 @@ module Optimizely
 
       @notifications[notification_type] = []
       @logger.log Logger::INFO, "All callbacks for notification type #{notification_type} have been removed."
+    end
+
+    def clean_all_notifications
+      # Deprecated
+      @logger.log Logger::WARN, "'clean_all_notifications' is deprecated. Call 'clear_all_notification_listeners' instead."
+      clear_all_notification_listeners
     end
 
     def clear_all_notification_listeners

@@ -288,6 +288,15 @@ describe Optimizely::NotificationCenter do
         ).to eq(1)
       end
 
+      it 'should call clear_notification_listeners and log depreciation message' do
+        notification_type = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE]
+        expect(@inner_notification_center).to receive(:clear_notification_listeners).once.with(notification_type)
+        @inner_notification_center.clear_notifications(notification_type)
+        expect(spy_logger).to have_received(:log).once.with(
+          Logger::WARN, "'clear_notifications' is deprecated. Call 'clear_notification_listeners' instead."
+        )
+      end
+
       it 'should not throw an error when clear_notification_listeners is called again for the same notification type' do
         notification_type = Optimizely::NotificationCenter::NOTIFICATION_TYPES[:ACTIVATE]
         @inner_notification_center.clear_notification_listeners(notification_type)
@@ -371,6 +380,14 @@ describe Optimizely::NotificationCenter do
         @inner_notification_center.clear_all_notification_listeners
         expect { @inner_notification_center.clear_all_notification_listeners }
           .to_not raise_error
+      end
+
+      it 'should call clear_all_notification_listeners and log depreciation message' do
+        expect(@inner_notification_center).to receive(:clear_all_notification_listeners).once
+        @inner_notification_center.clean_all_notifications
+        expect(spy_logger).to have_received(:log).once.with(
+          Logger::WARN, "'clean_all_notifications' is deprecated. Call 'clear_all_notification_listeners' instead."
+        )
       end
     end
 
