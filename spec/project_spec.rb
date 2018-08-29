@@ -109,11 +109,12 @@ describe 'Optimizely' do
     it 'should log an error when provided an invalid JSON datafile and skip_json_validation is true' do
       expect_any_instance_of(Optimizely::SimpleLogger).to receive(:log).once.with(Logger::ERROR, 'Provided datafile is in an invalid format.')
 
-      Optimizely::Project.new('{"foo": "bar"}', nil, nil, nil, true)
+      Optimizely::Project.new('{"foo": "bar"}', nil, nil, nil, false)
     end
 
     it 'should log an error when provided a datafile of unsupported version' do
-      expect_any_instance_of(Optimizely::SimpleLogger).to receive(:log).once.with(Logger::ERROR, 'Provided datafile is an unsupported version. Please use SDK version 1.1.2 or earlier for datafile version 1.')
+      config_body_invalid_json = JSON.parse(config_body_invalid_JSON)
+      expect_any_instance_of(Optimizely::SimpleLogger).to receive(:log).once.with(Logger::ERROR, "This version of the Ruby SDK does not support the given datafile version: #{config_body_invalid_json['version']}.")
 
       Optimizely::Project.new(config_body_invalid_JSON, nil, nil, nil, true)
     end

@@ -19,10 +19,6 @@ require_relative 'helpers/constants'
 require_relative 'helpers/validator'
 
 module Optimizely
-  V1_CONFIG_VERSION = '1'
-
-  UNSUPPORTED_VERSIONS = [V1_CONFIG_VERSION].freeze
-
   class ProjectConfig
     # Representation of the Optimizely project config.
     RUNNING_EXPERIMENT_STATUS = ['Running'].freeze
@@ -80,7 +76,7 @@ module Optimizely
       @logger = logger
       @version = config['version']
 
-      return if UNSUPPORTED_VERSIONS.include?(@version)
+      raise InvalidDatafileVersionError, @version unless Helpers::Constants::SUPPORTED_VERSIONS.value?(@version)
 
       @account_id = config['accountId']
       @attributes = config.fetch('attributes', [])
