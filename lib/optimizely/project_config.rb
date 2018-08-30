@@ -35,7 +35,6 @@ module Optimizely
     attr_reader :experiments
     attr_reader :feature_flags
     attr_reader :groups
-    attr_reader :parsing_succeeded
     attr_reader :project_id
     # Boolean - denotes if Optimizely should remove the last block of visitors' IP address before storing event data
     attr_reader :anonymize_ip
@@ -71,7 +70,6 @@ module Optimizely
 
       config = JSON.parse(datafile)
 
-      @parsing_succeeded = false
       @error_handler = error_handler
       @logger = logger
       @version = config['version']
@@ -143,7 +141,6 @@ module Optimizely
       @feature_flag_key_map.each do |key, feature_flag|
         @feature_variable_key_map[key] = generate_key_map(feature_flag['variables'], 'key')
       end
-      @parsing_succeeded = true
     end
 
     def experiment_running?(experiment)
@@ -383,14 +380,6 @@ module Optimizely
       @logger.log Logger::ERROR, "Attribute key '#{attribute_key}' is not in datafile."
       @error_handler.handle_error InvalidAttributeError
       nil
-    end
-
-    def parsing_succeeded?
-      # Helper method to determine if parsing the datafile was successful.
-      #
-      # Returns Boolean depending on whether parsing the datafile succeeded or not.
-
-      @parsing_succeeded
     end
 
     def variation_id_exists?(experiment_id, variation_id)

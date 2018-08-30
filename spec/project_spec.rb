@@ -122,22 +122,6 @@ describe 'Optimizely' do
       Optimizely::Project.new('{"version": "2", "foo": "bar"}', nil, nil, nil, true)
     end
 
-    it 'should log an error when provided a datafile of null version' do
-      config_body_json = JSON.parse(config_body_JSON)
-      config_body_json['version'] = nil
-      expect_any_instance_of(Optimizely::SimpleLogger).to receive(:log).once.with(Logger::ERROR, "This version of the Ruby SDK does not support the given datafile version: #{config_body_json['version']}.")
-
-      Optimizely::Project.new(JSON.dump(config_body_json), nil, nil, nil, true)
-    end
-
-    it 'should log an error when provided a datafile of empty version' do
-      config_body_json = JSON.parse(config_body_JSON)
-      config_body_json['version'] = ''
-      expect_any_instance_of(Optimizely::SimpleLogger).to receive(:log).once.with(Logger::ERROR, "This version of the Ruby SDK does not support the given datafile version: #{config_body_json['version']}.")
-
-      Optimizely::Project.new(JSON.dump(config_body_json), nil, nil, nil, true)
-    end
-
     it 'should log an error when provided a datafile of unsupported version' do
       config_body_invalid_json = JSON.parse(config_body_invalid_JSON)
       expect_any_instance_of(Optimizely::SimpleLogger).to receive(:log).once.with(Logger::ERROR, "This version of the Ruby SDK does not support the given datafile version: #{config_body_invalid_json['version']}.")
