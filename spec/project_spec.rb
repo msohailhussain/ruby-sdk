@@ -68,12 +68,12 @@ describe 'Optimizely' do
       expect(instance_with_error_handler.error_handler.handle_error('test_message')). to eq('test_message')
     end
 
-    it 'should log an error when given a datafile is null' do
+    it 'should log an error when datafile is null' do
       expect_any_instance_of(Optimizely::SimpleLogger).to receive(:log).once.with(Logger::ERROR, 'Provided datafile is in an invalid format.')
       Optimizely::Project.new(nil)
     end
 
-    it 'should log an error when given a datafile is empty' do
+    it 'should log an error when datafile is empty' do
       expect_any_instance_of(Optimizely::SimpleLogger).to receive(:log).once.with(Logger::ERROR, 'Provided datafile is in an invalid format.')
       Optimizely::Project.new('')
     end
