@@ -76,9 +76,7 @@ module Optimizely
       @logger = logger
       @version = config['version']
 
-      if @version && !Helpers::Constants::SUPPORTED_VERSIONS.value?(@version)
-        raise InvalidDatafileVersionError, @version
-      end
+      raise InvalidDatafileVersionError, @version unless Helpers::Constants::SUPPORTED_VERSIONS.value?(@version)
 
       @account_id = config['accountId']
       @attributes = config.fetch('attributes', [])
