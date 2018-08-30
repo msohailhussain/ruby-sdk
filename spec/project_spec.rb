@@ -109,7 +109,7 @@ describe 'Optimizely' do
     it 'should log an error when provided an invalid JSON datafile and skip_json_validation is true' do
       expect_any_instance_of(Optimizely::SimpleLogger).to receive(:log).once.with(Logger::ERROR, 'Provided datafile is in an invalid format.')
 
-      Optimizely::Project.new('{"foo": "bar"}', nil, nil, nil, false)
+      Optimizely::Project.new('{foo": "bar"}', nil, nil, nil, true)
     end
 
     it 'should log an error when provided a datafile of unsupported version' do
