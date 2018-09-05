@@ -67,13 +67,11 @@ module Optimizely
       rescue StandardError => e
         @is_valid = false
         @logger = SimpleLogger.new
-        if e.class == InvalidDatafileVersionError
-          @logger.log(Logger::ERROR, e.message)
-          @error_handler.handle_error InvalidDatafileVersionError
-        else
-          @logger.log(Logger::ERROR, InvalidInputError.new('datafile').message)
-          @error_handler.handle_error InvalidInputError
-        end
+        @logger.log(
+          Logger::ERROR,
+          e.class == InvalidDatafileVersionError ? e.message : InvalidInputError.new('datafile').message
+        )
+        @error_handler.handle_error e.class == InvalidDatafileVersionError ? InvalidDatafileVersionError : InvalidInputError
         return
       end
 
