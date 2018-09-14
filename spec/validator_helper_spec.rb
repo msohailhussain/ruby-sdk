@@ -29,6 +29,7 @@ describe 'ValidatorHelper' do
       expect(Optimizely::Helpers::Validator.attributes_valid?(key: 5)).to eq(true)
       expect(Optimizely::Helpers::Validator.attributes_valid?(key: 5.5)).to eq(true)
       expect(Optimizely::Helpers::Validator.attributes_valid?(key: false)).to eq(true)
+      expect(Optimizely::Helpers::Validator.attributes_valid?({'key'=>'fdfsd'})).to eq(true)
       expect(
         Optimizely::Helpers::Validator.attributes_valid?(
           boolean: false,
@@ -45,7 +46,9 @@ describe 'ValidatorHelper' do
       expect(Optimizely::Helpers::Validator.attributes_valid?(42)).to eq(false)
       expect(Optimizely::Helpers::Validator.attributes_valid?([])).to eq(false)
       expect(Optimizely::Helpers::Validator.attributes_valid?(false)).to eq(false)
-      expect(Optimizely::Helpers::Validator.attributes_valid?(false)).to eq(false)
+      expect(Optimizely::Helpers::Validator.attributes_valid?({5=>'fdfsd'})).to eq(false)
+      expect(Optimizely::Helpers::Validator.attributes_valid?({5.5=>'fdfsd'})).to eq(false)
+      expect(Optimizely::Helpers::Validator.attributes_valid?({true=>'fdfsd'})).to eq(false)
     end
   end
 

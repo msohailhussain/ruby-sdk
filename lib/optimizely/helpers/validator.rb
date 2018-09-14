@@ -30,8 +30,11 @@ module Optimizely
         # attributes - User attributes to be validated.
         #
         # Returns boolean depending on validity of attributes.
-
-        attributes.is_a?(Hash)
+        return false unless attributes.is_a?(Hash)
+        attributes.each_key do |key|
+          return false unless key.is_a?(String) || key.is_a?(Symbol)
+        end
+        true
       end
 
       def event_tags_valid?(event_tags)
