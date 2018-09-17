@@ -31,10 +31,16 @@ module Optimizely
         #
         # Returns boolean depending on validity of attributes.
         return false unless attributes.is_a?(Hash)
-        attributes.each_key do |key|
-          return false unless key.is_a?(String) || key.is_a?(Symbol)
-        end
         true
+      end
+
+      def attribute_value_type_valid?(attribute_value)
+        # Determines if provided attribute value is valid.
+        #
+        # attribute_value - value to be validated.
+        #
+        # Returns boolean depending on validity of attribute value.
+        !attribute_value.nil? && Helpers::Constants::ATTRIBUTE_VALID_TYPES.include?(attribute_value.class)
       end
 
       def event_tags_valid?(event_tags)

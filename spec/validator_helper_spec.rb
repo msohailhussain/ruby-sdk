@@ -25,11 +25,7 @@ describe 'ValidatorHelper' do
 
   describe '.attributes_valid?' do
     it 'should return true when valid attributes are passed' do
-      expect(Optimizely::Helpers::Validator.attributes_valid?(key: 'value')).to eq(true)
-      expect(Optimizely::Helpers::Validator.attributes_valid?(key: 5)).to eq(true)
-      expect(Optimizely::Helpers::Validator.attributes_valid?(key: 5.5)).to eq(true)
-      expect(Optimizely::Helpers::Validator.attributes_valid?(key: false)).to eq(true)
-      expect(Optimizely::Helpers::Validator.attributes_valid?({'key'=>'value'})).to eq(true)
+      expect(Optimizely::Helpers::Validator.attributes_valid?({})).to eq(true)
       expect(
         Optimizely::Helpers::Validator.attributes_valid?(
           boolean: false,
@@ -46,9 +42,27 @@ describe 'ValidatorHelper' do
       expect(Optimizely::Helpers::Validator.attributes_valid?(42)).to eq(false)
       expect(Optimizely::Helpers::Validator.attributes_valid?([])).to eq(false)
       expect(Optimizely::Helpers::Validator.attributes_valid?(false)).to eq(false)
-      expect(Optimizely::Helpers::Validator.attributes_valid?({5=>'value'})).to eq(false)
-      expect(Optimizely::Helpers::Validator.attributes_valid?({5.5=>'value'})).to eq(false)
-      expect(Optimizely::Helpers::Validator.attributes_valid?({true=>'value'})).to eq(false)
+    end
+  end
+
+  describe '.attribute_value_type_valid?' do
+    it 'should return true when valid type attribute value is passed' do
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?('value')).to eq(true)
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?(5)).to eq(true)
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?(5.5)).to eq(true)
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?(false)).to eq(true)
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?(true)).to eq(true)
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?('')).to eq(true)
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?(0)).to eq(true)
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?(0.0)).to eq(true)
+    end
+
+    it 'should return false when invalid type attribute value is passed' do
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?({})).to eq(false)
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?([])).to eq(false)
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?(nil)).to eq(false)
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?(key: 'value')).to eq(false)
+      expect(Optimizely::Helpers::Validator.attribute_value_type_valid?(%w[key value])).to eq(false)
     end
   end
 
