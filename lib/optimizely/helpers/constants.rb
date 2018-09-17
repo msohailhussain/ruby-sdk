@@ -328,7 +328,7 @@ module Optimizely
         'v4' => '4'
       }.freeze
 
-      ATTRIBUTE_VALID_TYPES = [FalseClass, Fixnum, Float, TrueClass, String].freeze
+      ATTRIBUTE_VALID_TYPES = [FalseClass, Float, Integer, String, TrueClass].freeze
     end
   end
 end

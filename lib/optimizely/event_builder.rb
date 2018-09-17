@@ -20,6 +20,7 @@ require_relative 'helpers/constants'
 require_relative 'helpers/event_tag_utils'
 require_relative 'params'
 require_relative 'version'
+
 require 'securerandom'
 
 module Optimizely
@@ -75,7 +76,7 @@ module Optimizely
       visitor_attributes = []
 
       attributes&.keys&.each do |attribute_key|
-        # Omit null attribute invalid values
+        # Omit invalid attribute values.
         attribute_value = attributes[attribute_key]
         if Helpers::Validator.attribute_value_type_valid?(attribute_value)
           attribute_id = @config.get_attribute_id attribute_key

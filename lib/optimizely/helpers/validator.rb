@@ -30,8 +30,7 @@ module Optimizely
         # attributes - User attributes to be validated.
         #
         # Returns boolean depending on validity of attributes.
-        return false unless attributes.is_a?(Hash)
-        true
+        attributes.is_a?(Hash)
       end
 
       def attribute_value_type_valid?(attribute_value)
@@ -40,7 +39,7 @@ module Optimizely
         # attribute_value - value to be validated.
         #
         # Returns boolean depending on validity of attribute value.
-        !attribute_value.nil? && Helpers::Constants::ATTRIBUTE_VALID_TYPES.include?(attribute_value.class)
+        Helpers::Constants::ATTRIBUTE_VALID_TYPES.any? { |type| attribute_value.is_a?(type) }
       end
 
       def event_tags_valid?(event_tags)
