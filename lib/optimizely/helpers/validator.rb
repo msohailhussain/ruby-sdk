@@ -30,6 +30,7 @@ module Optimizely
         # attributes - User attributes to be validated.
         #
         # Returns boolean depending on validity of attributes.
+
         attributes.is_a?(Hash)
       end
 
