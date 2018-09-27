@@ -291,18 +291,17 @@ describe 'Optimizely' do
 
     it 'should log and return false when non string value inputs are passed' do
       expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: nil}, spy_logger, Logger::ERROR)).to eq(false)
-      expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: ''}, spy_logger, Logger::ERROR)).to eq(false)
       expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: []}, spy_logger, Logger::ERROR)).to eq(false)
       expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: {}}, spy_logger, Logger::ERROR)).to eq(false)
       expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: 2}, spy_logger, Logger::ERROR)).to eq(false)
       expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: 2.0}, spy_logger, Logger::ERROR)).to eq(false)
       expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: true}, spy_logger, Logger::ERROR)).to eq(false)
       expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: false}, spy_logger, Logger::ERROR)).to eq(false)
-      expect(spy_logger).to have_received(:log).with(Logger::ERROR, 'User ID is invalid').exactly(8).times
+      expect(spy_logger).to have_received(:log).with(Logger::ERROR, 'User ID is invalid').exactly(7).times
     end
 
     it 'should log and return false when multiple non string value inputs are passed' do
-      expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: '', experiment_key: true}, spy_logger, Logger::ERROR)).to eq(false)
+      expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: nil, experiment_key: true}, spy_logger, Logger::ERROR)).to eq(false)
       expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: [], variation_key: 2.0}, spy_logger, Logger::ERROR)).to eq(false)
       expect(spy_logger).to have_received(:log).twice.with(Logger::ERROR, 'User ID is invalid')
       expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, 'Experiment key is invalid')
@@ -311,6 +310,7 @@ describe 'Optimizely' do
 
     it 'should return true when valid input values are passed' do
       expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: '2'}, spy_logger, Logger::ERROR)).to eq(true)
+      expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: ''}, spy_logger, Logger::ERROR)).to eq(true)
       expect(Optimizely::Helpers::Validator.inputs_valid?({
                                                             user_id: 'test_user',
                                                             experiment_key: 'test_experiment',
@@ -438,10 +438,9 @@ describe 'Optimizely' do
       }
     end
 
-    it 'should return nil when user_id is empty or nil' do
-      expect(project_instance.track('test_event', '', nil, 'revenue' => 42)).to eq(nil)
+    it 'should return nil when user_id is nil' do
       expect(project_instance.track('test_event', nil, nil, 'revenue' => 42)).to eq(nil)
-      expect(spy_logger).to have_received(:log).twice.with(Logger::ERROR, 'User ID is invalid')
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, 'User ID is invalid')
     end
 
     it 'should call inputs_valid? with the proper arguments in track' do
@@ -627,10 +626,9 @@ describe 'Optimizely' do
   end
 
   describe '#get_variation' do
-    it 'should return nil when user_id is empty or nil' do
-      expect(project_instance.get_variation('test_experiment_with_audience', '', nil)).to eq(nil)
+    it 'should return nil when user_id is nil' do
       expect(project_instance.get_variation('test_experiment_with_audience', nil, nil)).to eq(nil)
-      expect(spy_logger).to have_received(:log).twice.with(Logger::ERROR, 'User ID is invalid')
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, 'User ID is invalid')
     end
 
     it 'should call inputs_valid? with the proper arguments in get_variation' do
@@ -771,10 +769,9 @@ describe 'Optimizely' do
       expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, 'Feature flag key is invalid')
     end
 
-    it 'should return false when user_id is empty or nil' do
-      expect(project_instance.is_feature_enabled('boolean_single_variable_feature', '')).to be false
+    it 'should return false when user_id is nil' do
       expect(project_instance.is_feature_enabled('boolean_single_variable_feature', nil)).to be false
-      expect(spy_logger).to have_received(:log).twice.with(Logger::ERROR, 'User ID is invalid')
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, 'User ID is invalid')
     end
 
     it 'should return false when the feature flag key is invalid' do
@@ -791,6 +788,13 @@ describe 'Optimizely' do
         }, spy_logger, Logger::ERROR
       )
       project_instance.is_feature_enabled('multi_variate_feature', 'test_user')
+    end
+
+    it 'should return false when attributes are invalid' do
+      expect(Optimizely::Helpers::Validator).to receive(:attributes_valid?).once.with('invalid')
+      expect(error_handler).to receive(:handle_error).once.with(Optimizely::InvalidAttributeFormatError)
+      expect(project_instance.is_feature_enabled('multi_variate_feature', 'test_user', 'invalid')).to be false
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, 'Provided attributes are in an invalid format.')
     end
 
     it 'should return false when the user is not bucketed into any variation' do
@@ -906,6 +910,13 @@ describe 'Optimizely' do
       expect(Optimizely::Helpers::Validator.inputs_valid?({user_id: 'test_user'}, spy_logger, Logger::ERROR)).to eq(true)
       expect(Optimizely::Helpers::Validator).to receive(:inputs_valid?).with({user_id: 'test_user'}, spy_logger, Logger::ERROR)
       project_instance.get_enabled_features('test_user', 'browser_type' => 'chrome')
+    end
+
+    it 'should return empty when attributes are invalid' do
+      expect(Optimizely::Helpers::Validator).to receive(:attributes_valid?).once.with('invalid')
+      expect(error_handler).to receive(:handle_error).once.with(Optimizely::InvalidAttributeFormatError)
+      expect(project_instance.get_enabled_features('test_user', 'invalid')).to be_empty
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, 'Provided attributes are in an invalid format.')
     end
 
     it 'should return only enabled feature flags keys' do
@@ -1204,12 +1215,10 @@ describe 'Optimizely' do
       expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, 'Variable key is invalid')
     end
 
-    it 'should return nil if user_id is empty or nil' do
+    it 'should return nil if user_id is nil' do
       expect(project_instance.get_feature_variable_integer('integer_single_variable_feature', 'integer_variable', nil, user_attributes))
         .to eq(nil)
-      expect(project_instance.get_feature_variable_integer('integer_single_variable_feature', 'integer_variable', '', user_attributes))
-        .to eq(nil)
-      expect(spy_logger).to have_received(:log).twice.with(Logger::ERROR, 'User ID is invalid')
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, 'User ID is invalid')
     end
 
     it 'should call inputs_valid? with the proper arguments in get_feature_variable_for_type' do
@@ -1223,6 +1232,22 @@ describe 'Optimizely' do
       )
       expect(project_instance.get_feature_variable_integer('integer_single_variable_feature', 'integer_variable', nil, user_attributes))
         .to eq(nil)
+    end
+  end
+
+  describe '#get_feature_variable_for_type with invalid attributes' do
+    it 'should return nil when attributes are invalid' do
+      expect(Optimizely::Helpers::Validator).to receive(:attributes_valid?).once.with('invalid')
+      expect(error_handler).to receive(:handle_error).once.with(Optimizely::InvalidAttributeFormatError)
+      expect(project_instance.send(
+               :get_feature_variable_for_type,
+               'integer_single_variable_feature',
+               'integer_variable',
+               'integer',
+               'test_user',
+               'invalid'
+             )).to eq(nil)
+      expect(spy_logger).to have_received(:log).once.with(Logger::ERROR, 'Provided attributes are in an invalid format.')
     end
   end
 
