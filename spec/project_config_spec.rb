@@ -945,21 +945,39 @@ describe Optimizely::ProjectConfig do
     it 'should call inputs_valid? with the proper arguments in set_forced_variation' do
       expect(Optimizely::Helpers::Validator).to receive(:inputs_valid?).with(
         {
-          user_id: @user_id,
           experiment_key: @valid_experiment[:key]
         }, spy_logger, Logger::DEBUG
       )
       config.set_forced_variation(@valid_experiment[:key], @user_id, @valid_variation[:key])
     end
 
+    it 'should log and return false when user ID is non string in set_forced_variation' do
+      expect(config.set_forced_variation(@valid_experiment[:key], nil, @valid_variation[:key])).to be false
+      expect(config.set_forced_variation(@valid_experiment[:key], 5, @valid_variation[:key])).to be false
+      expect(config.set_forced_variation(@valid_experiment[:key], 5.5, @valid_variation[:key])).to be false
+      expect(config.set_forced_variation(@valid_experiment[:key], true, @valid_variation[:key])).to be false
+      expect(config.set_forced_variation(@valid_experiment[:key], {}, @valid_variation[:key])).to be false
+      expect(config.set_forced_variation(@valid_experiment[:key], [], @valid_variation[:key])).to be false
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG, 'User ID is invalid').exactly(6).times
+    end
+
     it 'should call inputs_valid? with the proper arguments in get_forced_variation' do
       expect(Optimizely::Helpers::Validator).to receive(:inputs_valid?).with(
         {
-          experiment_key: @valid_experiment[:key],
-          user_id: @user_id
+          experiment_key: @valid_experiment[:key]
         }, spy_logger, Logger::DEBUG
       )
       config.get_forced_variation(@valid_experiment[:key], @user_id)
+    end
+
+    it 'should log and return nil when user ID is non string in get_forced_variation' do
+      expect(config.get_forced_variation(@valid_experiment[:key], nil)).to eq(nil)
+      expect(config.get_forced_variation(@valid_experiment[:key], 5)).to eq(nil)
+      expect(config.get_forced_variation(@valid_experiment[:key], 5.5)).to eq(nil)
+      expect(config.get_forced_variation(@valid_experiment[:key], true)).to eq(nil)
+      expect(config.get_forced_variation(@valid_experiment[:key], {})).to eq(nil)
+      expect(config.get_forced_variation(@valid_experiment[:key], [])).to eq(nil)
+      expect(spy_logger).to have_received(:log).with(Logger::DEBUG, 'User ID is invalid').exactly(6).times
     end
 
     # Call set variation with different variations on one user/experiment to confirm that each set is expected.
