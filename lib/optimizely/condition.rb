@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 #
-#    Copyright 2016-2017, Optimizely and contributors
+#    Copyright 2016-2018, Optimizely and contributors
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -45,10 +45,14 @@ module Optimizely
       #
       # Returns boolean true if all operands evaluate to true.
 
+      found_null = false
       conditions.each do |condition|
         result = evaluate(condition)
         return result if result == false
+        found_null = true if result.nil?
       end
+
+      return nil if found_null
 
       true
     end
@@ -61,10 +65,14 @@ module Optimizely
       #
       # Returns boolean true if any operand evaluates to true.
 
+      found_null = false
       conditions.each do |condition|
         result = evaluate(condition)
         return result if result == true
+        found_null = true if result.nil?
       end
+
+      return nil if found_null
 
       false
     end
@@ -79,7 +87,8 @@ module Optimizely
 
       return false if single_condition.length != 1
 
-      !evaluate(single_condition[0])
+      result = evaluate(single_condition[0])
+      result.nil? ? nil : !result
     end
 
     def evaluator(condition_array)

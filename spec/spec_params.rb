@@ -314,6 +314,43 @@ module OptimizelySpec
                       '{"name": "browser_type", "type": "custom_attribute", "value": "chrome"}]]]',
       'id' => '11155'
     }],
+    'typedAudiences' => [
+      {
+        'id' => '11156',
+        'name' => 'BOOL',
+        'conditions' => '["and", ["or", ["or", {"name": "booleanKey", "type": "custom_attribute", "match": "exact", "value": true}]]]'
+      },
+      {
+        'id' => '11157',
+        'name' => 'INT',
+        'conditions' => '["and", ["or", ["or", {"name": "integerKey", "type": "custom_attribute", "match": "gt", "value": 1.0}]]]'
+      },
+      {
+        'id' => '11158',
+        'name' => 'DOUBLE',
+        'conditions' => '["and", ["or", ["or", {"name": "doubleKey", "type": "custom_attribute", "match": "lt", "value": 100.0}]]]'
+      },
+      {
+        'id' => '11159',
+        'name' => 'Gryffindors',
+        'conditions' => '["and", ["or", ["or", {"name": "house", "type": "custom_attribute", "match": "exact", "value": "Gryffindor"}]]]'
+      },
+      {
+        'id' => '11160',
+        'name' => 'Slytherins',
+        'conditions' => '["and", ["or", ["or", {"name": "house", "type": "custom_attribute", "match": "substring", "value": "Slytherin"}]]]'
+      },
+      {
+        'id' => '11161',
+        'name' => 'english_citizens',
+        'conditions' => '["and", ["or", ["or", {"name": "nationality", "type": "custom_attribute", "match": "exact", "value": "English"}]]]'
+      },
+      {
+        'id' => '11162',
+        'name' => 'audience_with_missing_value',
+        'conditions' => '["and", ["or", ["or", {"name": "nationality", "type": "custom_attribute", "value": "English"}, {"name": "nationality", "type": "custom_attribute"}]]]'
+      }
+    ],
     'groups' => [{
       'id' => '101',
       'policy' => 'random',

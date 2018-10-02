@@ -34,6 +34,7 @@ describe Optimizely::ProjectConfig do
       expect(project_config.account_id).to eq(config_body['accountId'])
       expect(project_config.attributes).to eq(config_body['attributes'])
       expect(project_config.audiences).to eq(config_body['audiences'])
+      expect(project_config.typed_audiences).to eq(config_body['typedAudiences'])
       expect(project_config.bot_filtering).to eq(config_body['botFiltering'])
       expect(project_config.events).to eq(config_body['events'])
       expect(project_config.feature_flags).to eq(config_body['featureFlags'])
@@ -46,7 +47,14 @@ describe Optimizely::ProjectConfig do
       }
       expected_audience_id_map = {
         '11154' => config_body['audiences'][0],
-        '11155' => config_body['audiences'][1]
+        '11155' => config_body['audiences'][1],
+        '11156' => config_body['typedAudiences'][0],
+        '11157' => config_body['typedAudiences'][1],
+        '11158' => config_body['typedAudiences'][2],
+        '11159' => config_body['typedAudiences'][3],
+        '11160' => config_body['typedAudiences'][4],
+        '11161' => config_body['typedAudiences'][5],
+        '11162' => config_body['typedAudiences'][6]
       }
 
       expected_event_key_map = {
