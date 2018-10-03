@@ -24,11 +24,31 @@ module Optimizely
     NOT = 'not'
   end
 
+  class ConditionalMatchTypes
+    EXACT = 'exact'.freeze
+    EXISTS = 'exists'.freeze
+    GREATER_THAN = 'gt'.freeze
+    LESS_THAN = 'lt'.freeze
+    SUBSTRING = 'substring'.freeze
+  end
+
   class ConditionEvaluator
+    CUSTOM_ATTRIBUTE_CONDITION_TYPE = 'custom_attribute'.freeze
+
     DEFAULT_OPERATOR_TYPES = [
       ConditionalOperatorTypes::AND,
       ConditionalOperatorTypes::OR,
       ConditionalOperatorTypes::NOT
+    ].freeze
+
+    EXACT_MATCH_ALLOWED_TYPES = [FalseClass, Numeric, String, TrueClass].freeze
+
+    MATCH_TYPES = [
+        ConditionalMatchTypes::EXACT,
+        ConditionalMatchTypes::EXISTS,
+        ConditionalMatchTypes::GREATER_THAN,
+        ConditionalMatchTypes::LESS_THAN,
+        ConditionalMatchTypes::SUBSTRING
     ].freeze
 
     attr_reader :user_attributes
@@ -45,14 +65,10 @@ module Optimizely
       #
       # Returns boolean true if all operands evaluate to true.
 
-      found_null = false
       conditions.each do |condition|
         result = evaluate(condition)
-        return result if result == false
-        found_null = true if result.nil?
+        return result if (result == false) || result.nil?
       end
-
-      return nil if found_null
 
       true
     end
@@ -65,14 +81,10 @@ module Optimizely
       #
       # Returns boolean true if any operand evaluates to true.
 
-      found_null = false
       conditions.each do |condition|
         result = evaluate(condition)
-        return result if result == true
-        found_null = true if result.nil?
+        return result if (result == true) || result.nil?
       end
-
-      return nil if found_null
 
       false
     end
@@ -108,10 +120,13 @@ module Optimizely
       #              Example: ['and', operand_1, ['or', operand_2, operand_3]]
       #
       # Returns boolean result of evaluating the conditions evaluated.
+      #         nil if the given conditions can't be evaluated.
 
       if conditions.is_a? Array
         operator_type = conditions[0]
-        return false unless DEFAULT_OPERATOR_TYPES.include?(operator_type)
+        # Operator to apply is not explicit - assume 'or'
+        operator_type = ConditionalOperatorTypes::OR unless DEFAULT_OPERATOR_TYPES.include?(operator_type)
+
         case operator_type
         when ConditionalOperatorTypes::AND
           return and_evaluator(conditions[1..-1])
@@ -122,11 +137,68 @@ module Optimizely
         end
       end
 
-      # Create array of condition key and corresponding value of audience condition.
-      condition_array = audience_condition_deserializer(conditions)
+      return nil unless (conditions['type'] == CUSTOM_ATTRIBUTE_CONDITION_TYPE) &&
+          MATCH_TYPES.include?(conditions['match'])
 
-      # Compare audience condition against provided user data i.e. attributes.
-      evaluator(condition_array)
+      match_type = conditions['match']
+
+      match_type = ConditionalMatchTypes::EXACT unless MATCH_TYPES.include?(match_type)
+
+      case match_type
+      when ConditionalMatchTypes::EXACT
+        return exact_evaluator(conditions)
+      when ConditionalMatchTypes::EXISTS
+        return exists_evaluator(conditions)
+      when ConditionalMatchTypes::GREATER_THAN
+        return greater_than_evaluator(conditions)
+      when ConditionalMatchTypes::LESS_THAN
+        return less_than_evaluator(conditions)
+      when ConditionalMatchTypes::SUBSTRING
+        return substring_evaluator(conditions)
+      end
+    end
+
+    def exact_evaluator(condition)
+      condition_value = condition['value']
+      user_provided_value = @user_attributes[condition['name']]
+      return nil unless EXACT_MATCH_ALLOWED_TYPES.any? do |type|
+        condition_value.is_a?(type) && user_provided_value.is_a?(type)
+      end
+
+      return nil unless condition_value.class == user_provided_value.class
+
+      return condition_value === user_provided_value
+    end
+
+    def exists_evaluator(condition)
+      return !@user_attributes[condition['name']].nil?
+    end
+
+    def greater_than_evaluator(condition)
+      condition_value = condition['value']
+      user_provided_value = @user_attributes[condition['name']]
+
+      return nil unless (user_provided_value.is_a?(Numeric)) && condition_value.is_a?(Numeric)
+
+      return  user_provided_value > condition_value
+    end
+
+    def less_than_evaluator(condition)
+      condition_value = condition['value']
+      user_provided_value = @user_attributes[condition['name']]
+
+      return nil unless (user_provided_value.is_a?(Numeric)) && condition_value.is_a?(Numeric)
+
+      return  user_provided_value < condition_value
+    end
+
+    def substring_evaluator(condition)
+      condition_value = condition['value']
+      user_provided_value = @user_attributes[condition['name']]
+
+      return nil unless (user_provided_value.is_a?(String)) && condition_value.is_a?(String)
+
+      return  user_provided_value.include? condition_value
     end
 
     private
