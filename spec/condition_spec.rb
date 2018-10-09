@@ -123,8 +123,8 @@ describe Optimizely::ConditionEvaluator do
     expect(@condition_evaluator.not_evaluator(conditions)).to be false
   end
 
-  it 'should return false for not_evaluator when array has more than one condition' do
-    expect(@condition_evaluator.not_evaluator([42, 42])).to be false
+  it 'should return nil for not_evaluator when condition array is empty' do
+    expect(@condition_evaluator.not_evaluator([])).to be nil
   end
 
   it 'should return true for evaluate when conditions evaluate to true' do
@@ -152,20 +152,20 @@ describe Optimizely::ConditionEvaluator do
     expect(@condition_evaluator.evaluate(condition)).to eq(nil)
   end
 
-  it 'should return null when condition has an invalid match property' do
+  it 'should return nil when condition has an invalid match property' do
     condition = '["and", {"match": "weird", "name": "browser_type", "type": "custom_attribute", "chrome": "test"}]'
     condition = JSON.parse(condition)
     expect(@condition_evaluator.evaluate(condition)).to eq(nil)
   end
 
-  describe 'null handling' do
+  describe 'nil handling' do
     before(:context) do
       @exact_browser_condition = {'name' => 'browser_type', 'match' => 'exact', 'type' => 'custom_attribute', 'value' => 'firefox'}
       @exact_device_condition =  {'name' => 'device', 'match' => 'exact', 'type' => 'custom_attribute', 'value' => 'iphone'}
       @exact_location_condition = {'name' => 'location', 'match' => 'exact', 'type' => 'custom_attribute', 'value' => 'san francisco'}
     end
     describe 'and evaluation' do
-      it 'should return null when all operands evaluate to null' do
+      it 'should return nil when all operands evaluate to nil' do
         user_attributes = {
           'browser_type' => 4.5,
           'location' => false
@@ -174,7 +174,7 @@ describe Optimizely::ConditionEvaluator do
         expect(condition_evaluator.evaluate(['and', @exact_browser_condition, @exact_location_condition])).to eq(nil)
       end
 
-      it 'should return null when operands evaluate to trues and nulls' do
+      it 'should return nil when operands evaluate to trues and nils' do
         user_attributes = {
           'browser_type' => 'firefox',
           'location' => false
@@ -183,7 +183,7 @@ describe Optimizely::ConditionEvaluator do
         expect(condition_evaluator.evaluate(['and', @exact_browser_condition, @exact_location_condition])).to eq(nil)
       end
 
-      it 'should return false when operands evaluate to falses and nulls' do
+      it 'should return false when operands evaluate to falses and nils' do
         user_attributes = {
           'browser_type' => 'chrome',
           'location' => false
@@ -192,7 +192,7 @@ describe Optimizely::ConditionEvaluator do
         expect(condition_evaluator.evaluate(['and', @exact_browser_condition, @exact_location_condition])).to be false
       end
 
-      it 'should return false when operands evaluate to trues, falses, and nulls' do
+      it 'should return false when operands evaluate to trues, falses, and nils' do
         user_attributes = {
           'browser_type' => 'firefox',
           'device' => 'android',
@@ -204,7 +204,7 @@ describe Optimizely::ConditionEvaluator do
     end
 
     describe 'or evaluation' do
-      it 'should return null when all operands evaluate to null' do
+      it 'should return nil when all operands evaluate to nil' do
         user_attributes = {
           'browser_type' => 4.5,
           'location' => false
@@ -213,7 +213,7 @@ describe Optimizely::ConditionEvaluator do
         expect(condition_evaluator.evaluate(['or', @exact_browser_condition, @exact_location_condition])).to eq(nil)
       end
 
-      it 'should return true when operands evaluate to trues and nulls' do
+      it 'should return true when operands evaluate to trues and nils' do
         user_attributes = {
           'browser_type' => 'firefox',
           'location' => false
@@ -222,7 +222,7 @@ describe Optimizely::ConditionEvaluator do
         expect(condition_evaluator.evaluate(['or', @exact_browser_condition, @exact_location_condition])).to be true
       end
 
-      it 'should return null when operands evaluate to falses and nulls' do
+      it 'should return nil when operands evaluate to falses and nils' do
         user_attributes = {
           'browser_type' => 'chrome',
           'location' => false
@@ -231,7 +231,7 @@ describe Optimizely::ConditionEvaluator do
         expect(condition_evaluator.evaluate(['or', @exact_browser_condition, @exact_location_condition])).to eq(nil)
       end
 
-      it 'should return true when operands evaluate to trues, falses, and nulls' do
+      it 'should return true when operands evaluate to trues, falses, and nils' do
         user_attributes = {
           'browser_type' => 'firefox',
           'device' => 'android',
@@ -243,7 +243,7 @@ describe Optimizely::ConditionEvaluator do
     end
 
     describe 'not evaluation' do
-      it 'should return null when operand evaluates to null' do
+      it 'should return nil when operand evaluates to nil' do
         user_attributes = {
           'browser_type' => 4.5
         }
@@ -323,12 +323,12 @@ describe Optimizely::ConditionEvaluator do
         expect(condition_evaluator.evaluate(@exact_string_conditions)).to be false
       end
 
-      it 'should return null if the user-provided value is of a different type than the condition value' do
+      it 'should return nil if the user-provided value is of a different type than the condition value' do
         condition_evaluator = Optimizely::ConditionEvaluator.new('location' => false)
         expect(condition_evaluator.evaluate(@exact_string_conditions)).to eq(nil)
       end
 
-      it 'should return null if there is no user-provided value' do
+      it 'should return nil if there is no user-provided value' do
         condition_evaluator = Optimizely::ConditionEvaluator.new('location' => {})
         expect(condition_evaluator.evaluate(@exact_string_conditions)).to eq(nil)
       end
@@ -349,12 +349,12 @@ describe Optimizely::ConditionEvaluator do
         expect(condition_evaluator.evaluate(@exact_number_conditions)).to be false
       end
 
-      it 'should return null if the user-provided value is of a different type than the condition value' do
+      it 'should return nil if the user-provided value is of a different type than the condition value' do
         condition_evaluator = Optimizely::ConditionEvaluator.new('sum' => false)
         expect(condition_evaluator.evaluate(@exact_number_conditions)).to eq(nil)
       end
 
-      it 'should return null if there is no user-provided value' do
+      it 'should return nil if there is no user-provided value' do
         condition_evaluator = Optimizely::ConditionEvaluator.new('sum' => {})
         expect(condition_evaluator.evaluate(@exact_number_conditions)).to eq(nil)
       end
@@ -375,12 +375,12 @@ describe Optimizely::ConditionEvaluator do
         expect(condition_evaluator.evaluate(@exact_boolean_conditions)).to be false
       end
 
-      it 'should return null if the user-provided value is of a different type than the condition value' do
+      it 'should return nil if the user-provided value is of a different type than the condition value' do
         condition_evaluator = Optimizely::ConditionEvaluator.new('boolean' => 10)
         expect(condition_evaluator.evaluate(@exact_boolean_conditions)).to eq(nil)
       end
 
-      it 'should return null if there is no user-provided value' do
+      it 'should return nil if there is no user-provided value' do
         condition_evaluator = Optimizely::ConditionEvaluator.new('boolean' => {})
         expect(condition_evaluator.evaluate(@exact_boolean_conditions)).to eq(nil)
       end
@@ -402,12 +402,12 @@ describe Optimizely::ConditionEvaluator do
       expect(condition_evaluator.evaluate(@substring_conditions)).to be false
     end
 
-    it 'should return null if the user-provided value is not a string' do
+    it 'should return nil if the user-provided value is not a string' do
       condition_evaluator = Optimizely::ConditionEvaluator.new('text' => 10)
       expect(condition_evaluator.evaluate(@substring_conditions)).to eq(nil)
     end
 
-    it 'should return null if there is no user-provided value' do
+    it 'should return nil if there is no user-provided value' do
       condition_evaluator = Optimizely::ConditionEvaluator.new('text' => {})
       expect(condition_evaluator.evaluate(@substring_conditions)).to eq(nil)
     end
@@ -428,12 +428,12 @@ describe Optimizely::ConditionEvaluator do
       expect(condition_evaluator.evaluate(@gt_conditions)).to be false
     end
 
-    it 'should return null if the user-provided value is not a number' do
+    it 'should return nil if the user-provided value is not a number' do
       condition_evaluator = Optimizely::ConditionEvaluator.new('input_value' => 'test')
       expect(condition_evaluator.evaluate(@gt_conditions)).to eq(nil)
     end
 
-    it 'should return null if there is no user-provided value' do
+    it 'should return nil if there is no user-provided value' do
       condition_evaluator = Optimizely::ConditionEvaluator.new('input_value' => {})
       expect(condition_evaluator.evaluate(@gt_conditions)).to eq(nil)
     end
@@ -454,12 +454,12 @@ describe Optimizely::ConditionEvaluator do
       expect(condition_evaluator.evaluate(@lt_conditions)).to be false
     end
 
-    it 'should return null if the user-provided value is not a number' do
+    it 'should return nil if the user-provided value is not a number' do
       condition_evaluator = Optimizely::ConditionEvaluator.new('input_value' => 'test')
       expect(condition_evaluator.evaluate(@lt_conditions)).to eq(nil)
     end
 
-    it 'should return null if there is no user-provided value' do
+    it 'should return nil if there is no user-provided value' do
       condition_evaluator = Optimizely::ConditionEvaluator.new('input_value' => {})
       expect(condition_evaluator.evaluate(@lt_conditions)).to eq(nil)
     end

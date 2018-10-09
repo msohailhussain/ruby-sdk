@@ -65,12 +65,14 @@ module Optimizely
       # Returns boolean if the user attributes match/don't match the given conditions,
       #         nil if the user attributes and conditions can't be evaluated.
 
+      found_nil = false
       conditions.each do |condition|
         result = evaluate(condition)
-        return result if (result == false) || result.nil?
+        return result if result == false
+        found_nil = true if result.nil?
       end
 
-      true
+      found_nil ? nil : true
     end
 
     def or_evaluator(conditions)
@@ -82,12 +84,14 @@ module Optimizely
       # Returns boolean if the user attributes match/don't match the given conditions,
       #         nil if the user attributes and conditions can't be evaluated.
 
+      found_nil = false
       conditions.each do |condition|
         result = evaluate(condition)
-        return result if (result == true) || result.nil?
+        return result if result == true
+        found_nil = true if result.nil?
       end
 
-      false
+      found_nil ? nil : false
     end
 
     def not_evaluator(single_condition)
@@ -99,7 +103,7 @@ module Optimizely
       # Returns boolean if the user attributes match/don't match the given conditions,
       #         nil if the user attributes and conditions can't be evaluated.
 
-      return false if single_condition.length != 1
+      return nil unless single_condition.length > 0
 
       result = evaluate(single_condition[0])
       result.nil? ? nil : !result
@@ -126,21 +130,15 @@ module Optimizely
 
       if conditions.is_a? Array
         first_operator = conditions[0]
-        rest_of_conditions = conditions[1..-1]
-
-        unless DEFAULT_OPERATOR_TYPES.include?(first_operator)
-          # Operator to apply is not explicit - assume 'or'
-          first_operator = ConditionalOperatorTypes::OR
-          rest_of_conditions = conditions
-        end
+        rest_of_conditions = DEFAULT_OPERATOR_TYPES.include?(first_operator) ? conditions[1..-1] : conditions
 
         case first_operator
         when ConditionalOperatorTypes::AND
           return and_evaluator(rest_of_conditions)
-        when ConditionalOperatorTypes::OR
-          return or_evaluator(rest_of_conditions)
         when ConditionalOperatorTypes::NOT
           return not_evaluator(rest_of_conditions)
+        else
+          return or_evaluator(rest_of_conditions)
         end
       end
 
