@@ -103,7 +103,7 @@ module Optimizely
       # Returns boolean if the user attributes match/don't match the given conditions,
       #         nil if the user attributes and conditions can't be evaluated.
 
-      return nil unless single_condition.length > 0
+      return nil if single_condition.empty?
 
       result = evaluate(single_condition[0])
       result.nil? ? nil : !result
