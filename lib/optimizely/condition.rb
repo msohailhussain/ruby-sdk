@@ -41,8 +41,6 @@ module Optimizely
       ConditionalOperatorTypes::NOT => :not_evaluator
     }.freeze
 
-    EXACT_MATCH_ALLOWED_TYPES = [FalseClass, Numeric, String, TrueClass].freeze
-
     EVALUATORS_BY_MATCH_TYPE = {
       ConditionalMatchTypes::EXACT_MATCH_TYPE => :exact_evaluator,
       ConditionalMatchTypes::EXISTS_MATCH_TYPE => :exists_evaluator,
@@ -108,16 +106,6 @@ module Optimizely
 
       result = evaluate(single_condition[0])
       result.nil? ? nil : !result
-    end
-
-    def evaluator(condition_array)
-      # Method to compare single audience condition against provided user data i.e. attributes.
-      #
-      # condition_array - Array consisting of condition key and corresponding value.
-      #
-      # Returns boolean indicating the result of comparing the condition value against the user attributes.
-
-      condition_array[1] == @user_attributes[condition_array[0]]
     end
 
     def evaluate(conditions)

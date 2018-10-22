@@ -31,16 +31,6 @@ describe Optimizely::ConditionEvaluator do
     @condition_evaluator = Optimizely::ConditionEvaluator.new(user_attributes)
   end
 
-  it 'should return true for evaluator when there is a match' do
-    condition_array = %w[browser_type firefox]
-    expect(@condition_evaluator.evaluator(condition_array)).to be true
-  end
-
-  it 'should return false for evaluator when there is not a match' do
-    condition_array = %w[browser_type chrome]
-    expect(@condition_evaluator.evaluator(condition_array)).to be false
-  end
-
   it 'should return true for and_evaluator when all conditions evaluate to true' do
     conditions = [
       {
