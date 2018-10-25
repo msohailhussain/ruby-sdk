@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 #
-#    Copyright 2016-2018, Optimizely and contributors
+#    Copyright 2018, Optimizely and contributors
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
 require 'json'
 
 module Optimizely
-  class ConditionalOperatorTypes
-    AND = 'and'
-    OR = 'or'
-    NOT = 'not'
-  end
+  # class ConditionalOperatorTypes
+  #   AND = 'and'
+  #   OR = 'or'
+  #   NOT = 'not'
+  # end
 
   class ConditionalMatchTypes
     EXACT_MATCH_TYPE = 'exact'
@@ -32,14 +32,8 @@ module Optimizely
     SUBSTRING_MATCH_TYPE = 'substring'
   end
 
-  class ConditionEvaluator
+  class CustomAttributeConditionEvaluator
     CUSTOM_ATTRIBUTE_CONDITION_TYPE = 'custom_attribute'
-
-    EVALUATORS_BY_OPERATOR_TYPE = {
-      ConditionalOperatorTypes::AND => :and_evaluator,
-      ConditionalOperatorTypes::OR => :or_evaluator,
-      ConditionalOperatorTypes::NOT => :not_evaluator
-    }.freeze
 
     EVALUATORS_BY_MATCH_TYPE = {
       ConditionalMatchTypes::EXACT_MATCH_TYPE => :exact_evaluator,
@@ -55,60 +49,7 @@ module Optimizely
       @user_attributes = user_attributes
     end
 
-    def and_evaluator(conditions)
-      # Evaluates an array of conditions as if the evaluator had been applied
-      # to each entry and the results AND-ed together.
-      #
-      # conditions - Array of conditions ex: [operand_1, operand_2]
-      #
-      # Returns boolean if the user attributes match/don't match the given conditions,
-      #         nil if the user attributes and conditions can't be evaluated.
-
-      found_nil = false
-      conditions.each do |condition|
-        result = evaluate(condition)
-        return result if result == false
-        found_nil = true if result.nil?
-      end
-
-      found_nil ? nil : true
-    end
-
-    def or_evaluator(conditions)
-      # Evaluates an array of conditions as if the evaluator had been applied
-      # to each entry and the results AND-ed together.
-      #
-      # conditions - Array of conditions ex: [operand_1, operand_2]
-      #
-      # Returns boolean if the user attributes match/don't match the given conditions,
-      #         nil if the user attributes and conditions can't be evaluated.
-
-      found_nil = false
-      conditions.each do |condition|
-        result = evaluate(condition)
-        return result if result == true
-        found_nil = true if result.nil?
-      end
-
-      found_nil ? nil : false
-    end
-
-    def not_evaluator(single_condition)
-      # Evaluates an array of conditions as if the evaluator had been applied
-      # to a single entry and NOT was applied to the result.
-      #
-      # single_condition - Array of a single condition ex: [operand_1]
-      #
-      # Returns boolean if the user attributes match/don't match the given conditions,
-      #         nil if the user attributes and conditions can't be evaluated.
-
-      return nil if single_condition.empty?
-
-      result = evaluate(single_condition[0])
-      result.nil? ? nil : !result
-    end
-
-    def evaluate(conditions)
+    def evaluate(leaf_condition)
       # Top level method to evaluate audience conditions.
       #
       # conditions - Nested array of and/or conditions.
@@ -116,16 +57,6 @@ module Optimizely
       #
       # Returns boolean if the given user attributes match/don't match the given conditions,
       #         nil if the given conditions can't be evaluated.
-
-      if conditions.is_a? Array
-        # Operator to apply is not explicit - assume 'or'
-        first_operator = EVALUATORS_BY_OPERATOR_TYPE.include?(conditions[0]) ? conditions[0] : ConditionalOperatorTypes::OR
-        rest_of_conditions = EVALUATORS_BY_OPERATOR_TYPE.include?(conditions[0]) ? conditions[1..-1] : conditions
-
-        return send(EVALUATORS_BY_OPERATOR_TYPE[first_operator], rest_of_conditions)
-      end
-
-      leaf_condition = conditions
 
       return nil unless leaf_condition['type'] == CUSTOM_ATTRIBUTE_CONDITION_TYPE
 
