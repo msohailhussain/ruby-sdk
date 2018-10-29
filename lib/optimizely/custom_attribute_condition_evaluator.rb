@@ -15,32 +15,23 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
-require 'json'
-
 module Optimizely
-  # class ConditionalOperatorTypes
-  #   AND = 'and'
-  #   OR = 'or'
-  #   NOT = 'not'
-  # end
+  class CustomAttributeConditionEvaluator
+    CUSTOM_ATTRIBUTE_CONDITION_TYPE = 'custom_attribute'
 
-  class ConditionalMatchTypes
+    # Conditional match types
     EXACT_MATCH_TYPE = 'exact'
     EXISTS_MATCH_TYPE = 'exists'
     GREATER_THAN_MATCH_TYPE = 'gt'
     LESS_THAN_MATCH_TYPE = 'lt'
     SUBSTRING_MATCH_TYPE = 'substring'
-  end
-
-  class CustomAttributeConditionEvaluator
-    CUSTOM_ATTRIBUTE_CONDITION_TYPE = 'custom_attribute'
 
     EVALUATORS_BY_MATCH_TYPE = {
-      ConditionalMatchTypes::EXACT_MATCH_TYPE => :exact_evaluator,
-      ConditionalMatchTypes::EXISTS_MATCH_TYPE => :exists_evaluator,
-      ConditionalMatchTypes::GREATER_THAN_MATCH_TYPE => :greater_than_evaluator,
-      ConditionalMatchTypes::LESS_THAN_MATCH_TYPE => :less_than_evaluator,
-      ConditionalMatchTypes::SUBSTRING_MATCH_TYPE => :substring_evaluator
+      EXACT_MATCH_TYPE => :exact_evaluator,
+      EXISTS_MATCH_TYPE => :exists_evaluator,
+      GREATER_THAN_MATCH_TYPE => :greater_than_evaluator,
+      LESS_THAN_MATCH_TYPE => :less_than_evaluator,
+      SUBSTRING_MATCH_TYPE => :substring_evaluator
     }.freeze
 
     attr_reader :user_attributes
@@ -64,7 +55,7 @@ module Optimizely
 
       return nil if !condition_match.nil? && !EVALUATORS_BY_MATCH_TYPE.include?(condition_match)
 
-      condition_match = ConditionalMatchTypes::EXACT_MATCH_TYPE if condition_match.nil?
+      condition_match = EXACT_MATCH_TYPE if condition_match.nil?
 
       send(EVALUATORS_BY_MATCH_TYPE[condition_match], leaf_condition)
     end
