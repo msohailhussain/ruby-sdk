@@ -298,6 +298,54 @@ module OptimizelySpec
           }
         ]
       }]
+    }, {
+      'id' => '1323241598',
+      'key' => 'audience_combinations_experiment',
+      'layerId' => '1323241598',
+      'status' => 'Running',
+      'variations' => [
+        {
+          'id' => '1423767504',
+          'key' => 'A',
+          'variables' => []
+        }
+      ],
+      'trafficAllocation' => [
+        {
+          'entityId' => '1423767504',
+          'endOfRange' => 10_000
+        }
+      ],
+      'audienceIds' => ['0'],
+      'audienceConditions' => '["and", ["or", "3468206642", "3988293898"], ["or", "3988293899", "3468206646", "3468206647", "3468206644", "3468206643"]]',
+      'forcedVariations' => {}
+    }, {
+      'id' => '1323241599',
+      'key' => 'feat2_with_var_test',
+      'layerId' => '1323241600',
+      'status' => 'Running',
+      'variations' => [
+        {
+          'variables' => [
+            {
+              'id' => '11535264367',
+              'value' => '150'
+            }
+          ],
+          'id' => '1423767505',
+          'key' => 'variation_2',
+          'featureEnabled' => true
+        }
+      ],
+      'trafficAllocation' => [
+        {
+          'entityId' => '1423767505',
+          'endOfRange' => 10_000
+        }
+      ],
+      'audienceIds' => ['0'],
+      'audienceConditions' => '["and", ["or", "3468206642", "3988293898"], ["or", "3988293899", "3468206646", "3468206647", "3468206644", "3468206643"]]',
+      'forcedVariations' => {}
     }],
     'attributes' => [{
       'key' => 'browser_type',
@@ -586,6 +634,25 @@ module OptimizelySpec
       'rolloutId' => '',
       'experimentIds' => [],
       'variables' => []
+    }, {
+      'experimentIds' => [],
+      'rolloutId' => '11551226732',
+      'variables' => [],
+      'id' => '11567102052',
+      'key' => 'feat2'
+    }, {
+      'experimentIds' => ['1323241599'],
+      'rolloutId' => '11638870868',
+      'variables' => [
+        {
+          'defaultValue' => '10',
+          'type' => 'integer',
+          'id' => '11535264367',
+          'key' => 'z'
+        }
+      ],
+      'id' => '11567102053',
+      'key' => 'feat2_with_var'
     }],
     'rollouts' => [{
       'id' => '166660',
@@ -688,6 +755,59 @@ module OptimizelySpec
           'endOfRange' => 1500
         }]
       }]
+    }, {
+      'experiments' => [
+        {
+          'status' => 'Running',
+          'key' => '11488548028',
+          'layerId' => '11551226732',
+          'trafficAllocation' => [
+            {
+              'entityId' => '11557362670',
+              'endOfRange' => 10_000
+            }
+          ],
+          'audienceIds' => ['0'],
+          'audienceConditions' => '["and", ["or", "3468206642", "3988293898"], ["or", "3988293899", "3468206646", "3468206647", "3468206644", "3468206643"]]',
+          'variations' => [
+            {
+              'variables' => [],
+              'id' => '11557362670',
+              'key' => '11557362670',
+              'featureEnabled' => true
+            }
+          ],
+          'forcedVariations' => {},
+          'id' => '11488548028'
+        }
+      ],
+      'id' => '11551226732'
+    }, {
+      'experiments' => [
+        {
+          'status' => 'Paused',
+          'key' => '11630490912',
+          'layerId' => '11638870868',
+          'trafficAllocation' => [
+            {
+              'entityId' => '11475708559',
+              'endOfRange' => 0
+            }
+          ],
+          'audienceIds' => [],
+          'variations' => [
+            {
+              'variables' => [],
+              'id' => '11475708559',
+              'key' => '11475708559',
+              'featureEnabled' => false
+            }
+          ],
+          'forcedVariations' => {},
+          'id' => '11630490912'
+        }
+      ],
+      'id' => '11638870868'
     }]
   }.freeze
 
