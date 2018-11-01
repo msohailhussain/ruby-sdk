@@ -34,7 +34,6 @@ describe Optimizely::ProjectConfig do
       expect(project_config.account_id).to eq(config_body['accountId'])
       expect(project_config.attributes).to eq(config_body['attributes'])
       expect(project_config.audiences).to eq(config_body['audiences'])
-      expect(project_config.typed_audiences).to eq(config_body['typedAudiences'])
       expect(project_config.bot_filtering).to eq(config_body['botFiltering'])
       expect(project_config.events).to eq(config_body['events'])
       expect(project_config.feature_flags).to eq(config_body['featureFlags'])
@@ -47,14 +46,7 @@ describe Optimizely::ProjectConfig do
       }
       expected_audience_id_map = {
         '11154' => config_body['audiences'][0],
-        '11155' => config_body['audiences'][1],
-        '11156' => config_body['typedAudiences'][0],
-        '11157' => config_body['typedAudiences'][1],
-        '11158' => config_body['typedAudiences'][2],
-        '11159' => config_body['typedAudiences'][3],
-        '11160' => config_body['typedAudiences'][4],
-        '11161' => config_body['typedAudiences'][5],
-        '11162' => config_body['typedAudiences'][6]
+        '11155' => config_body['audiences'][1]
       }
 
       expected_event_key_map = {
@@ -664,6 +656,33 @@ describe Optimizely::ProjectConfig do
       expect(project_config.rollout_id_map).to eq(expected_rollout_id_map)
       expect(project_config.rollout_experiment_id_map).to eq(expected_rollout_experiment_id_map)
     end
+
+    it 'should initialize properties correctly upon creating project with typed audience dict' do
+      project_config = Optimizely::ProjectConfig.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), logger, error_handler)
+      config_body = OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES
+
+      expect(project_config.audiences).to eq(config_body['audiences'])
+
+      expected_audience_id_map = {
+          '3468206642' => config_body['audiences'][0],
+          '3988293898' => config_body['audiences'][1],
+          '3988293899' => config_body['audiences'][2],
+          '3468206646' => config_body['audiences'][3],
+          '3468206647' => config_body['audiences'][4],
+          '3468206644' => config_body['audiences'][5],
+          '3468206643' => config_body['audiences'][6],
+          '0' => config_body['audiences'][7],
+          '3988293898' => config_body['typedAudiences'][0],
+          '3988293899' => config_body['typedAudiences'][1],
+          '3468206646' => config_body['typedAudiences'][2],
+          '3468206647' => config_body['typedAudiences'][3],
+          '3468206644' => config_body['typedAudiences'][4],
+          '3468206643' => config_body['typedAudiences'][5]
+      }
+
+      expect(project_config.audience_id_map).to eq(expected_audience_id_map)
+    end
+
   end
 
   describe '@logger' do
