@@ -63,7 +63,8 @@ module Optimizely
     def exact_evaluator(condition)
       # Evaluate the given exact match condition for the given user attributes.
       #
-      # Returns boolean true if the user attribute value is equal (===) to the condition value,
+      # Returns boolean true if numbers values matched, i.e 2 is equal to 2.0
+      #                 true if the user attribute value is equal (===) to the condition value,
       #                 false if the user attribute value is not equal (!==) to the condition value,
       #                 nil if the condition value or user attribute value has an invalid type,
       #                 or if there is a mismatch between the user attribute type and the condition value type.
@@ -73,6 +74,10 @@ module Optimizely
 
       user_provided_value = @user_attributes[condition['name']]
       user_provided_type = @user_attributes[condition['name']].class
+
+      if user_provided_value.is_a?(Numeric) && condition_value.is_a?(Numeric)
+        return true if condition_value.to_f == user_provided_value.to_f
+      end
 
       return nil if !value_valid_for_exact_conditions?(user_provided_value) ||
                     !value_valid_for_exact_conditions?(condition_value) ||
@@ -85,7 +90,7 @@ module Optimizely
       # Evaluate the given exists match condition for the given user attributes.
       # Returns boolean true if both:
       #                    1) the user attributes have a value for the given condition, and
-      #                    2) the user attribute value is neither null nor undefined
+      #                    2) the user attribute value is neither nil nor undefined
       #                 Returns false otherwise
 
       return false unless @user_attributes
