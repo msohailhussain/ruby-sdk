@@ -31,6 +31,11 @@ describe Optimizely::ConditionTreeEvaluator do
       leaf_callback = ->(_condition) { return true }
       expect(@condition_evaluator.evaluate(@browser_condition, leaf_callback)).to be true
     end
+
+    it 'should return false for a leaf condition when the leaf condition evaluator returns false' do
+      leaf_callback = ->(_condition) { return false }
+      expect(@condition_evaluator.evaluate(@browser_condition, leaf_callback)).to be false
+    end
   end
 
   describe 'and evaluation' do
@@ -54,6 +59,9 @@ describe Optimizely::ConditionTreeEvaluator do
       it 'should return nil when operands evaluate to trues and nils' do
         leaf_callback = double
         allow(leaf_callback).to receive(:call).and_return(true, nil)
+        expect(@condition_evaluator.evaluate(['and', @browser_condition, @device_condition], leaf_callback)).to eq(nil)
+
+        allow(leaf_callback).to receive(:call).and_return(nil, true)
         expect(@condition_evaluator.evaluate(['and', @browser_condition, @device_condition], leaf_callback)).to eq(nil)
       end
 

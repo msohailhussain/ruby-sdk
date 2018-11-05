@@ -24,7 +24,7 @@ describe Optimizely::CustomAttributeConditionEvaluator do
     expect(condition_evaluator.evaluate('name' => 'browser_type', 'type' => 'custom_attribute', 'value' => 'safari')).to be true
   end
 
-  it 'should return true when the attributes pass the audience conditions and no match type is provided' do
+  it 'should return false when the attributes pass the audience conditions and no match type is provided' do
     condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('browser_type' => 'firefox')
     expect(condition_evaluator.evaluate('name' => 'browser_type', 'type' => 'custom_attribute', 'value' => 'safari')).to be false
   end
@@ -125,6 +125,9 @@ describe Optimizely::CustomAttributeConditionEvaluator do
       it 'should return true if the user-provided value is equal to the condition value' do
         condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => 100)
         expect(condition_evaluator.evaluate(@exact_number_conditions)).to be true
+
+        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => 100.0)
+        expect(condition_evaluator.evaluate(@exact_number_conditions)).to be true
       end
 
       it 'should return false if the user-provided value is not equal to the condition value' do
@@ -134,6 +137,9 @@ describe Optimizely::CustomAttributeConditionEvaluator do
 
       it 'should return nil if the user-provided value is of a different type than the condition value' do
         condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => false)
+        expect(condition_evaluator.evaluate(@exact_number_conditions)).to eq(nil)
+
+        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => 100.5)
         expect(condition_evaluator.evaluate(@exact_number_conditions)).to eq(nil)
       end
 
@@ -234,6 +240,11 @@ describe Optimizely::CustomAttributeConditionEvaluator do
 
     it 'should return false if the user-provided value is not less than the condition value' do
       condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 12)
+      expect(condition_evaluator.evaluate(@lt_conditions)).to be false
+    end
+
+    it 'should return false if the user-provided value is equal to condition value' do
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 10.0)
       expect(condition_evaluator.evaluate(@lt_conditions)).to be false
     end
 
