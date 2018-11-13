@@ -927,7 +927,7 @@ describe Optimizely::ProjectConfig do
                                                      "Variation mapped to experiment '#{@valid_experiment[:key]}' has been removed for user '#{@user_id}'.")
     end
     # Variation key is an empty string
-    it 'should return false when variation_key is passed as empty string' do
+    it 'should persist forced variation mapping, log a message and return false when variation_key is passed as empty string' do
       expect(config.set_forced_variation(@valid_experiment[:key], @user_id, '')).to eq(false)
       expect(spy_logger).to have_received(:log).with(Logger::DEBUG,
                                                      'Variation key is invalid')
