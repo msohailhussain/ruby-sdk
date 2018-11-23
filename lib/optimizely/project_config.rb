@@ -132,9 +132,9 @@ module Optimizely
           variation_id = variation['id']
           variation['featureEnabled'] = variation['featureEnabled'] == true
           variation_variables = variation['variables']
-          unless variation_variables.nil?
-            @variation_id_to_variable_usage_map[variation_id] = generate_key_map(variation_variables, 'id')
-          end
+          next if variation_variables.nil?
+
+          @variation_id_to_variable_usage_map[variation_id] = generate_key_map(variation_variables, 'id')
         end
         @variation_id_map[key] = generate_key_map(variations, 'id')
         @variation_key_map[key] = generate_key_map(variations, 'key')
@@ -332,12 +332,9 @@ module Optimizely
       #
       # Returns a boolean value that indicates if the set completed successfully.
 
-      return false unless Optimizely::Helpers::Validator.inputs_valid?(
-        {
-          user_id: user_id,
-          experiment_key: experiment_key
-        }, @logger, Logger::DEBUG
-      )
+      input_values = {user_id: user_id, experiment_key: experiment_key}
+      input_values[:variation_key] = variation_key unless variation_key.nil?
+      return false unless Optimizely::Helpers::Validator.inputs_valid?(input_values, @logger, Logger::DEBUG)
 
       experiment = get_experiment_from_key(experiment_key)
       experiment_id = experiment['id'] if experiment
@@ -345,7 +342,7 @@ module Optimizely
       return false if experiment_id.nil? || experiment_id.empty?
 
       #  clear the forced variation if the variation key is null
-      if variation_key.nil? || variation_key.empty?
+      if variation_key.nil?
         @forced_variation_map[user_id].delete(experiment_id) if @forced_variation_map.key? user_id
         @logger.log(Logger::DEBUG, "Variation mapped to experiment '#{experiment_key}' has been removed for user "\
                     "'#{user_id}'.")
@@ -360,9 +357,7 @@ module Optimizely
         return false
       end
 
-      unless @forced_variation_map.key? user_id
-        @forced_variation_map[user_id] = {}
-      end
+      @forced_variation_map[user_id] = {} unless @forced_variation_map.key? user_id
       @forced_variation_map[user_id][experiment_id] = variation_id
       @logger.log(Logger::DEBUG, "Set variation '#{variation_id}' for experiment '#{experiment_id}' and "\
                   "user '#{user_id}' in the forced variation map.")
