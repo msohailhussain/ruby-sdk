@@ -67,6 +67,7 @@ module Optimizely
       conditions.each do |condition|
         result = evaluate(condition, leaf_evaluator)
         return result if result == false
+
         found_nil = true if result.nil?
       end
 
@@ -105,6 +106,7 @@ module Optimizely
       conditions.each do |condition|
         result = evaluate(condition, leaf_evaluator)
         return result if result == true
+
         found_nil = true if result.nil?
       end
 

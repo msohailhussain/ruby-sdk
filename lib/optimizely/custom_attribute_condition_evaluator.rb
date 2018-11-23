@@ -94,6 +94,7 @@ module Optimizely
       #                 Returns false otherwise
 
       return false unless @user_attributes
+
       !@user_attributes[condition['name']].nil?
     end
 
@@ -161,6 +162,7 @@ module Optimizely
       #         false otherwise.
 
       return false if [TrueClass, FalseClass].include?(condition_type) && [TrueClass, FalseClass].include?(user_provided_type)
+
       condition_type != user_provided_type
     end
 
