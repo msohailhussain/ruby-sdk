@@ -34,6 +34,8 @@ module Optimizely
       SUBSTRING_MATCH_TYPE => :substring_evaluator
     }.freeze
 
+    FINITE_NUMBER_LIMIT = 1.0e+53
+
     attr_reader :user_attributes
 
     def initialize(user_attributes)
@@ -107,9 +109,7 @@ module Optimizely
       condition_value = condition['value']
       user_provided_value = @user_attributes[condition['name']]
 
-      return nil unless user_provided_value.is_a?(Numeric) && condition_value.is_a?(Numeric)
-
-      return nil if infinite_number?(user_provided_value) || infinite_number?(condition_value)
+      return nil if !finite_number?(user_provided_value) || !finite_number?(condition_value)
 
       user_provided_value > condition_value
     end
@@ -123,9 +123,7 @@ module Optimizely
       condition_value = condition['value']
       user_provided_value = @user_attributes[condition['name']]
 
-      return nil unless user_provided_value.is_a?(Numeric) && condition_value.is_a?(Numeric)
-
-      return nil if infinite_number?(user_provided_value) || infinite_number?(condition_value)
+      return nil if !finite_number?(user_provided_value) || !finite_number?(condition_value)
 
       user_provided_value < condition_value
     end
@@ -150,7 +148,7 @@ module Optimizely
       # Returns true if the value is valid for exact conditions. Valid values include
       #  strings, booleans, and numbers that aren't NaN, -Infinity, or Infinity.
 
-      return value.finite? if value.is_a? Float
+      return finite_number?(value) if value.is_a? Numeric
 
       (value.is_a? FalseClass) || (value.is_a? Integer) || (value.is_a? String) ||
         (value.is_a? TrueClass)
@@ -166,8 +164,8 @@ module Optimizely
       condition_type != user_provided_type
     end
 
-    def infinite_number?(value)
-      value.is_a?(Float) && !value.finite?
+    def finite_number?(value)
+      value.is_a?(Numeric) && value.to_f.finite? && value.to_f <= FINITE_NUMBER_LIMIT
     end
   end
 end

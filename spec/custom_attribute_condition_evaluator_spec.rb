@@ -226,6 +226,11 @@ describe Optimizely::CustomAttributeConditionEvaluator do
       condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => {})
       expect(condition_evaluator.evaluate(@gt_conditions)).to eq(nil)
     end
+
+    it 'should return nil if user-provided value is greater than specified limit' do
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 2.0e+53)
+      expect(condition_evaluator.evaluate(@gt_conditions)).to eq(nil)
+    end
   end
 
   describe 'less than match type' do
@@ -255,6 +260,11 @@ describe Optimizely::CustomAttributeConditionEvaluator do
 
     it 'should return nil if there is no user-provided value' do
       condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => {})
+      expect(condition_evaluator.evaluate(@lt_conditions)).to eq(nil)
+    end
+
+    it 'should return nil if user-provided value is greater than specified limit' do
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 2.0e+53)
       expect(condition_evaluator.evaluate(@lt_conditions)).to eq(nil)
     end
   end
