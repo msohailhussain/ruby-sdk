@@ -38,8 +38,7 @@ module Optimizely
       # Return true if there are no audiences
       return true if audience_ids.empty?
 
-      # Return false if there are audiences but no attributes
-      return false unless attributes
+      attributes ||= {}
 
       evaluate_condition_with_user_attributes = lambda do |condition|
         custom_attribute_condition_evaluator = CustomAttributeConditionEvaluator.new(attributes)
