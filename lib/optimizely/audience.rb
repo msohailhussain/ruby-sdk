@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 #
-#    Copyright 2016-2017, Optimizely and contributors
+#    Copyright 2016-2018, Optimizely and contributors
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 #    limitations under the License.
 #
 require 'json'
-require_relative './condition'
+require_relative './condition_tree_evaluator'
+require_relative './custom_attribute_condition_evaluator'
 
 module Optimizely
   module Audience
@@ -37,18 +38,21 @@ module Optimizely
       # Return true if there are no audiences
       return true if audience_ids.empty?
 
-      # Return false if there are audiences but no attributes
-      return false unless attributes
+      attributes ||= {}
+
+      evaluate_condition_with_user_attributes = lambda do |condition|
+        custom_attribute_condition_evaluator = CustomAttributeConditionEvaluator.new(attributes)
+        return custom_attribute_condition_evaluator.evaluate(condition)
+      end
 
       # Return true if any one of the audience conditions are met
-      @condition_evaluator = ConditionEvaluator.new(attributes)
       audience_ids.each do |audience_id|
         audience = config.get_audience_from_id(audience_id)
         audience_conditions = audience['conditions']
         audience_conditions = JSON.parse(audience_conditions)
-        return true if @condition_evaluator.evaluate(audience_conditions)
+        condition_evaluator = ConditionTreeEvaluator.new
+        return true if condition_evaluator.evaluate(audience_conditions, evaluate_condition_with_user_attributes)
       end
-
       false
     end
   end
