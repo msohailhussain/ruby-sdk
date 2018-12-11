@@ -16,10 +16,8 @@
 #    limitations under the License.
 #
 module Optimizely
-  class ConditionTreeEvaluator
-    CUSTOM_ATTRIBUTE_CONDITION_TYPE = 'custom_attribute'
-
-    # Default operator types
+  module ConditionTreeEvaluator
+    # Operator types
     AND_CONDITION = 'and'
     OR_CONDITION = 'or'
     NOT_CONDITION = 'not'
@@ -29,6 +27,8 @@ module Optimizely
       OR_CONDITION => :or_evaluator,
       NOT_CONDITION => :not_evaluator
     }.freeze
+
+    module_function
 
     def evaluate(conditions, leaf_evaluator)
       # Top level method to evaluate audience conditions.
@@ -42,9 +42,14 @@ module Optimizely
       #         nil if the given conditions are invalid or can't be evaluated.
 
       if conditions.is_a? Array
+        first_operator =  conditions[0]
+        rest_of_conditions = conditions[1..-1]
+
         # Operator to apply is not explicit - assume 'or'
-        first_operator = EVALUATORS_BY_OPERATOR_TYPE.include?(conditions[0]) ? conditions[0] : OR_CONDITION
-        rest_of_conditions = EVALUATORS_BY_OPERATOR_TYPE.include?(conditions[0]) ? conditions[1..-1] : conditions
+        unless EVALUATORS_BY_OPERATOR_TYPE.include?(conditions[0])
+          first_operator = OR_CONDITION
+          rest_of_conditions = conditions
+        end
 
         return send(EVALUATORS_BY_OPERATOR_TYPE[first_operator], rest_of_conditions, leaf_evaluator)
       end

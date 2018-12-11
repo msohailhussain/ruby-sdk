@@ -16,8 +16,8 @@
 #    limitations under the License.
 #
 require 'json'
-require_relative './condition_tree_evaluator'
 require_relative './custom_attribute_condition_evaluator'
+require_relative 'condition_tree_evaluator'
 
 module Optimizely
   module Audience
@@ -51,8 +51,7 @@ module Optimizely
         audience = config.get_audience_from_id(audience_id)
         audience_conditions = audience['conditions']
         audience_conditions = JSON.parse(audience_conditions)
-        condition_evaluator = ConditionTreeEvaluator.new
-        return true if condition_evaluator.evaluate(audience_conditions, evaluate_condition_with_user_attributes)
+        return true if ConditionTreeEvaluator.evaluate(audience_conditions, evaluate_condition_with_user_attributes)
       end
       false
     end

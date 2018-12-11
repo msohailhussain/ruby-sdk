@@ -140,6 +140,33 @@ module Optimizely
         end
         is_valid
       end
+
+      def boolean?(value)
+        # Returns true if given value type is boolean.
+        #         false otherwise.
+
+        value.is_a?(TrueClass) || value.is_a?(FalseClass)
+      end
+
+      def same_types?(value_1, value_2)
+        # Returns true if given values types are boolean.
+        #         true if given values types are integer.
+        #         true if value_1 and value_2 are of same types.
+        #         false otherwise.
+
+        return true if boolean?(value_1) && boolean?(value_2)
+        return true if value_1.is_a?(Integer) && value_2.is_a?(Integer)
+
+        value_1.class == value_2.class
+      end
+
+      def finite_number?(value)
+        # Returns true if the value is numeric, and that value isn't NaN or Infinity or
+        #         greater than 1.0e+53.
+        #         false otherwise.
+
+        value.is_a?(Numeric) && value.to_f.finite? && value.to_f <= Constants::FINITE_NUMBER_LIMIT
+      end
     end
   end
 end
