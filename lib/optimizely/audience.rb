@@ -49,7 +49,7 @@ module Optimizely
       audience_ids.each do |audience_id|
         audience = config.get_audience_from_id(audience_id)
         audience_conditions = audience['conditions']
-        audience_conditions = JSON.parse(audience_conditions)
+        audience_conditions = JSON.parse(audience_conditions) if audience_conditions.is_a?(String)
         condition_evaluator = ConditionTreeEvaluator.new
         return true if condition_evaluator.evaluate(audience_conditions, evaluate_condition_with_user_attributes)
       end
