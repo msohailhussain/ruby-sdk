@@ -54,7 +54,7 @@ describe Optimizely::CustomAttributeConditionEvaluator do
     expect(condition_evaluator.evaluate('match' => 'exact', 'name' => 'weird_condition', 'value' => 'hi')).to eq(nil)
   end
 
-  it 'should return null when condition has an invalid match property' do
+  it 'should return nil when condition has an invalid match property' do
     condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('weird_condition' => 'bye')
     expect(condition_evaluator.evaluate('match' => 'invalid', 'name' => 'weird_condition', 'type' => 'custom_attribute', 'value' => 'bye')).to eq(nil)
   end
@@ -81,6 +81,9 @@ describe Optimizely::CustomAttributeConditionEvaluator do
 
     it 'should return true if the user-provided value is a number' do
       condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 10)
+      expect(condition_evaluator.evaluate(@exists_conditions)).to be true
+
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 10.0)
       expect(condition_evaluator.evaluate(@exists_conditions)).to be true
     end
 
@@ -112,40 +115,58 @@ describe Optimizely::CustomAttributeConditionEvaluator do
       end
 
       it 'should return nil if there is no user-provided value' do
-        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('location' => {})
+        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new({})
         expect(condition_evaluator.evaluate(@exact_string_conditions)).to eq(nil)
       end
     end
 
     describe 'with a number condition value' do
       before(:context) do
-        @exact_number_conditions = {'match' => 'exact', 'name' => 'sum', 'type' => 'custom_attribute', 'value' => 100}
+        @exact_integer_conditions = {'match' => 'exact', 'name' => 'sum', 'type' => 'custom_attribute', 'value' => 100}
+        @exact_float_conditions = {'match' => 'exact', 'name' => 'sum', 'type' => 'custom_attribute', 'value' => 100.0}
       end
 
       it 'should return true if the user-provided value is equal to the condition value' do
+        # user-provided integer value
         condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => 100)
-        expect(condition_evaluator.evaluate(@exact_number_conditions)).to be true
+        expect(condition_evaluator.evaluate(@exact_integer_conditions)).to be true
+        expect(condition_evaluator.evaluate(@exact_float_conditions)).to be true
 
+        # user-provided float value
         condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => 100.0)
-        expect(condition_evaluator.evaluate(@exact_number_conditions)).to be true
+        expect(condition_evaluator.evaluate(@exact_integer_conditions)).to be true
+        expect(condition_evaluator.evaluate(@exact_float_conditions)).to be true
       end
 
       it 'should return false if the user-provided value is not equal to the condition value' do
+        # user-provided integer value
         condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => 101)
-        expect(condition_evaluator.evaluate(@exact_number_conditions)).to be false
+        expect(condition_evaluator.evaluate(@exact_integer_conditions)).to be false
+
+        # user-provided float value
+        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => 100.1)
+        expect(condition_evaluator.evaluate(@exact_float_conditions)).to be false
       end
 
       it 'should return nil if the user-provided value is of a different type than the condition value' do
-        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => false)
-        expect(condition_evaluator.evaluate(@exact_number_conditions)).to eq(nil)
+        # user-provided integer value
+        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => 101)
+        expect(condition_evaluator.evaluate(@exact_float_conditions)).to eq(nil)
 
-        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => 100.5)
-        expect(condition_evaluator.evaluate(@exact_number_conditions)).to eq(nil)
+        # user-provided float value
+        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => 100.1)
+        expect(condition_evaluator.evaluate(@exact_integer_conditions)).to eq(nil)
+
+        # user-provided boolean value
+        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => false)
+        expect(condition_evaluator.evaluate(@exact_integer_conditions)).to eq(nil)
+        expect(condition_evaluator.evaluate(@exact_float_conditions)).to eq(nil)
       end
 
       it 'should return nil if there is no user-provided value' do
-        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('sum' => {})
-        expect(condition_evaluator.evaluate(@exact_number_conditions)).to eq(nil)
+        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new({})
+        expect(condition_evaluator.evaluate(@exact_integer_conditions)).to eq(nil)
+        expect(condition_evaluator.evaluate(@exact_float_conditions)).to eq(nil)
       end
     end
 
@@ -165,12 +186,17 @@ describe Optimizely::CustomAttributeConditionEvaluator do
       end
 
       it 'should return nil if the user-provided value is of a different type than the condition value' do
+        # user-provided integer value
         condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('boolean' => 10)
+        expect(condition_evaluator.evaluate(@exact_boolean_conditions)).to eq(nil)
+
+        # user-provided float value
+        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('boolean' => 10.0)
         expect(condition_evaluator.evaluate(@exact_boolean_conditions)).to eq(nil)
       end
 
       it 'should return nil if there is no user-provided value' do
-        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('boolean' => {})
+        condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new({})
         expect(condition_evaluator.evaluate(@exact_boolean_conditions)).to eq(nil)
       end
     end
@@ -192,80 +218,128 @@ describe Optimizely::CustomAttributeConditionEvaluator do
     end
 
     it 'should return nil if the user-provided value is not a string' do
+      # user-provided integer value
       condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('text' => 10)
+      expect(condition_evaluator.evaluate(@substring_conditions)).to eq(nil)
+
+      # user-provided float value
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('text' => 10.0)
       expect(condition_evaluator.evaluate(@substring_conditions)).to eq(nil)
     end
 
     it 'should return nil if there is no user-provided value' do
-      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('text' => {})
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new({})
       expect(condition_evaluator.evaluate(@substring_conditions)).to eq(nil)
     end
   end
 
   describe 'greater than match type' do
     before(:context) do
-      @gt_conditions = {'match' => 'gt', 'name' => 'input_value', 'type' => 'custom_attribute', 'value' => 10}
+      @gt_integer_conditions = {'match' => 'gt', 'name' => 'input_value', 'type' => 'custom_attribute', 'value' => 10}
+      @gt_float_conditions = {'match' => 'gt', 'name' => 'input_value', 'type' => 'custom_attribute', 'value' => 10.0}
     end
 
     it 'should return true if the user-provided value is greater than the condition value' do
+      # user-provided integer value
       condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 12)
-      expect(condition_evaluator.evaluate(@gt_conditions)).to be true
+      expect(condition_evaluator.evaluate(@gt_integer_conditions)).to be true
+      expect(condition_evaluator.evaluate(@gt_float_conditions)).to be true
+
+      # user-provided float value
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 12.0)
+      expect(condition_evaluator.evaluate(@gt_integer_conditions)).to be true
+      expect(condition_evaluator.evaluate(@gt_float_conditions)).to be true
     end
 
-    it 'should return false if the user-provided value is not greater than the condition value' do
+    it 'should return false if the user-provided value is equal to condition value' do
+      # user-provided integer value
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 10)
+      expect(condition_evaluator.evaluate(@gt_integer_conditions)).to be false
+      expect(condition_evaluator.evaluate(@gt_float_conditions)).to be false
+
+      # user-provided float value
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 10.0)
+      expect(condition_evaluator.evaluate(@gt_integer_conditions)).to be false
+      expect(condition_evaluator.evaluate(@gt_float_conditions)).to be false
+    end
+
+    it 'should return true if the user-provided value is less than the condition value' do
+      # user-provided integer value
       condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 8)
-      expect(condition_evaluator.evaluate(@gt_conditions)).to be false
+      expect(condition_evaluator.evaluate(@gt_integer_conditions)).to be false
+      expect(condition_evaluator.evaluate(@gt_float_conditions)).to be false
+
+      # user-provided float value
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 8.0)
+      expect(condition_evaluator.evaluate(@gt_integer_conditions)).to be false
+      expect(condition_evaluator.evaluate(@gt_float_conditions)).to be false
     end
 
     it 'should return nil if the user-provided value is not a number' do
       condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 'test')
-      expect(condition_evaluator.evaluate(@gt_conditions)).to eq(nil)
+      expect(condition_evaluator.evaluate(@gt_integer_conditions)).to eq(nil)
+      expect(condition_evaluator.evaluate(@gt_float_conditions)).to eq(nil)
     end
 
     it 'should return nil if there is no user-provided value' do
-      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => {})
-      expect(condition_evaluator.evaluate(@gt_conditions)).to eq(nil)
-    end
-
-    it 'should return nil if user-provided value is greater than specified limit' do
-      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 2.0e+53)
-      expect(condition_evaluator.evaluate(@gt_conditions)).to eq(nil)
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new({})
+      expect(condition_evaluator.evaluate(@gt_integer_conditions)).to eq(nil)
+      expect(condition_evaluator.evaluate(@gt_float_conditions)).to eq(nil)
     end
   end
 
   describe 'less than match type' do
     before(:context) do
-      @lt_conditions = {'match' => 'lt', 'name' => 'input_value', 'type' => 'custom_attribute', 'value' => 10}
+      @lt_integer_conditions = {'match' => 'lt', 'name' => 'input_value', 'type' => 'custom_attribute', 'value' => 10}
+      @lt_float_conditions = {'match' => 'lt', 'name' => 'input_value', 'type' => 'custom_attribute', 'value' => 10.0}
     end
 
     it 'should return true if the user-provided value is less than the condition value' do
+      # user-provided integer value
       condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 8)
-      expect(condition_evaluator.evaluate(@lt_conditions)).to be true
-    end
+      expect(condition_evaluator.evaluate(@lt_integer_conditions)).to be true
+      expect(condition_evaluator.evaluate(@lt_float_conditions)).to be true
 
-    it 'should return false if the user-provided value is not less than the condition value' do
-      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 12)
-      expect(condition_evaluator.evaluate(@lt_conditions)).to be false
+      # user-provided float value
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 8.0)
+      expect(condition_evaluator.evaluate(@lt_integer_conditions)).to be true
+      expect(condition_evaluator.evaluate(@lt_float_conditions)).to be true
     end
 
     it 'should return false if the user-provided value is equal to condition value' do
+      # user-provided integer value
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 10)
+      expect(condition_evaluator.evaluate(@lt_integer_conditions)).to be false
+      expect(condition_evaluator.evaluate(@lt_float_conditions)).to be false
+
+      # user-provided float value
       condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 10.0)
-      expect(condition_evaluator.evaluate(@lt_conditions)).to be false
+      expect(condition_evaluator.evaluate(@lt_integer_conditions)).to be false
+      expect(condition_evaluator.evaluate(@lt_float_conditions)).to be false
+    end
+
+    it 'should return false if the user-provided value is greater than the condition value' do
+      # user-provided integer value
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 12)
+      expect(condition_evaluator.evaluate(@lt_integer_conditions)).to be false
+      expect(condition_evaluator.evaluate(@lt_float_conditions)).to be false
+
+      # user-provided float value
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 12.0)
+      expect(condition_evaluator.evaluate(@lt_integer_conditions)).to be false
+      expect(condition_evaluator.evaluate(@lt_float_conditions)).to be false
     end
 
     it 'should return nil if the user-provided value is not a number' do
       condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 'test')
-      expect(condition_evaluator.evaluate(@lt_conditions)).to eq(nil)
+      expect(condition_evaluator.evaluate(@lt_integer_conditions)).to eq(nil)
+      expect(condition_evaluator.evaluate(@lt_float_conditions)).to eq(nil)
     end
 
     it 'should return nil if there is no user-provided value' do
-      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => {})
-      expect(condition_evaluator.evaluate(@lt_conditions)).to eq(nil)
-    end
-
-    it 'should return nil if user-provided value is greater than specified limit' do
-      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new('input_value' => 2.0e+53)
-      expect(condition_evaluator.evaluate(@lt_conditions)).to eq(nil)
+      condition_evaluator = Optimizely::CustomAttributeConditionEvaluator.new({})
+      expect(condition_evaluator.evaluate(@lt_integer_conditions)).to eq(nil)
+      expect(condition_evaluator.evaluate(@lt_float_conditions)).to eq(nil)
     end
   end
 end

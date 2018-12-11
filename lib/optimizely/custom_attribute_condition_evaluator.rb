@@ -15,6 +15,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
+require_relative 'helpers/validator'
+
 module Optimizely
   class CustomAttributeConditionEvaluator
     CUSTOM_ATTRIBUTE_CONDITION_TYPE = 'custom_attribute'
@@ -34,8 +36,6 @@ module Optimizely
       SUBSTRING_MATCH_TYPE => :substring_evaluator
     }.freeze
 
-    FINITE_NUMBER_LIMIT = 1.0e+53
-
     attr_reader :user_attributes
 
     def initialize(user_attributes)
@@ -53,11 +53,9 @@ module Optimizely
 
       return nil unless leaf_condition['type'] == CUSTOM_ATTRIBUTE_CONDITION_TYPE
 
-      condition_match = leaf_condition['match']
+      condition_match = leaf_condition['match'] || EXACT_MATCH_TYPE
 
-      return nil if !condition_match.nil? && !EVALUATORS_BY_MATCH_TYPE.include?(condition_match)
-
-      condition_match = EXACT_MATCH_TYPE if condition_match.nil?
+      return nil unless EVALUATORS_BY_MATCH_TYPE.include?(condition_match)
 
       send(EVALUATORS_BY_MATCH_TYPE[condition_match], leaf_condition)
     end
@@ -72,10 +70,8 @@ module Optimizely
       #                 or if there is a mismatch between the user attribute type and the condition value type.
 
       condition_value = condition['value']
-      condition_type = condition['value'].class
 
       user_provided_value = @user_attributes[condition['name']]
-      user_provided_type = @user_attributes[condition['name']].class
 
       if user_provided_value.is_a?(Numeric) && condition_value.is_a?(Numeric)
         return true if condition_value.to_f == user_provided_value.to_f
@@ -83,7 +79,7 @@ module Optimizely
 
       return nil if !value_valid_for_exact_conditions?(user_provided_value) ||
                     !value_valid_for_exact_conditions?(condition_value) ||
-                    different_types?(condition_type, user_provided_type)
+                    !Helpers::Validator.same_types?(condition_value, user_provided_value)
 
       condition_value == user_provided_value
     end
@@ -94,8 +90,6 @@ module Optimizely
       #                    1) the user attributes have a value for the given condition, and
       #                    2) the user attribute value is neither nil nor undefined
       #                 Returns false otherwise
-
-      return false unless @user_attributes
 
       !@user_attributes[condition['name']].nil?
     end
@@ -109,7 +103,8 @@ module Optimizely
       condition_value = condition['value']
       user_provided_value = @user_attributes[condition['name']]
 
-      return nil if !finite_number?(user_provided_value) || !finite_number?(condition_value)
+      return nil if !Helpers::Validator.finite_number?(user_provided_value) ||
+                    !Helpers::Validator.finite_number?(condition_value)
 
       user_provided_value > condition_value
     end
@@ -123,7 +118,8 @@ module Optimizely
       condition_value = condition['value']
       user_provided_value = @user_attributes[condition['name']]
 
-      return nil if !finite_number?(user_provided_value) || !finite_number?(condition_value)
+      return nil if !Helpers::Validator.finite_number?(user_provided_value) ||
+                    !Helpers::Validator.finite_number?(condition_value)
 
       user_provided_value < condition_value
     end
@@ -148,24 +144,9 @@ module Optimizely
       # Returns true if the value is valid for exact conditions. Valid values include
       #  strings, booleans, and numbers that aren't NaN, -Infinity, or Infinity.
 
-      return finite_number?(value) if value.is_a? Numeric
+      return Helpers::Validator.finite_number?(value) if value.is_a? Numeric
 
-      (value.is_a? FalseClass) || (value.is_a? Integer) || (value.is_a? String) ||
-        (value.is_a? TrueClass)
-    end
-
-    def different_types?(condition_type, user_provided_type)
-      # Returns false if given types are boolean.
-      #         true if condition_type and user_provided_type are of same types.
-      #         false otherwise.
-
-      return false if [TrueClass, FalseClass].include?(condition_type) && [TrueClass, FalseClass].include?(user_provided_type)
-
-      condition_type != user_provided_type
-    end
-
-    def finite_number?(value)
-      value.is_a?(Numeric) && value.to_f.finite? && value.to_f <= FINITE_NUMBER_LIMIT
+      (Helpers::Validator.boolean? value) || (value.is_a? String)
     end
   end
 end
