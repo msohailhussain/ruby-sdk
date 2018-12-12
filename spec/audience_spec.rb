@@ -27,12 +27,44 @@ describe Optimizely::Audience do
     @project_instance = Optimizely::Project.new(@config_body_json)
   end
 
-  it 'should return true for user_in_experiment? if there are no audiences and no attributes' do
+  it 'should return true for user_in_experiment? when experiment is using no audience' do
+    user_attributes = {}
+    # Both Audience Ids and Conditions are Empty
+		experiment = @project_instance.config.experiment_key_map['test_experiment']
+    experiment['audienceIds'] = []
+    experiment['audienceConditions'] = []
+
+		expect(Optimizely::Audience.user_in_experiment?(@project_instance.config,
+                                                    experiment,
+                                                    user_attributes)).to be true
+
+		# Audience Ids exist but Audience Conditions is Empty
     experiment = @project_instance.config.experiment_key_map['test_experiment']
+    experiment['audienceIds'] = ['11154']
+    experiment['audienceConditions'] = []
+
     expect(Optimizely::Audience.user_in_experiment?(@project_instance.config,
                                                     experiment,
-                                                    nil)).to be true
-  end
+                                                    user_attributes)).to be true
+
+		# Audience Ids is Empty and  Audience Conditions is nil
+    experiment = @project_instance.config.experiment_key_map['test_experiment']
+    experiment['audienceIds'] = []
+    experiment['audienceConditions'] = nil
+
+    expect(Optimizely::Audience.user_in_experiment?(@project_instance.config,
+                                                    experiment,
+                                                    user_attributes)).to be true
+	end
+  #
+  # it 'should return true when user_in_experiment? evaluates non-empty audience' do
+  #   user_attributes = {'test_attribute'=> 'test_value_1'}
+  #   experiment = @project_instance.config.experiment_key_map['test_experiment']
+  #   experiment['audienceIds'] = ['11154']
+  #
+  #   # Both Audience Ids and Conditions exist
+  #   experiment['audienceConditions'] = ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899','3468206646', '3468206647', '3468206644', '3468206643']]
+  # end
 
   it 'should return true for user_in_experiment? if there are no audiences and there are attributes' do
     experiment = @project_instance.config.experiment_key_map['test_experiment']
