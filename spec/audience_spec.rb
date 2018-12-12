@@ -30,15 +30,15 @@ describe Optimizely::Audience do
   it 'should return true for user_in_experiment? when experiment is using no audience' do
     user_attributes = {}
     # Both Audience Ids and Conditions are Empty
-		experiment = @project_instance.config.experiment_key_map['test_experiment']
+    experiment = @project_instance.config.experiment_key_map['test_experiment']
     experiment['audienceIds'] = []
     experiment['audienceConditions'] = []
 
-		expect(Optimizely::Audience.user_in_experiment?(@project_instance.config,
+    expect(Optimizely::Audience.user_in_experiment?(@project_instance.config,
                                                     experiment,
                                                     user_attributes)).to be true
 
-		# Audience Ids exist but Audience Conditions is Empty
+    # Audience Ids exist but Audience Conditions is Empty
     experiment = @project_instance.config.experiment_key_map['test_experiment']
     experiment['audienceIds'] = ['11154']
     experiment['audienceConditions'] = []
@@ -47,7 +47,7 @@ describe Optimizely::Audience do
                                                     experiment,
                                                     user_attributes)).to be true
 
-		# Audience Ids is Empty and  Audience Conditions is nil
+    # Audience Ids is Empty and  Audience Conditions is nil
     experiment = @project_instance.config.experiment_key_map['test_experiment']
     experiment['audienceIds'] = []
     experiment['audienceConditions'] = nil
@@ -55,7 +55,7 @@ describe Optimizely::Audience do
     expect(Optimizely::Audience.user_in_experiment?(@project_instance.config,
                                                     experiment,
                                                     user_attributes)).to be true
-	end
+  end
   #
   # it 'should return true when user_in_experiment? evaluates non-empty audience' do
   #   user_attributes = {'test_attribute'=> 'test_value_1'}
