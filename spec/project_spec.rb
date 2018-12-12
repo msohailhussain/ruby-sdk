@@ -320,7 +320,7 @@ describe 'Optimizely' do
         expect(@project_typed_audience_instance.decision_service.bucketer).to have_received(:bucket).once
       end
 
-      it 'should return return nil when typed audience conditions mismatch' do
+      it 'should return nil when typed audience conditions mismatch' do
         variation_to_return = @project_typed_audience_instance.config.get_variation_from_id('typed_audience_experiment', '1423767503')
         allow(@project_typed_audience_instance.decision_service.bucketer).to receive(:bucket).and_return(variation_to_return)
         allow(@project_typed_audience_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
@@ -735,64 +735,73 @@ describe 'Optimizely' do
       expect(project_instance.event_dispatcher).to have_received(:dispatch_event).with(Optimizely::Event.new(:post, conversion_log_url, params, post_headers)).once
     end
 
-    it 'should properly track an event (with attributes provided) when there is typed audience' do
-      project_typed_audience_instance = Optimizely::Project.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), nil, spy_logger, error_handler)
+    describe '.typed audience' do
+      before(:example) do
+        @project_typed_audience_instance = Optimizely::Project.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), nil, spy_logger, error_handler)
+        @expected_activate_params = {
+          account_id: '4879520872',
+          project_id: '11624721371',
+          visitors: [
+            {
+              attributes: [
+                {
+                  entity_id: '594015',
+                  key: 'house',
+                  type: 'custom',
+                  value: 'Welcome to Slytherin!'
+                }, {
+                  entity_id: Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['BOT_FILTERING'],
+                  key: Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['BOT_FILTERING'],
+                  type: 'custom', value: false
+                }
+              ],
+              snapshots: [
+                {
+                  decisions: [
+                    {
+                      campaign_id: '11504144555',
+                      experiment_id: '11564051718',
+                      variation_id: '11617170975'
+                    },
+                    {
+                      campaign_id: '1630555627',
+                      experiment_id: '1323241597',
+                      variation_id: '1423767503'
+                    }
+                  ],
+                  events: [
+                    {
+                      entity_id: '594089',
+                      timestamp: (time_now.to_f * 1000).to_i,
+                      uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                      key: 'item_bought'
+                    }
+                  ]
+                }
+              ],
+              visitor_id: 'test_user'
+            }
+          ],
+          anonymize_ip: false,
+          revision: '3',
+          client_name: Optimizely::CLIENT_ENGINE,
+          client_version: Optimizely::VERSION
+        }
+      end
 
-      params = {
-        account_id: '4879520872',
-        project_id: '11624721371',
-        visitors: [
-          {
-            attributes: [
-              {
-                entity_id: '594015',
-                key: 'house',
-                type: 'custom',
-                value: 'Welcome to Slytherin!'
-              }, {
-                entity_id: Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['BOT_FILTERING'],
-                key: Optimizely::Helpers::Constants::CONTROL_ATTRIBUTES['BOT_FILTERING'],
-                type: 'custom', value: false
-              }
-            ],
-            snapshots: [
-              {
-                decisions: [
-                  {
-                    campaign_id: '11504144555',
-                    experiment_id: '11564051718',
-                    variation_id: '11617170975'
-                  },
-                  {
-                    campaign_id: '1630555627',
-                    experiment_id: '1323241597',
-                    variation_id: '1423767503'
-                  }
-                ],
-                events: [
-                  {
-                    entity_id: '594089',
-                    timestamp: (time_now.to_f * 1000).to_i,
-                    uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                    key: 'item_bought'
-                  }
-                ]
-              }
-            ],
-            visitor_id: 'test_user'
-          }
-        ],
-        anonymize_ip: false,
-        revision: '3',
-        client_name: Optimizely::CLIENT_ENGINE,
-        client_version: Optimizely::VERSION
-      }
+      it 'should call dispatch_event with right params when attributes are provided' do
+        # Should be included via substring match string audience with id '3988293898'
+        allow(@project_typed_audience_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
+        @project_typed_audience_instance.track('item_bought', 'test_user', 'house' => 'Welcome to Slytherin!')
+        expect(@project_typed_audience_instance.event_dispatcher).to have_received(:dispatch_event).with(Optimizely::Event.new(:post, conversion_log_url, @expected_activate_params, post_headers)).once
+      end
 
-      allow(project_typed_audience_instance.event_dispatcher).to receive(:dispatch_event).with(instance_of(Optimizely::Event))
-      project_typed_audience_instance.track('item_bought', 'test_user', 'house' => 'Welcome to Slytherin!')
-      expect(project_typed_audience_instance.event_dispatcher).to have_received(:dispatch_event).with(Optimizely::Event.new(:post, conversion_log_url, params, post_headers)).once
+      it 'should not call dispatch_event when typed audience conditions do not match' do
+        allow(@project_typed_audience_instance.event_dispatcher).to receive(:dispatch_event)
+        @project_typed_audience_instance.track('item_bought', 'test_user', 'house' => 'Welcome to Hufflepuff!')
+        expect(@project_typed_audience_instance.event_dispatcher).to_not have_received(:dispatch_event)
+      end
     end
-
     it 'should not call dispatch_event when tracking an event for which audience conditions do not match' do
       allow(project_instance.event_dispatcher).to receive(:dispatch_event)
       project_instance.track('test_event_with_audience', 'test_user', 'browser_type' => 'cyberdog')
@@ -1133,23 +1142,36 @@ describe 'Optimizely' do
       expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Feature 'boolean_single_variable_feature' is enabled for user 'test_user'.")
     end
 
-    it 'should return true, if the user is bucketed into a feature rollout when there is a typed audience match' do
-      project_typed_audience_instance = Optimizely::Project.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), nil, spy_logger, error_handler)
+    describe '.typed audience' do
+      before(:example) do
+        @project_typed_audience_instance = Optimizely::Project.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), nil, spy_logger, error_handler)
+      end
 
-      # Should be included via exists match audience with id '3988293899'
-      expect(project_typed_audience_instance.is_feature_enabled(
-               'feat', 'test_user',
-               'favorite_ice_cream' => 'chocolate'
-             )).to be true
+      it 'should return true for feature rollout when typed audience matched' do
+        @project_typed_audience_instance = Optimizely::Project.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), nil, spy_logger, error_handler)
 
-      # Should be included via less-than match audience with id '3468206644'
-      expect(project_typed_audience_instance.is_feature_enabled(
-               'feat', 'test_user',
-               'lasers' => -3
-             )).to be true
+        # Should be included via exists match audience with id '3988293899'
+        expect(@project_typed_audience_instance.is_feature_enabled(
+                 'feat', 'test_user',
+                 'favorite_ice_cream' => 'chocolate'
+               )).to be true
 
-      expect(spy_logger).to have_received(:log).twice.with(Logger::DEBUG, "The user 'test_user' is not being experimented on in feature 'feat'.")
-      expect(spy_logger).to have_received(:log).twice.with(Logger::INFO, "Feature 'feat' is enabled for user 'test_user'.")
+        # Should be included via less-than match audience with id '3468206644'
+        expect(@project_typed_audience_instance.is_feature_enabled(
+                 'feat', 'test_user',
+                 'lasers' => -3
+               )).to be true
+
+        expect(spy_logger).to have_received(:log).twice.with(Logger::DEBUG, "The user 'test_user' is not being experimented on in feature 'feat'.")
+        expect(spy_logger).to have_received(:log).twice.with(Logger::INFO, "Feature 'feat' is enabled for user 'test_user'.")
+      end
+
+      it 'it should return false for feature rollout when typed audience mismatch' do
+        expect(@project_typed_audience_instance.is_feature_enabled('feat', 'test_user', {})).to be false
+
+        expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "User 'test_user' is not bucketed into a rollout for feature flag 'feat'.")
+        expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Feature 'feat' is not enabled for user 'test_user'.")
+      end
     end
 
     it 'should return true, send activate notification and an impression if the user is bucketed into a feature experiment' do
