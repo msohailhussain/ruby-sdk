@@ -135,9 +135,11 @@ describe 'ValidatorHelper' do
     it 'should return false when passed invalid number' do
       # Infinity
       expect(Optimizely::Helpers::Validator.finite_number?(1 / 0.0)).to eq(false)
+      # -Infinity
+      expect(Optimizely::Helpers::Validator.finite_number?(-1 / 0.0)).to eq(false)
       # NaN
       expect(Optimizely::Helpers::Validator.finite_number?(0.0 / 0)).to eq(false)
-      # Greater than specified limit 2.0e+53
+      # Greater than specified limit of 2.0e+53
       expect(Optimizely::Helpers::Validator.finite_number?(2.0e+53)).to eq(false)
     end
   end
