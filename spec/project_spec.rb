@@ -228,7 +228,7 @@ describe 'Optimizely' do
       expect(project_instance.decision_service.bucketer).to have_received(:bucket).once
     end
 
-    describe '.typed audience' do
+    describe '.typed audiences' do
       before(:example) do
         @project_typed_audience_instance = Optimizely::Project.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), nil, spy_logger, error_handler)
         @expected_activate_params = {
@@ -735,7 +735,7 @@ describe 'Optimizely' do
       expect(project_instance.event_dispatcher).to have_received(:dispatch_event).with(Optimizely::Event.new(:post, conversion_log_url, params, post_headers)).once
     end
 
-    describe '.typed audience' do
+    describe '.typed audiences' do
       before(:example) do
         @project_typed_audience_instance = Optimizely::Project.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), nil, spy_logger, error_handler)
         @expected_activate_params = {
@@ -1142,14 +1142,12 @@ describe 'Optimizely' do
       expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "Feature 'boolean_single_variable_feature' is enabled for user 'test_user'.")
     end
 
-    describe '.typed audience' do
+    describe '.typed audiences' do
       before(:example) do
         @project_typed_audience_instance = Optimizely::Project.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), nil, spy_logger, error_handler)
       end
 
       it 'should return true for feature rollout when typed audience matched' do
-        @project_typed_audience_instance = Optimizely::Project.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), nil, spy_logger, error_handler)
-
         # Should be included via exists match audience with id '3988293899'
         expect(@project_typed_audience_instance.is_feature_enabled(
                  'feat', 'test_user',
@@ -1166,7 +1164,7 @@ describe 'Optimizely' do
         expect(spy_logger).to have_received(:log).twice.with(Logger::INFO, "Feature 'feat' is enabled for user 'test_user'.")
       end
 
-      it 'it should return false for feature rollout when typed audience mismatch' do
+      it 'should return false for feature rollout when typed audience mismatch' do
         expect(@project_typed_audience_instance.is_feature_enabled('feat', 'test_user', {})).to be false
 
         expect(spy_logger).to have_received(:log).once.with(Logger::INFO, "User 'test_user' is not bucketed into a rollout for feature flag 'feat'.")
@@ -1579,28 +1577,31 @@ describe 'Optimizely' do
       expect(spy_logger).to have_received(:log).with(Logger::ERROR, 'User ID is invalid').exactly(6).times
     end
 
-    it 'should return variable value when typed audience match' do
-      project_typed_audience_instance = Optimizely::Project.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), nil, spy_logger, error_handler)
-      # Should be included in the feature test via greater-than match audience with id '3468206647'
-      expect(project_typed_audience_instance.get_feature_variable_string(
-               'feat_with_var',
-               'x', 'user1', 'lasers' => 71
-             )).to eq('xyz')
+    describe '.typed audiences' do
+      before(:example) do
+        @project_typed_audience_instance = Optimizely::Project.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), nil, spy_logger, error_handler)
+      end
 
-      # Should be included in the feature test via exact match boolean audience with id '3468206643'
-      expect(project_typed_audience_instance.get_feature_variable_string(
-               'feat_with_var',
-               'x', 'user1', 'should_do_it' => true
-             )).to eq('xyz')
-    end
+      it 'should return variable value when typed audience match' do
+        # Should be included in the feature test via greater-than match audience with id '3468206647'
+        expect(@project_typed_audience_instance.get_feature_variable_string(
+                 'feat_with_var',
+                 'x', 'user1', 'lasers' => 71
+               )).to eq('xyz')
 
-    it 'should return default_value when typed audience match' do
-      project_typed_audience_instance = Optimizely::Project.new(JSON.dump(OptimizelySpec::CONFIG_DICT_WITH_TYPED_AUDIENCES), nil, spy_logger, error_handler)
+        # Should be included in the feature test via exact match boolean audience with id '3468206643'
+        expect(@project_typed_audience_instance.get_feature_variable_string(
+                 'feat_with_var',
+                 'x', 'user1', 'should_do_it' => true
+               )).to eq('xyz')
+      end
 
-      expect(project_typed_audience_instance.get_feature_variable_string(
-               'feat_with_var',
-               'x', 'user1', 'lasers' => 50
-             )).to eq('x')
+      it 'should return default_value when typed audience mismatch' do
+        expect(@project_typed_audience_instance.get_feature_variable_string(
+                 'feat_with_var',
+                 'x', 'user1', 'lasers' => 50
+               )).to eq('x')
+      end
     end
   end
 
