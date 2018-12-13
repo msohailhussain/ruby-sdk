@@ -53,6 +53,7 @@ module Optimizely
         audience_conditions = JSON.parse(audience_conditions) if audience_conditions.is_a?(String)
         return ConditionTreeEvaluator.evaluate(audience_conditions, evaluate_custom_attr)
       end
+
       return true if ConditionTreeEvaluator.evaluate(audience_conditions, evaluate_audience)
 
       false
