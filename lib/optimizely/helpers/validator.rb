@@ -165,7 +165,9 @@ module Optimizely
         #   of 1.0e+53 and restricts NaN, Infinity, -Infinity.
         #   false otherwise.
 
-        value.is_a?(Numeric) && value.to_f.finite? && value.to_f <= Constants::FINITE_NUMBER_LIMIT
+        value.is_a?(Numeric) && value.to_f.finite? &&
+          value > Constants::FINITE_NUMBER_LIMIT[:lower_limit] &&
+          value < Constants::FINITE_NUMBER_LIMIT[:upper_limit]
       end
     end
   end
