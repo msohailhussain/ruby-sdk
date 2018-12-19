@@ -161,8 +161,8 @@ module Optimizely
       end
 
       def finite_number?(value)
-        # Returns true if the given value is a number, enforces limit
-        #   of 1.0e+53 and restricts NaN, Infinity, -Infinity.
+        # Returns true if the given value is a number, enforces range
+        #   -2 ^ 53 to 2 ^ 53 and restricts NaN, Infinity, -Infinity.
         #   false otherwise.
 
         value.is_a?(Numeric) && value.to_f.finite? &&
